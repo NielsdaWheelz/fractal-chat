@@ -1,6 +1,6 @@
 import type { Route } from "./+types/home";
 import { authClient } from "~/utils/auth-client";
-import SignUp from "../signUp/signUp"
+ import SignUp from "../signUp/signUp"
 import SignIn from "../signIn/signIn"
 import Chat from "../chat/chat"
 
@@ -13,7 +13,7 @@ export function meta({ }: Route.MetaArgs) {
 
 export default function Home() {
   const session = authClient.useSession()
-  if (session.data?.user.id) {
+  if (session?.data?.user?.id) {
     return (
       <Chat data={session.data} />
     )

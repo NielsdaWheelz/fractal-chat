@@ -8,19 +8,21 @@ const SignIn = () => {
   const [token, setToken] = useState("")
   const [accessToken, setAccessToken] = useState("")
 
+  const handleSubmit = (event) => {
+    event.preventDefault()
+    emailSignIn(email, password)
+  }
   return (
     <>
       <h1>
         Sign In
       </h1>
-      <Form onSubmit={() => {emailSignIn(email, password)}}>
+      <Form onSubmit={handleSubmit}>
         <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Email"/>
         <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Password"/>
         <button type="submit">Sign In</button>
       </Form>
-      <Form onSubmit={() => {googleSignIn(token, accessToken)}}>
-        <button type="submit">Sign In With Google</button>
-      </Form>
+      <button onClick={googleSignIn}>Sign In With Google</button>
     </>
   )
 }

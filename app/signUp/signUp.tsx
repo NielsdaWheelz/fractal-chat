@@ -32,12 +32,17 @@ const SignUp = () => {
     )
   }
 
+  const handleSubmit = (event) => {
+    event.preventDefault()
+    signUp()
+  }
+
   return (
     <>
       <h1>
         Sign Up
       </h1>
-      <Form onSubmit={signUp}>
+      <Form onSubmit={handleSubmit}>
         <input type="text" value={name} onChange={(event) => setName(event.target.value)} placeholder="Name"/>
         <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Email"/>
         <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Password"/>
