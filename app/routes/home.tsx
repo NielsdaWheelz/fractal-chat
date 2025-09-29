@@ -2,7 +2,7 @@ import type { Route } from "./+types/home";
 import { authClient } from "~/utils/auth-client";
 import SignUp from "../signUp/signUp"
 import SignIn from "../signIn/signIn"
-import { Welcome } from "../welcome/welcome";
+import Chat from "../chat/chat"
 
 export function meta({ }: Route.MetaArgs) {
   return [
@@ -12,13 +12,15 @@ export function meta({ }: Route.MetaArgs) {
 }
 
 export default function Home() {
-  const { data, isPending, error } = authClient.useSession()
-  if (data) {
-    return <div>Hello, {data.user.email}!</div>
+  const session = authClient.useSession()
+  if (session.data?.user.id) {
+    return (
+      <Chat data={session.data} />
+    )
   } else {
-    return <div>
+    return <>
       <SignIn />
       <SignUp />
-    </div>
+    </>
   }
 }
