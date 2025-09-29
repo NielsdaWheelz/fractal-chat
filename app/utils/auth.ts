@@ -1,6 +1,6 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { db } from "../index"; // your drizzle instance
+import { db } from "../index";
 import * as schema from "../db/schema";
 
 export const auth = betterAuth({
@@ -11,10 +11,12 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
-  // socialProviders: {
-  //   github: {
-  //     clientId: process.env.GITHUB_CLIENT_ID as string,
-  //     clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
-  //   },
-  // },
+  socialProviders: {
+    google: {
+      prompt: "select_account",
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+    }
+  },
+  trustedOrigins: ["http://localhost:5173"],
 });

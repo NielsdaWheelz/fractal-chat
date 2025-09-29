@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { Form } from "react-router"
-import { authClient } from "~/utils/auth-client"
+import { signUp, googleSignIn } from "~/utils/auth-client"
 
 const SignUp = () => {
   const [email, setEmail] = useState("")
@@ -8,28 +8,9 @@ const SignUp = () => {
   const [name, setName] = useState("")
   // const [image, setImage] = useState("")
 
-
-  const signUp = async () => {
-    await authClient.signUp.email({
-      email,
-      password,
-      name,
-      // image
-      // callbackURL: "/dashboard" // A URL to redirect to after the user verifies their email (optional)
-    },
-      {
-        onRequest: (ctx) => {
-          //show loading
-        },
-        onSuccess: (ctx) => {
-          //redirect to the dashboard or sign in page
-        },
-        onError: (ctx) => {
-          // display the error message
-          alert(ctx.error.message);
-        },
-      }
-    )
+  const handleSubmit = (event) => {
+    event.preventDefault()
+    signUp(email, password, name)
   }
 
   return (
@@ -37,12 +18,13 @@ const SignUp = () => {
       <h1>
         Sign Up
       </h1>
-      <Form onSubmit={signUp}>
+      <Form onSubmit={handleSubmit}>
         <input type="text" value={name} onChange={(event) => setName(event.target.value)} placeholder="Name"/>
         <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Email"/>
         <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Password"/>
         <button type="submit">Sign Up</button>
       </Form>
+      <button onClick={googleSignIn}>Sign In With Google</button>
     </>
   )
 }
