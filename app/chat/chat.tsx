@@ -6,7 +6,8 @@ import { useState } from 'react';
 import { PromptInput, PromptInputAction, PromptInputActions, PromptInputTextarea } from "~/components/ui/prompt-input"
 import { ArrowUp, Square } from "lucide-react"
 import { Button } from "~/components/ui/button";
-import Message from "../chat/Message"
+import AIMessage from "./AIMessage"
+import UserMessage from "./UserMessage"
 
 // export async function loader({ request }: Route.LoaderArgs) {
 //   const session = await getSession(request);
@@ -32,9 +33,8 @@ const Chat = () => {
   return (
     <>
       {messages.map(message => {
-        return (
-          <Message message={message} />
-        )
+        if (message.role === "user") return <UserMessage message={message} />
+        else if (message.role === "assistant") return <AIMessage message={message} />
       })}
       <PromptInput
         value={newMessage}
