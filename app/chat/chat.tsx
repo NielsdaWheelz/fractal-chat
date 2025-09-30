@@ -1,6 +1,9 @@
 // import { getSession } from "../routes/api.auth";
 // import { redirect } from "react-router";
 // import type { Route } from "./+types/chat";
+import { useChat } from '@ai-sdk/react';
+import { useState } from 'react';
+import { Form } from "react-router";
 
 // export async function loader({ request }: Route.LoaderArgs) {
 //   const session = await getSession(request);
@@ -10,12 +13,32 @@
 //   return null
 // }
 
-const Chat = (props: {name: string}) => {
+const Chat = () => {
+  const [newMessage, setNewMessage] = useState("");
+  const { messages, sendMessage } = useChat();
 
+  const handleSubmit = (event) => {
+    event.preventDefault()
+    sendMessage({text: newMessage})
+    setNewMessage("")
+  }
 
   return (
     <>
-      Hello, {props.name}!
+      {messages.map(message => (
+        <div key={message.id}>
+          {message.role}:
+          {message.parts.map((part, i) => {
+            switch (part.type) {
+              case "text":
+                return <div key={`${message.id}-${i}`}>{part.text}</div>
+            }
+          })}
+        </div>
+      ))}
+      <Form onSubmit={handleSubmit}>
+        <input value={newMessage} onChange={(event) => setNewMessage(event.currentTarget.value)} placeholder="The world is your cloister."></input>
+      </Form>
     </>
   )
 }
