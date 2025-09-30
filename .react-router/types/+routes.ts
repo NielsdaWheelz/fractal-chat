@@ -45,8 +45,8 @@ type RouteFiles = {
     id: "chat/chat";
     page: "/chats/:chatId";
   };
-  "routes/api.auth.$.ts": {
-    id: "routes/api.auth.$";
+  "routes/api.auth.ts": {
+    id: "routes/api.auth";
     page: "/api/auth/*";
   };
 };

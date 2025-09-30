@@ -1,4 +1,4 @@
-// import { getSession } from "../routes/api.auth.$";
+// import { getSession } from "../routes/api.auth";
 // import { redirect } from "react-router";
 // import type { Route } from "./+types/chat";
 
