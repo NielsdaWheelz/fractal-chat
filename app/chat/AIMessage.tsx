@@ -1,25 +1,8 @@
 import Content from './Content'
 import { ToolComponent } from './Tool'
-import type { ToolPart } from "~/components/ui/tool"
 import { Message as MessageKit, MessageAvatar, MessageContent } from "~/components/ui/message"
 
-type ChatPart = {
-  type: string
-  text?: string
-  state?: ToolPart["state"]
-  input?: Record<string, unknown>
-  output?: Record<string, unknown>
-  toolCallId?: string
-  errorText?: string
-}
-
-type ChatMessage = {
-  id: string
-  role: string
-  parts?: ChatPart[]
-}
-
-const Message = ({ message }: { message: ChatMessage }) => {
+const Message = ({ message }: { message }) => {
   const parts = message.parts ?? []
 
   return (

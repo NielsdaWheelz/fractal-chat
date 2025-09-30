@@ -1,7 +1,7 @@
 import { Message as MessageKit, MessageAvatar, MessageContent } from "~/components/ui/message"
 import Content from './Content'
 
-const UserMessage = ({ message }: { message: ChatMessage }) => {
+const UserMessage = ({ message }: { message }) => {
   return (
     <MessageContent className="bg-transparent p-0">
       <MessageKit className="justify-end">

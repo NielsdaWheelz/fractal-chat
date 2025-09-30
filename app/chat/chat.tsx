@@ -8,6 +8,7 @@ import { ArrowUp, Square } from "lucide-react"
 import { Button } from "~/components/ui/button";
 import AIMessage from "./AIMessage"
 import UserMessage from "./UserMessage"
+import { ChatContainerContent, ChatContainerRoot } from "~/components/ui/chat-container"
 
 // export async function loader({ request }: Route.LoaderArgs) {
 //   const session = await getSession(request);
@@ -32,37 +33,41 @@ const Chat = () => {
 
   return (
     <>
-      {messages.map(message => {
-        if (message.role === "user") return <UserMessage message={message} />
-        else if (message.role === "assistant") return <AIMessage message={message} />
-      })}
-      <PromptInput
-        value={newMessage}
-        onValueChange={(value) => setNewMessage(value)}
-        isLoading={isLoading}
-        onSubmit={handleSubmit}
-        className="w-full max-w-(--breakpoint-md)"
-      >
-        <PromptInputTextarea placeholder="Ask me anything..." />
-        <PromptInputActions className="justify-end pt-2">
-          <PromptInputAction
-            tooltip={isLoading ? "Stop generation" : "Send message"}
+      <ChatContainerRoot className="flex-1">
+        <ChatContainerContent className="space-y-4 p-4">
+          {messages.map(message => {
+            if (message.role === "user") return <UserMessage message={message} />
+            else if (message.role === "assistant") return <AIMessage message={message} />
+          })}
+          <PromptInput
+            value={newMessage}
+            onValueChange={(value) => setNewMessage(value)}
+            isLoading={isLoading}
+            onSubmit={handleSubmit}
+            className="w-full max-w-(--breakpoint-md)"
           >
-            <Button
-              variant="default"
-              size="icon"
-              className="h-8 w-8 rounded-full"
-              onClick={handleSubmit}
-            >
-              {isLoading ? (
-                <Square className="size-5 fill-current" />
-              ) : (
-                <ArrowUp className="size-5" />
-              )}
-            </Button>
-          </PromptInputAction>
-        </PromptInputActions>
-      </PromptInput>
+            <PromptInputTextarea placeholder="Ask me anything..." />
+            <PromptInputActions className="justify-end pt-2">
+              <PromptInputAction
+                tooltip={isLoading ? "Stop generation" : "Send message"}
+              >
+                <Button
+                  variant="default"
+                  size="icon"
+                  className="h-8 w-8 rounded-full"
+                  onClick={handleSubmit}
+                >
+                  {isLoading ? (
+                    <Square className="size-5 fill-current" />
+                  ) : (
+                    <ArrowUp className="size-5" />
+                  )}
+                </Button>
+              </PromptInputAction>
+            </PromptInputActions>
+          </PromptInput>
+        </ChatContainerContent>
+      </ChatContainerRoot>
     </>
   )
 }
