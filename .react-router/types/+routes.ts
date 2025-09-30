@@ -13,6 +13,14 @@ type Pages = {
   "/": {
     params: {};
   };
+  "/chats": {
+    params: {};
+  };
+  "/chats/:chatId": {
+    params: {
+      "chatId": string;
+    };
+  };
   "/api/auth/*": {
     params: {
       "*": string;
@@ -23,11 +31,19 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/api/auth/*";
+    page: "/" | "/chats" | "/chats/:chatId" | "/api/auth/*";
   };
   "routes/home.tsx": {
     id: "routes/home";
     page: "/";
+  };
+  "chat/chats.tsx": {
+    id: "chat/chats";
+    page: "/chats";
+  };
+  "chat/chat.tsx": {
+    id: "chat/chat";
+    page: "/chats/:chatId";
   };
   "routes/api.auth.$.ts": {
     id: "routes/api.auth.$";

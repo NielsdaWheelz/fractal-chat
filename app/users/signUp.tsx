@@ -1,16 +1,15 @@
 import { useState } from "react"
 import { Form } from "react-router"
-import { signUp, googleSignIn } from "~/utils/auth-client"
+import { clientSignUp, clientGoogleSignIn } from "~/utils/auth-client"
 
 const SignUp = () => {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [name, setName] = useState("")
-  // const [image, setImage] = useState("")
 
   const handleSubmit = (event) => {
     event.preventDefault()
-    signUp(email, password, name)
+    clientSignUp(email, password, name)
   }
 
   return (
@@ -24,7 +23,7 @@ const SignUp = () => {
         <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Password"/>
         <button type="submit">Sign Up</button>
       </Form>
-      <button onClick={googleSignIn}>Sign In With Google</button>
+      <button onClick={clientGoogleSignIn}>Sign In With Google</button>
     </>
   )
 }

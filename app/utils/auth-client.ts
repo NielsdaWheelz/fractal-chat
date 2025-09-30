@@ -2,10 +2,10 @@ import { createAuthClient } from "better-auth/react"
 export const authClient = createAuthClient({
   /** The base URL of the server (optional if you're using the same domain) */
   // baseURL: "http://localhost:3000"
-  baseURL: "http://localhost:5173"
+  // baseURL: "http://localhost:5173"
 })
 
-export const signUp = async (email, password, name) => {
+export const clientSignUp = async (email, password, name) => {
   await authClient.signUp.email({
     email,
     password,
@@ -29,7 +29,7 @@ export const signUp = async (email, password, name) => {
 }
 
 
-export const googleSignIn = async () => {
+export const clientGoogleSignIn = async () => {
   // await authClient.signIn.social({
   //   provider: "google",
   //   idToken: {
@@ -40,7 +40,7 @@ export const googleSignIn = async () => {
   authClient.signIn.social({ provider: "google", callbackURL: "/" })
 };
 
-export const emailSignIn = async (email, password) => {
+export const clientEmailSignIn = async (email, password) => {
   await authClient.signIn.email(
     {
       email,
@@ -62,7 +62,7 @@ export const emailSignIn = async (email, password) => {
   )
 }
 
-export const signOut = async () => {
+export const clientSignOut = async () => {
   await authClient.signOut({
     fetchOptions: {
       onSuccess: () => {
