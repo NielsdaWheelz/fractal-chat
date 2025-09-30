@@ -16,12 +16,15 @@ type Pages = {
   "/chats": {
     params: {};
   };
-  "/chats/:chatId": {
-    params: {
-      "chatId": string;
-    };
+  "/chat": {
+    params: {};
   };
   "/api/auth/*": {
+    params: {
+      "*": string;
+    };
+  };
+  "/api/chat/*": {
     params: {
       "*": string;
     };
@@ -31,7 +34,7 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/chats" | "/chats/:chatId" | "/api/auth/*";
+    page: "/" | "/chats" | "/chat" | "/api/auth/*" | "/api/chat/*";
   };
   "routes/home.tsx": {
     id: "routes/home";
@@ -43,10 +46,14 @@ type RouteFiles = {
   };
   "chat/chat.tsx": {
     id: "chat/chat";
-    page: "/chats/:chatId";
+    page: "/chat";
   };
   "routes/api.auth.ts": {
     id: "routes/api.auth";
     page: "/api/auth/*";
+  };
+  "routes/api.chat.ts": {
+    id: "routes/api.chat";
+    page: "/api/chat/*";
   };
 };
