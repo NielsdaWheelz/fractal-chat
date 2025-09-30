@@ -1,7 +1,7 @@
 // import { Link, useLoaderData } from "react-router"
 // import { Form, redirect } from "react-router";
 import type { Route } from "./+types/home";
-// import { getSession, signInEmail, signUpEmail, signOut, signInGoogle } from "./api.auth.$"
+// import { getSession, signInEmail, signUpEmail, signOut, signInGoogle } from "./api.auth"
 import { authClient } from "~/utils/auth-client";
 import SignUp from "../users/signUp"
 import SignIn from "../users/signIn"
