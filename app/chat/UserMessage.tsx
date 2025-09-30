@@ -1,21 +1,26 @@
 import { Message as MessageKit, MessageAvatar, MessageContent } from "~/components/ui/message"
+import { Markdown } from "~/components/ui/markdown"
 import Content from './Content'
 
 const UserMessage = ({ message }: { message }) => {
   return (
-    <MessageContent className="bg-transparent p-0">
-      <MessageKit className="justify-end">
+    <MessageKit className="justify-end">
+      <MessageContent className="bg-transparent p-0">
         {message.parts.map((part, i) => {
           switch (part.type) {
             case 'text': {
               return (
-                <Content key={`${message.id}-${i}`} text={part.text ?? ''} />
+                <div className="w-full min-w-full">
+                  <Markdown key={`${message.id}-${i}`} className="prose prose-sm dark:prose-invert prose-h2:mt-0! prose-h2:scroll-m-0!">
+                    {part.text}
+                  </Markdown>
+                </div>
               )
             }
           }
         })}
-      </MessageKit>
-    </MessageContent >
+      </MessageContent >
+    </MessageKit>
   )
 }
 
