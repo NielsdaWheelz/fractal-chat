@@ -3,13 +3,13 @@
 // import type { Route } from "./+types/chat";
 import { useChat } from '@ai-sdk/react';
 import { useState } from 'react';
-import { Form } from "react-router";
 import {
   PromptInput,
   PromptInputAction,
   PromptInputActions,
   PromptInputTextarea,
 } from "~/components/ui/prompt-input"
+import { ToolComponent } from './Tool';
 import { ArrowUp, Square } from "lucide-react"
 import { Button } from "~/components/ui/button";
 
@@ -43,10 +43,11 @@ const Chat = () => {
               case "text":
                 return <div key={`${message.id}-${i}`}>{part.text}</div>
               case 'tool-weather':
+                console.log(message, part)
                 return (
-                  <pre key={`${message.id}-${i}`}>
-                    {JSON.stringify(part, null, 2)}
-                  </pre>
+                  <>
+                    <ToolComponent i={i} message={message} part={part}/>
+                  </>
                 );
             }
           })}
