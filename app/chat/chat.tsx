@@ -1,6 +1,8 @@
 // import { getSession } from "../routes/api.auth";
 // import { redirect } from "react-router";
 // import type { Route } from "./+types/chat";
+import { redirect, useLoaderData } from "react-router";
+import { getSession } from "~/routes/api.auth";
 import { Loader } from "~/components/ui/loader"
 import { useChat } from '@ai-sdk/react';
 import { useState } from 'react';
@@ -12,19 +14,22 @@ import UserMessage from "./UserMessage"
 import { ChatContainerContent, ChatContainerRoot } from "~/components/ui/chat-container"
 import { Message as MessageKit, MessageAvatar, MessageContent } from "~/components/ui/message"
 
-// export async function loader({ request }: Route.LoaderArgs) {
-//   const session = await getSession(request);
-//   if (!session?.user) {
-//     return redirect("/")
-//   }
-//   return null
-// }
+export const loader = async ({ request }: Route.LoaderArgs) => {
+  const session = await getSession(request)
+  if (!session?.user) {
+    return { user: null }
+  } else {
+    return { user: session.user }
+  }
+}
 
 const Chat = () => {
+  let data = useLoaderData<typeof loader>();
+  if (!data?.user?.id) return redirect("/")
   const [newMessage, setNewMessage] = useState("");
   const { messages, sendMessage, status, stop } = useChat();
   const isLoading = status === "submitted"
-  const isStreaming = status  === "streaming"
+  const isStreaming = status === "streaming"
 
   const handleSubmit = () => {
     if (isLoading) {
