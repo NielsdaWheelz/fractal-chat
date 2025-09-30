@@ -10,13 +10,12 @@
 //   return null
 // }
 
-const Chat = (props: {session}) => {
+const Chat = (props: {name: string}) => {
 
 
   return (
     <>
-      Hello, {props.session}!
-      <button onClick={handleClick}>Sign Out</button>
+      Hello, {props.name}!
     </>
   )
 }

@@ -6,6 +6,7 @@ import { authClient } from "~/utils/auth-client";
 import SignUp from "../users/signUp"
 import SignIn from "../users/signIn"
 import { clientSignOut } from "~/utils/auth-client"
+import Chat from "../chat/chat"
 
 export function meta({ }: Route.MetaArgs) {
   return [
