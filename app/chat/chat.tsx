@@ -4,6 +4,14 @@
 import { useChat } from '@ai-sdk/react';
 import { useState } from 'react';
 import { Form } from "react-router";
+import {
+  PromptInput,
+  PromptInputAction,
+  PromptInputActions,
+  PromptInputTextarea,
+} from "~/components/ui/prompt-input"
+import { ArrowUp, Square } from "lucide-react"
+import { Button } from "~/components/ui/button";
 
 // export async function loader({ request }: Route.LoaderArgs) {
 //   const session = await getSession(request);
@@ -16,11 +24,13 @@ import { Form } from "react-router";
 const Chat = () => {
   const [newMessage, setNewMessage] = useState("");
   const { messages, sendMessage } = useChat();
+  const [isLoading, setIsLoading] = useState(false)
 
-  const handleSubmit = (event) => {
-    event.preventDefault()
+  const handleSubmit = () => {
+    setIsLoading(true)
     sendMessage({ text: newMessage })
     setNewMessage("")
+    setIsLoading(false)
   }
 
   return (
@@ -42,9 +52,33 @@ const Chat = () => {
           })}
         </div>
       ))}
-      <Form onSubmit={handleSubmit}>
-        <input value={newMessage} onChange={(event) => setNewMessage(event.currentTarget.value)} placeholder="The world is your cloister."></input>
-      </Form>
+      <PromptInput
+        value={newMessage}
+        onValueChange={(value) => setNewMessage(value)}
+        isLoading={isLoading}
+        onSubmit={handleSubmit}
+        className="w-full max-w-(--breakpoint-md)"
+      >
+        <PromptInputTextarea placeholder="Ask me anything..." />
+        <PromptInputActions className="justify-end pt-2">
+          <PromptInputAction
+            tooltip={isLoading ? "Stop generation" : "Send message"}
+          >
+            <Button
+              variant="default"
+              size="icon"
+              className="h-8 w-8 rounded-full"
+              onClick={handleSubmit}
+            >
+              {isLoading ? (
+                <Square className="size-5 fill-current" />
+              ) : (
+                <ArrowUp className="size-5" />
+              )}
+            </Button>
+          </PromptInputAction>
+        </PromptInputActions>
+      </PromptInput>
     </>
   )
 }

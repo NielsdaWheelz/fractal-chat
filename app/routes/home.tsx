@@ -7,6 +7,7 @@ import SignUp from "../users/signUp"
 import SignIn from "../users/signIn"
 import { clientSignOut } from "~/utils/auth-client"
 import Chat from "../chat/chat"
+import { Button } from "~/components/ui/button";
 
 export function meta({ }: Route.MetaArgs) {
   return [
@@ -34,13 +35,15 @@ export default function Home() {
     return (
       <>
         Hello, {session.data.user.name}!
-        <button onClick={handleClick}>Sign Out</button>
+        <Button onClick={handleClick}>Sign Out</Button>
       </>
     )
   } else {
-    return <>
-      <SignIn />
-      <SignUp />
-    </>
+    return (
+      <>
+        <SignIn />
+        <SignUp />
+      </>
+    )
   }
 }
