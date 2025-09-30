@@ -1,20 +1,28 @@
-import { Tool } from "~/components/ui/tool"
+import { Tool, type ToolPart } from "~/components/ui/tool"
 
-export function ToolComponent(props: { i, message, part }) {
+type ToolLikePart = {
+  type: string
+  state?: ToolPart["state"]
+  input?: Record<string, unknown> | string
+  output?: Record<string, unknown>
+  toolCallId?: string
+  errorText?: string
+}
+
+export function ToolComponent({ part }: { part: ToolLikePart }) {
+  const normalizedInput =
+    typeof part.input === 'string' ? { query: part.input } : part.input
+
   return (
-    <Tool key={`${props.message.id}-${props.i}`}
+    <Tool
       className="w-full max-w-md"
       toolPart={{
-        type: props.part.type,
-        state: props.part.state,
-        input: {
-          query: props.part.input,
-        },
-        output: {
-          results: [
-            JSON.stringify(props.part, null, 2)
-          ]
-        },
+        type: part.type,
+        state: part.state ?? 'input-available',
+        input: normalizedInput,
+        output: part.output,
+        toolCallId: part.toolCallId,
+        errorText: part.errorText,
       }}
     />
   )

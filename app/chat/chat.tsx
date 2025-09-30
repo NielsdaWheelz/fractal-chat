@@ -3,15 +3,10 @@
 // import type { Route } from "./+types/chat";
 import { useChat } from '@ai-sdk/react';
 import { useState } from 'react';
-import {
-  PromptInput,
-  PromptInputAction,
-  PromptInputActions,
-  PromptInputTextarea,
-} from "~/components/ui/prompt-input"
-import { ToolComponent } from './Tool';
+import { PromptInput, PromptInputAction, PromptInputActions, PromptInputTextarea } from "~/components/ui/prompt-input"
 import { ArrowUp, Square } from "lucide-react"
 import { Button } from "~/components/ui/button";
+import Message from "../chat/Message"
 
 // export async function loader({ request }: Route.LoaderArgs) {
 //   const session = await getSession(request);
@@ -33,26 +28,14 @@ const Chat = () => {
     setIsLoading(false)
   }
 
+
   return (
     <>
-      {messages.map(message => (
-        <div key={message.id}>
-          {message.role}:
-          {message.parts.map((part, i) => {
-            switch (part.type) {
-              case "text":
-                return <div key={`${message.id}-${i}`}>{part.text}</div>
-              case 'tool-weather':
-                console.log(message, part)
-                return (
-                  <>
-                    <ToolComponent i={i} message={message} part={part}/>
-                  </>
-                );
-            }
-          })}
-        </div>
-      ))}
+      {messages.map(message => {
+        return (
+          <Message message={message} />
+        )
+      })}
       <PromptInput
         value={newMessage}
         onValueChange={(value) => setNewMessage(value)}
