@@ -31,14 +31,13 @@ const Chat = () => {
     setNewMessage("")
   }
 
-
   return (
     <>
       <ChatContainerRoot className="flex-1">
         <ChatContainerContent className="mx-auto w-full max-w-2xl space-y-4 p-4">
           {!hasMessages && !isLoading && (
             <div className="text-muted-foreground mx-auto mt-10 flex w-full max-w-xl flex-col items-center gap-3 text-center">
-              <img src="/favicon.ico" alt="App" className="h-8 w-8 opacity-70" />
+              {/* <img src="/favicon.ico" alt="App" className="h-8 w-8 opacity-70" /> */}
               <div className="text-foreground text-base font-medium">Welcome</div>
               <p className="text-sm">Ask a question to get started. Shift+Enter for newline, Enter to send.</p>
             </div>
@@ -66,7 +65,7 @@ const Chat = () => {
             isLoading={isLoading}
             onSubmit={handleSubmit}
             className="w-full max-w-(--breakpoint-md)"
-            disabled={isLoading}
+            disabled={isLoading && newMessage.length > 0}
           >
             <PromptInputTextarea placeholder="Ask me anything..." />
             <PromptInputActions className="justify-end pt-2">

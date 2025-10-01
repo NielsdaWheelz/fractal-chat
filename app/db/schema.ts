@@ -1,8 +1,34 @@
-import { pgTable, text, timestamp, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, integer, varchar, timestamp, boolean, jsonb } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
 
-// export const chatTable = pgTable("chat", {
-//   id: integer().primaryKey().generatedAlwaysAsIdentity(),
-// });
+export const chatTable = pgTable("chat", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  title: text("title").default("New Chat"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const messageTable = pgTable("message", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  chatId: integer("chat_id")
+    .notNull()
+    .references(() => chatTable.id, { onDelete: "cascade" }),
+  role: varchar("role", { length: 20 }).notNull(), // "user" | "assistant" | "system"
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const toolCallTable = pgTable("tool_call", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  messageId: integer("message_id")
+    .notNull()
+    .references(() => messageTable.id, { onDelete: "cascade" }),
+  tool: varchar("tool", { length: 100 }).notNull(),
+  toolCallData: jsonb("tool_call_data").notNull(), // store inputs/outputs
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -63,3 +89,31 @@ export const verification = pgTable("verification", {
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
 });
+
+// Relations
+export const userRelations = relations(user, ({ many }) => ({
+  chats: many(chatTable),
+}));
+
+export const chatRelations = relations(chatTable, ({ one, many }) => ({
+  user: one(user, {
+    fields: [chatTable.userId],
+    references: [user.id],
+  }),
+  messages: many(messageTable),
+}));
+
+export const messageRelations = relations(messageTable, ({ one, many }) => ({
+  chat: one(chatTable, {
+    fields: [messageTable.chatId],
+    references: [chatTable.id],
+  }),
+  toolCalls: many(toolCallTable),
+}));
+
+export const toolCallRelations = relations(toolCallTable, ({ one }) => ({
+  message: one(messageTable, {
+    fields: [toolCallTable.messageId],
+    references: [messageTable.id],
+  }),
+}));

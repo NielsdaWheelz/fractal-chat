@@ -5,9 +5,10 @@ import RightSidebar from "./right-sidebar"
 const Workspace = () => {
   return (
     <>
-    <LeftSidebar />
-    <Chat />
-    <RightSidebar />
+      <div className="flex flex-row">
+        <LeftSidebar />
+        <RightSidebar />
+      </div>
     </>
   )
 }

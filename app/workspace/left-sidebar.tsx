@@ -2,7 +2,9 @@ import Chats from "~/chat/chats";
 
 const LeftSidebar = () => {
   return (
-    <Chats />
+    <div className="flex flex-col">
+      <Chats />
+    </div>
   )
 }
 
