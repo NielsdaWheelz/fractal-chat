@@ -1,15 +1,35 @@
-import type { Route } from "./+types/authed-layout";
-import { Outlet, redirect } from "react-router";
+import type { Route } from "./+types/layout";
+import { Form, NavLink, Outlet, redirect } from "react-router";
 import { getSession } from "./api.auth";
+import { getUser } from "~/utils/auth";
+import { listChats } from "..";
+import { Button } from "~/components/ui/button";
 
 export const loader = async ({ request }: Route.LoaderArgs) => {
   const session = await getSession(request)
   if (!session?.user) return redirect("/")
-  return { user: session.user }
+
+  const userId = await getUser(request)
+  const ids = userId ? (await listChats(userId)) : []
+  return {
+    chats: ids
+  }
 }
 
-const Layout = () => {
-  return <Outlet />
+const Layout = ({ loaderData }: Route.ComponentProps) => {
+  return <div className="flex flex-row w-full h-full">
+    <div className="max-w-[20%] flex flex-col gap-4 p-4 bg-gray-200">
+      <Form method="post" action="chat">
+        <Button className="text-xs" type="submit">Create Chat</Button>
+      </Form>
+      {
+        loaderData.chats.map((id: string) =>
+          <NavLink key={id} to={"/workspace/chat/" + id}>
+            <Button className="text-xs w-full">{id.substring(0, 8)}</Button>
+          </NavLink>)
+      }
+    </div>
+    <Outlet />
+  </div>
 }
-
 export default Layout

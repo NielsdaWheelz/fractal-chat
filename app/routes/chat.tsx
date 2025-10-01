@@ -1,0 +1,15 @@
+import { redirect, type ActionFunctionArgs } from "react-router"
+import { requireUser } from "~/utils/auth"
+import { saveChat } from ".."
+
+// POST /chat will create a new chat
+export async function action({ request }: ActionFunctionArgs) {
+    const userId = await requireUser(request)
+    const chat = {
+        id: crypto.randomUUID(),
+        userId: userId,
+        messages: []
+    }
+    await saveChat(chat)
+    throw redirect("/workspace/chat/" + chat.id)
+}

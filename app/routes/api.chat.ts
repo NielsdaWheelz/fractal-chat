@@ -1,19 +1,20 @@
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "@remix-run/node"
 import { openai } from "@ai-sdk/openai"
-import { streamText, convertToModelMessages, tool, stepCountIs } from "ai"
+import { streamText, convertToModelMessages, tool, stepCountIs, createIdGenerator } from "ai"
 import { z } from "zod"
 import type { UIMessage } from "ai"
+import { requireUser } from "~/utils/auth"
+import { saveChat } from ".."
 
 export const maxDuration = 30
 
-// export async function loader({ request }: LoaderFunctionArgs) {
-// }
-
-export async function action({ request }: ActionFunctionArgs) {
-  const { messages }: { messages: UIMessage[] } = await request.json();
+export async function action({ request }: Route.ActionArgs) {
+  const userId = await requireUser(request)
+  // `useChat` will POST JSON { messages: UIMessage[] }
+  const { id, messages }: { id: string, messages: UIMessage[] } = await request.json();
 
   const result = streamText({
-    model: openai('gpt-5-nano'),
+    model: openai("gpt-4.1-mini"),
     messages: convertToModelMessages(messages),
     stopWhen: stepCountIs(5), // stop after a maximum of 5 steps if tools were called
     tools: {
@@ -30,5 +31,18 @@ export async function action({ request }: ActionFunctionArgs) {
     },
   });
 
-  return result.toUIMessageStreamResponse();
+  // returns SSE with the UI Message Stream protocol
+  return result.toUIMessageStreamResponse({
+    generateMessageId: createIdGenerator({
+      prefix: 'msg',
+      size: 16,
+    }),
+    onFinish: (data) => {
+      saveChat({
+        id: id,
+        userId: userId,
+        messages: [...messages, ...data.messages]
+      })
+    }
+  });
 }
