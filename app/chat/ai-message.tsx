@@ -1,26 +1,31 @@
 import MessageTextContent from './message-text-content'
 import { MessageTool } from './message-tool'
-import { Message as MessageKit, MessageAvatar, MessageContent } from "~/components/ui/message"
-import type { ToolPart } from "~/components/ui/tool"
+import { Message as MessageKit, MessageAvatar, MessageContent, MessageActions, MessageAction } from "~/components/ui/message"
+import { Button } from "~/components/ui/button"
+import { Copy, Check } from "lucide-react"
+import { useState } from 'react'
 
-type TextPart = { type: 'text'; text?: string }
-type ToolishPart = {
-  type: string
-  state?: ToolPart["state"]
-  input?: Record<string, unknown> | string
-  output?: Record<string, unknown>
-  toolCallId?: string
-  errorText?: string
+type ChatMessage = {
+  id?: string
+  role: string
+  parts?: Array<{ type: string; text?: string } & Record<string, unknown>>
 }
 
-type AIAssistantMessage = {
-  id: string
-  role: 'assistant' | string
-  parts?: Array<TextPart | ToolishPart>
-}
-
-const Message = ({ message }: { message: AIAssistantMessage }) => {
+const Message = ({ message }: { message: ChatMessage }) => {
   const parts = message.parts ?? []
+  const [copied, setCopied] = useState(false)
+
+  const copyAll = async () => {
+    const text = parts
+      .filter((p) => p.type === 'text')
+      .map((p) => (p as { text?: string }).text ?? '')
+      .join('\n')
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1200)
+    } catch (_) {}
+  }
 
   return (
     <div className="flex flex-col gap-8">
@@ -32,7 +37,7 @@ const Message = ({ message }: { message: AIAssistantMessage }) => {
               switch (part.type) {
                 case 'text': {
                   return (
-                    <MessageTextContent key={`${message.id}-${i}`} text={(part as TextPart).text ?? ''} />
+                    <MessageTextContent key={`${message.id}-${i}`} text={(part).text ?? ''} />
                   )
                 }
                 case 'tool-weather': {
