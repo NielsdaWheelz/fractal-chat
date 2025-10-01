@@ -9,8 +9,8 @@ import { useState } from 'react';
 import { PromptInput, PromptInputAction, PromptInputActions, PromptInputTextarea } from "~/components/ui/prompt-input"
 import { ArrowUp, Square } from "lucide-react"
 import { Button } from "~/components/ui/button";
-import AIMessage from "./AIMessage"
-import UserMessage from "./UserMessage"
+import AIMessage from "./ai-message"
+import UserMessage from "./user-message"
 import { ChatContainerContent, ChatContainerRoot } from "~/components/ui/chat-container"
 import { Message as MessageKit, MessageAvatar, MessageContent } from "~/components/ui/message"
 

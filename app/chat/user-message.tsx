@@ -1,6 +1,6 @@
 import { Message as MessageKit, MessageAvatar, MessageContent } from "~/components/ui/message"
 import { Markdown } from "~/components/ui/markdown"
-import Content from './Content'
+import MessageTextContent from './message-text-content'
 
 const UserMessage = ({ message }: { message }) => {
   return (

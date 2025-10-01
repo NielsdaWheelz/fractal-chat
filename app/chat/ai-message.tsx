@@ -1,8 +1,25 @@
-import Content from './Content'
-import { ToolComponent } from './Tool'
+import MessageTextContent from './message-text-content'
+import { MessageTool } from './message-tool'
 import { Message as MessageKit, MessageAvatar, MessageContent } from "~/components/ui/message"
+import type { ToolPart } from "~/components/ui/tool"
 
-const Message = ({ message }: { message }) => {
+type TextPart = { type: 'text'; text?: string }
+type ToolishPart = {
+  type: string
+  state?: ToolPart["state"]
+  input?: Record<string, unknown> | string
+  output?: Record<string, unknown>
+  toolCallId?: string
+  errorText?: string
+}
+
+type AIAssistantMessage = {
+  id: string
+  role: 'assistant' | string
+  parts?: Array<TextPart | ToolishPart>
+}
+
+const Message = ({ message }: { message: AIAssistantMessage }) => {
   const parts = message.parts ?? []
 
   return (
@@ -11,16 +28,16 @@ const Message = ({ message }: { message }) => {
         <MessageAvatar src="/avatars/ai.png" alt="AI" fallback="AI" />
         <div className="flex w-full flex-col gap-2">
           <MessageContent className="bg-transparent p-0">
-            {parts.map((part, i) => {
+            {parts.map((part, i: number) => {
               switch (part.type) {
                 case 'text': {
                   return (
-                    <Content key={`${message.id}-${i}`} text={part.text ?? ''} />
+                    <MessageTextContent key={`${message.id}-${i}`} text={(part as TextPart).text ?? ''} />
                   )
                 }
                 case 'tool-weather': {
                   return (
-                    <ToolComponent key={`${message.id}-${i}`} part={part} />
+                    <MessageTool key={`${message.id}-${i}`} part={part} />
                   )
                 }
                 // default: {
@@ -37,8 +54,8 @@ const Message = ({ message }: { message }) => {
             })}
           </MessageContent>
         </div>
-      </MessageKit>
-    </div>
+      </MessageKit >
+    </div >
   )
 }
 

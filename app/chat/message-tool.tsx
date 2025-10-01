@@ -9,7 +9,7 @@ type ToolLikePart = {
   errorText?: string
 }
 
-export function ToolComponent({ part }: { part: ToolLikePart }) {
+export function MessageTool({ part }: { part: ToolLikePart }) {
   const normalizedInput =
     typeof part.input === 'string' ? { query: part.input } : part.input
 

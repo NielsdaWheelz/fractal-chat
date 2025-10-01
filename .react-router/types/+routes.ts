@@ -13,12 +13,6 @@ type Pages = {
   "/": {
     params: {};
   };
-  "/chats": {
-    params: {};
-  };
-  "/chat": {
-    params: {};
-  };
   "/api/auth/*": {
     params: {
       "*": string;
@@ -29,24 +23,25 @@ type Pages = {
       "*": string;
     };
   };
+  "/chat": {
+    params: {};
+  };
+  "/workspace": {
+    params: {};
+  };
+  "/chats": {
+    params: {};
+  };
 };
 
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/chats" | "/chat" | "/api/auth/*" | "/api/chat/*";
+    page: "/" | "/api/auth/*" | "/api/chat/*" | "/chat" | "/workspace" | "/chats";
   };
   "routes/home.tsx": {
     id: "routes/home";
     page: "/";
-  };
-  "chat/chats.tsx": {
-    id: "chat/chats";
-    page: "/chats";
-  };
-  "chat/chat.tsx": {
-    id: "chat/chat";
-    page: "/chat";
   };
   "routes/api.auth.ts": {
     id: "routes/api.auth";
@@ -55,5 +50,21 @@ type RouteFiles = {
   "routes/api.chat.ts": {
     id: "routes/api.chat";
     page: "/api/chat/*";
+  };
+  "chat/chat.tsx": {
+    id: "chat/chat";
+    page: "/chat";
+  };
+  "routes/layout.tsx": {
+    id: "routes/layout";
+    page: "/" | "/workspace" | "/chats";
+  };
+  "workspace/workspace.tsx": {
+    id: "workspace/workspace";
+    page: "/workspace";
+  };
+  "chat/chats.tsx": {
+    id: "chat/chats";
+    page: "/chats";
   };
 };
