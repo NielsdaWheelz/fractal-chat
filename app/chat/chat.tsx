@@ -1,50 +1,99 @@
 // import { getSession } from "../routes/api.auth";
 // import { redirect } from "react-router";
 // import type { Route } from "./+types/chat";
+import { redirect, useLoaderData } from "react-router";
+import { getSession } from "~/routes/api.auth";
+import { Loader } from "~/components/ui/loader"
 import { useChat } from '@ai-sdk/react';
 import { useState } from 'react';
-import { Form } from "react-router";
+import { PromptInput, PromptInputAction, PromptInputActions, PromptInputTextarea } from "~/components/ui/prompt-input"
+import { ArrowUp, Square } from "lucide-react"
+import { Button } from "~/components/ui/button";
+import AIMessage from "./AIMessage"
+import UserMessage from "./UserMessage"
+import { ChatContainerContent, ChatContainerRoot } from "~/components/ui/chat-container"
+import { Message as MessageKit, MessageAvatar, MessageContent } from "~/components/ui/message"
 
-// export async function loader({ request }: Route.LoaderArgs) {
-//   const session = await getSession(request);
-//   if (!session?.user) {
-//     return redirect("/")
-//   }
-//   return null
-// }
+export const loader = async ({ request }: Route.LoaderArgs) => {
+  const session = await getSession(request)
+  if (!session?.user) {
+    return { user: null }
+  } else {
+    return { user: session.user }
+  }
+}
 
 const Chat = () => {
+  let data = useLoaderData<typeof loader>();
+  if (!data?.user?.id) return redirect("/")
   const [newMessage, setNewMessage] = useState("");
-  const { messages, sendMessage } = useChat();
+  const { messages, sendMessage, status, stop } = useChat();
+  const isLoading = status === "submitted"
+  const isStreaming = status === "streaming"
 
-  const handleSubmit = (event) => {
-    event.preventDefault()
-    sendMessage({ text: newMessage })
+  const handleSubmit = () => {
+    if (isLoading) {
+      stop()
+      return
+    }
+
+    const text = newMessage.trim()
+    if (!text) return
+
+    sendMessage({ text })
     setNewMessage("")
   }
 
+
   return (
     <>
-      {messages.map(message => (
-        <div key={message.id}>
-          {message.role}:
-          {message.parts.map((part, i) => {
-            switch (part.type) {
-              case "text":
-                return <div key={`${message.id}-${i}`}>{part.text}</div>
-              case 'tool-weather':
-                return (
-                  <pre key={`${message.id}-${i}`}>
-                    {JSON.stringify(part, null, 2)}
-                  </pre>
-                );
-            }
+      <ChatContainerRoot className="flex-1">
+        <ChatContainerContent className="space-y-4 p-4">
+          {messages.map(message => {
+            if (message.role === "user") return <UserMessage message={message} />
+            else if (message.role === "assistant") return <AIMessage message={message} />
           })}
-        </div>
-      ))}
-      <Form onSubmit={handleSubmit}>
-        <input value={newMessage} onChange={(event) => setNewMessage(event.currentTarget.value)} placeholder="The world is your cloister."></input>
-      </Form>
+          {isLoading || isStreaming && (
+            <div className="flex flex-col gap-8">
+              <MessageKit className="justify-start">
+                <MessageAvatar src="/avatars/ai.png" alt="AI" fallback="AI" />
+                <div className="flex w-full flex-col gap-2">
+                  <div className="bg-transparent p-0">
+                    <Loader variant="typing" size="sm" />
+                  </div>
+                </div>
+              </MessageKit>
+            </div>
+          )}
+          <PromptInput
+            value={newMessage}
+            onValueChange={(value) => setNewMessage(value)}
+            isLoading={isLoading || isStreaming}
+            onSubmit={handleSubmit}
+            className="w-full max-w-(--breakpoint-md)"
+          >
+            <PromptInputTextarea placeholder="Ask me anything..." />
+            <PromptInputActions className="justify-end pt-2">
+              <PromptInputAction
+                tooltip={isLoading || isStreaming ? "Stop generation" : "Send message"}
+              >
+                <Button
+                  variant="default"
+                  size="icon"
+                  className="h-8 w-8 rounded-full"
+                  onClick={handleSubmit}
+                >
+                  {isLoading || isStreaming ? (
+                    <Square className="size-5 fill-current" />
+                  ) : (
+                    <ArrowUp className="size-5" />
+                  )}
+                </Button>
+              </PromptInputAction>
+            </PromptInputActions>
+          </PromptInput>
+        </ChatContainerContent>
+      </ChatContainerRoot>
     </>
   )
 }
