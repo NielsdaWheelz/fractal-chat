@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { Markdown } from "~/components/ui/markdown"
 import { useTextStream } from "~/components/ui/response-stream"
 
-const Content = ({ text }: { text: string }) => {
+const MessageTextContent = ({ text }: { text: string }) => {
   const { displayedText, startStreaming } = useTextStream({
     textStream: text,
     mode: "typewriter",
@@ -22,4 +22,4 @@ const Content = ({ text }: { text: string }) => {
   )
 }
 
-export default Content
+export default MessageTextContent
