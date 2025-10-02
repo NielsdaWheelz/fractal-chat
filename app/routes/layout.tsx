@@ -2,7 +2,7 @@ import type { Route } from "./+types/layout";
 import { Form, NavLink, Outlet, redirect } from "react-router";
 import { getSession } from "./api.auth";
 import { getUser } from "~/utils/auth";
-import { listChats } from "..";
+import { getChats } from "..";
 import { Button } from "~/components/ui/button";
 
 export const loader = async ({ request }: Route.LoaderArgs) => {
@@ -10,10 +10,8 @@ export const loader = async ({ request }: Route.LoaderArgs) => {
   if (!session?.user) return redirect("/")
 
   const userId = await getUser(request)
-  const ids = userId ? (await listChats(userId)) : []
-  return {
-    chats: ids
-  }
+  const chats = userId ? (await getChats(userId)) : []
+  return chats
 }
 
 const Layout = ({ loaderData }: Route.ComponentProps) => {
@@ -23,9 +21,9 @@ const Layout = ({ loaderData }: Route.ComponentProps) => {
         <Button className="text-xs" type="submit">Create Chat</Button>
       </Form>
       {
-        loaderData.chats.map((id: string) =>
-          <NavLink key={id} to={"/workspace/chat/" + id}>
-            <Button className="text-xs w-full">{id.substring(0, 8)}</Button>
+        loaderData.map((chat) =>
+          <NavLink key={chat.id} to={"/workspace/chat/" + chat.id}>
+            <Button className="text-xs w-full">{chat.id.substring(0, 8)}</Button>
           </NavLink>)
       }
     </div>

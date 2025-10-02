@@ -11,11 +11,11 @@ async function main() {
   db
 }
 
-export async function listChats(userId: string): Promise<string[]> {
-  const results = await db.select({ id: chatTable.id })
+export const getChats = async (userId: string) => {
+  const results = await db.select()
     .from(chatTable)
     .where(eq(chatTable.userId, userId))
-  return results.map(row => row.id)
+  return results
 }
 
 export async function getChat(id: string, userId: string): Promise<(Chat | null)> {
