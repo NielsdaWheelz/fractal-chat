@@ -6,9 +6,10 @@ export default [
   route("api/chat/*", "routes/api.chat.ts"),
   route("api/document/*", "routes/api.document.ts"),
   route("/workspace", "routes/layout.tsx", [
-    route("document/:id", "routes/document.tsx"),
+    route("document/:id", "routes/document.tsx", [
+      route("chat-create", "routes/chat-create.tsx"),
+    ]),
     route("chat/:id", "routes/chat.tsx"),
-    route("chat-create", "routes/chat-create.tsx"),
     route("document-create", "routes/document-create.tsx")
   ]),
 ] satisfies RouteConfig;

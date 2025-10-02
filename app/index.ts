@@ -25,8 +25,8 @@ export const getDocument = async (id: string, userId: string) => {
   }
 }
 
-export const getChats = async (userId: string) => {
-  const results = await db.select().from(chatTable).where(eq(chatTable.userId, userId))
+export const getChats = async (userId: string, documentId: string) => {
+  const results = await db.select().from(chatTable).where(and(eq(chatTable.userId, userId), eq(chatTable.documentId, documentId)))
   return results
 }
 
@@ -61,8 +61,8 @@ const documentObjectToRow = (document) => {
   }
 }
 
-export const getChat = async (id: string, userId: string) => {
-  const results = await db.select().from(chatTable).where(and(eq(chatTable.id, id), eq(chatTable.userId, userId)))
+export const getChat = async (id: string, userId: string, documentId: string) => {
+  const results = await db.select().from(chatTable).where(and(eq(chatTable.id, id), eq(chatTable.userId, userId), eq(chatTable.documentId, documentId)))
   if (results.length == 0) {
     return null
   } else {
@@ -79,6 +79,7 @@ const chatRowToObject = (row) => {
   return {
     id: row.id,
     userId: row.userId,
+    documentId: row.documentId,
     messages: JSON.parse(row.messages)
   }
 }
@@ -87,6 +88,7 @@ const chatObjectToRow = (chat) => {
   return {
     id: chat.id,
     userId: chat.userId,
+    documentId: chat.documentId,
     messages: JSON.stringify(chat.messages)
   }
 }

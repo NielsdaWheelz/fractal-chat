@@ -24,9 +24,10 @@ export async function loader({ request, params }: { request: Request; params: { 
   if (!params.id) {
     throw redirect("/")
   }
-  const chat = await getChat(params.id, userId)
+  const chat = await getChat(request.body.chatId, userId, params.id)
   if (!chat) {
-    throw redirect("/")
+    return
+    // throw redirect("/")
   }
   return { chat: chat }
 }
