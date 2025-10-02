@@ -12,47 +12,34 @@ async function main() {
 }
 
 export const getChats = async (userId: string) => {
-  const results = await db.select()
-    .from(chatTable)
-    .where(eq(chatTable.userId, userId))
+  const results = await db.select().from(chatTable).where(eq(chatTable.userId, userId))
   return results
 }
 
-export async function getChat(id: string, userId: string): Promise<(Chat | null)> {
-  const results = await db.select()
-    .from(chatTable)
-    .where(
-      and(
-        eq(chatTable.id, id),
-        eq(chatTable.userId, userId)
-      )
-    )
+export const getChat = async (id: string, userId: string) => {
+  const results = await db.select().from(chatTable).where(and(eq(chatTable.id, id), eq(chatTable.userId, userId)))
 
   if (results.length == 0) {
     return null
   } else {
-    return toChat(results[0])
+    return chatRowToObject(results[0])
   }
 }
 
-export async function saveChat(chat: Chat): Promise<any> {
-  const dbChat = toDbChat(chat)
-  return await db.insert(chatTable)
-    .values(dbChat)
-    .onConflictDoUpdate(
-      { target: chatTable.id, set: dbChat }
-    )
+export const saveChat = async (chat) => {
+  const dbChat = chatObjectToRow(chat)
+  return await db.insert(chatTable).values(dbChat).onConflictDoUpdate({ target: chatTable.id, set: dbChat })
 }
 
-function toChat(row: DbChat): Chat {
+const chatRowToObject = (row) => {
   return {
     id: row.id,
     userId: row.userId,
-    messages: JSON.parse(row.messages) as UIMessage[]
+    messages: JSON.parse(row.messages)
   }
 }
 
-function toDbChat(chat: Chat): DbChat {
+const chatObjectToRow = (chat) => {
   return {
     id: chat.id,
     userId: chat.userId,

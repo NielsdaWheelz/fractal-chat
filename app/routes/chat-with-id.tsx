@@ -2,9 +2,7 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import type React from "react";
 import { Button } from "~/components/ui/button";
-import { Textarea } from "~/components/ui/textarea";
-import { cn } from "~/lib/utils";
-import { useRef, useState, useMemo } from 'react';
+import { useRef, useState } from 'react';
 import { redirect, type LoaderFunctionArgs } from "react-router";
 import { requireUser } from "~/utils/auth";
 import { getChat } from "..";
@@ -15,6 +13,7 @@ import AIMessage from "../chat/ai-message"
 import UserMessage from "../chat/user-message"
 import { ChatContainerContent, ChatContainerRoot } from "~/components/ui/chat-container"
 import { Message as MessageKit, MessageAvatar } from "~/components/ui/message"
+import type { Route } from "../+types/root";
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const userId = await requireUser(request)
@@ -37,7 +36,6 @@ export default function Chat({ loaderData }: Route.ComponentProps) {
   });
   const [message, setMessage] = useState("");
   const isLoading = status === "submitted" || status === "streaming"
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     // e.preventDefault();
@@ -45,10 +43,6 @@ export default function Chat({ loaderData }: Route.ComponentProps) {
     if (message.trim()) {
       sendMessage({ text: message })
       setMessage("");
-
-      if (textareaRef.current) {
-        textareaRef.current.style.height = "auto";
-      }
     }
   };
 
@@ -79,30 +73,12 @@ export default function Chat({ loaderData }: Route.ComponentProps) {
             </MessageKit>
           </div>
         )}
-        <PromptInput
-          value={message}
-          onValueChange={(value) => setMessage(value)}
-          isLoading={isLoading}
-          onSubmit={handleSubmit}
-          className="w-full max-w-(--breakpoint-md)"
-          disabled={isLoading && message.length > 0}
-        >
+        <PromptInput value={message} onValueChange={(value) => setMessage(value)} isLoading={isLoading} onSubmit={handleSubmit} className="w-full max-w-(--breakpoint-md)" disabled={isLoading && message.length > 0} >
           <PromptInputTextarea placeholder="Ask me anything..." />
           <PromptInputActions className="justify-end pt-2">
-            <PromptInputAction
-              tooltip={isLoading ? "Stop generation" : "Send message"}
-            >
-              <Button
-                variant="default"
-                size="icon"
-                className="h-8 w-8 rounded-full"
-                onClick={handleSubmit}
-              >
-                {isLoading ? (
-                  <Square className="size-5 fill-current" />
-                ) : (
-                  <ArrowUp className="size-5" />
-                )}
+            <PromptInputAction tooltip={isLoading ? "Stop generation" : "Send message"} >
+              <Button variant="default" size="icon" className="h-8 w-8 rounded-full" onClick={handleSubmit} >
+                {isLoading ? (<Square className="size-5 fill-current" />) : (<ArrowUp className="size-5" />)}
               </Button>
             </PromptInputAction>
           </PromptInputActions>
