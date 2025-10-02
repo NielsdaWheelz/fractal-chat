@@ -73,6 +73,21 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
     return title
   }, [selectedChat])
 
+  const selectedChatMessages = useMemo(() => {
+    if (!selectedChat) return [] as UIMessage[]
+    const raw: unknown = (selectedChat as any).messages
+    if (Array.isArray(raw)) return raw as UIMessage[]
+    if (typeof raw === "string") {
+      try {
+        const parsed = JSON.parse(raw)
+        return Array.isArray(parsed) ? (parsed as UIMessage[]) : []
+      } catch {
+        return [] as UIMessage[]
+      }
+    }
+    return [] as UIMessage[]
+  }, [selectedChat])
+
   return (
     <Sidebar className="border-r-0" {...props} side="right">
       <SidebarHeader>
@@ -135,7 +150,7 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
           )}
           {selectedChat && (
             <div className="h-full">
-              <ChatBlock chatId={selectedChat.id} initialMessages={selectedChat.messages ?? []} />
+              <ChatBlock chatId={selectedChat.id} initialMessages={selectedChatMessages} docId={useParams().id} />
             </div>
           )}
         </div>

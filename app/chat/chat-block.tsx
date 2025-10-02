@@ -17,9 +17,10 @@ import { DefaultChatTransport } from "ai";
 type ChatBlockProps = {
   chatId: string;
   initialMessages: any[];
+  docId: string
 };
 
-export default function ChatBlock({ chatId, initialMessages }: ChatBlockProps) {
+export default function ChatBlock({ chatId, initialMessages, docId }: ChatBlockProps) {
   const { messages, sendMessage, status, stop } = useChat({
     id: chatId,
     messages: initialMessages,
@@ -31,7 +32,7 @@ export default function ChatBlock({ chatId, initialMessages }: ChatBlockProps) {
 
   const handleSubmit = () => {
     if (!message.trim()) return;
-    sendMessage({ text: message });
+    sendMessage({ text: message }, { body: { documentId: docId } });
     setMessage("");
   };
 
@@ -39,7 +40,7 @@ export default function ChatBlock({ chatId, initialMessages }: ChatBlockProps) {
     <div className="flex-1 flex flex-col h-full overflow-y-auto">
       <ChatMessageArea scrollButtonAlignment="center">
         <div className="max-w-2xl mx-auto w-full px-4 py-8 space-y-4">
-          {messages.map((message) => {
+          {messages?.map((message) => {
             if (message.role !== "user") {
               return (
                 <ChatMessage key={message.id} id={message.id}>
