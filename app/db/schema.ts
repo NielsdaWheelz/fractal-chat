@@ -13,8 +13,8 @@ export const documentTable = pgTable("document", {
   title: text("title").notNull(),
   content: text("content").notNull(),
   textContent: text("textContent"),
-  authors: text("authors").notNull(),
-  publishedTime: text("published_time").notNull()
+  authors: text("authors"),
+  publishedTime: text("published_time")
 })
 
 export const user = pgTable("user", {

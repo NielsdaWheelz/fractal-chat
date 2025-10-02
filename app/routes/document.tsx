@@ -20,7 +20,7 @@ export default function Document() {
   const { document } = useLoaderData<typeof loader>() as { document: { id: string; content: string } };
   return (
     <div className="flex-1 flex flex-col h-full overflow-y-auto">
-      {document.content}
+      {(document.content)}
     </div>
   );
 }

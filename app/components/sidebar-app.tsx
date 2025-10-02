@@ -23,14 +23,25 @@ import { NavUser } from "~/components/nav-user";
 import { MessageCircle, SquarePen } from "lucide-react";
 import type { ComponentProps } from "react";
 import { Form, NavLink } from "react-router";
-import Chat from "~/routes/chat";
 
 type UIMessagePart = { type: string; text?: string }
 type UIMessage = { role: string; parts: UIMessagePart[] }
 type ChatListItem = { id: string; messages?: UIMessage[] }
-type SidebarAppProps = { data: { chats: ChatListItem[]; user: { name: string; email: string; avatar: string } } } & ComponentProps<typeof Sidebar>
+type UserInfo = { name: string; email: string; avatar: string }
+type SidebarAppProps = { data: any[]; user: UserInfo; side: "left" | "right" } & ComponentProps<typeof Sidebar>
 
 export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
+  const handleSubmit = (event) => {
+    const form = event.currentTarget as HTMLFormElement
+    const input = form.querySelector('input[name="url"]') as HTMLInputElement
+    const value = window.prompt("Enter a URL to import", input?.value || "") || ""
+    if (!value.trim()) {
+      event.preventDefault()
+      return
+    }
+    if (input) input.value = value.trim()
+  }
+
   return (
     <Sidebar className="border-r-0" {...props}>
       <SidebarHeader>
@@ -43,37 +54,38 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
           </div>
           {/* New Chat Button */}
           {(side === "right") ?
-          <Form method="post" action="chat-create">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button size="icon" variant="ghost" type="submit">
-                    <SquarePen className="h-5 w-5" />
-                    <span className="sr-only">New Chat</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>New Chat</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </Form>
-          : 
-          <Form method="post" action="document-create">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button size="icon" variant="ghost" type="submit">
-                    <SquarePen className="h-5 w-5" />
-                    <span className="sr-only">New Document</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>New Chat</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </Form>}
+            <Form method="post" action="chat-create">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button size="icon" variant="ghost" type="submit">
+                      <SquarePen className="h-5 w-5" />
+                      <span className="sr-only">New Chat</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>New Chat</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </Form>
+            :
+            <Form method="post" action="document-create" onSubmit={handleSubmit}>
+              <input type="hidden" name="url" defaultValue="https://paulgraham.com/taste.html" />
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button size="icon" variant="ghost" type="submit">
+                      <SquarePen className="h-5 w-5" />
+                      <span className="sr-only">New Document</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>New Document</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </Form>}
         </div>
       </SidebarHeader>
       <SidebarContent>
@@ -81,34 +93,54 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
           {/* Recent Chats */}
           <SidebarGroup>
             <SidebarGroupLabel>Recent</SidebarGroupLabel>
-            <SidebarMenu>
-              {data.map((chat: ChatListItem) => {
-                let title = chat.id
-                try {
-                  const firstUserMessage = (chat.messages ?? []).find((m: UIMessage) => m.role === "user")
-                  const firstLine = firstUserMessage?.parts?.find((p: UIMessagePart) => p.type === "text")?.text?.split("\n")[0]
-                  if (firstLine && firstLine.trim().length > 0) {
-                    title = firstLine.trim()
-                  }
-                } catch {}
-                return (
-                  <NavLink key={chat.id} to={"/workspace/chat/" + chat.id}>
-                    <SidebarMenuItem key={chat.id}>
-                      <SidebarMenuButton className="w-full justify-start">
-                        <MessageCircle className="mr-2 h-4 w-4" />
-                        {title}
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  </NavLink>
-                )
-              })}
-            </SidebarMenu>
+            {side === "right" ?
+              <SidebarMenu>
+                {data.map((chat: ChatListItem) => {
+                  let title = chat.id
+                  try {
+                    const firstUserMessage = (chat.messages ?? []).find((m: UIMessage) => m.role === "user")
+                    const firstLine = firstUserMessage?.parts?.find((p: UIMessagePart) => p.type === "text")?.text?.split("\n")[0]
+                    if (firstLine && firstLine.trim().length > 0) {
+                      title = firstLine.trim()
+                    }
+                  } catch { }
+                  return (
+                    <NavLink key={chat.id} to={"/workspace/chat/" + chat.id}>
+                      <SidebarMenuItem key={chat.id}>
+                        <SidebarMenuButton className="w-full justify-start">
+                          <MessageCircle className="mr-2 h-4 w-4" />
+                          {title}
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    </NavLink>
+                  )
+                })}
+              </SidebarMenu>
+              :
+              <SidebarMenu>
+                {data.map((document: { id: string, title?: string | null, url?: string }) => {
+                  const title = (document.title && document.title.trim().length > 0)
+                    ? document.title
+                    : (document.url || document.id)
+                  return (
+                    <NavLink key={document.id} to={"/workspace/document/" + document.id}>
+                      <SidebarMenuItem key={document.id}>
+                        <SidebarMenuButton className="w-full justify-start">
+                          <MessageCircle className="mr-2 h-4 w-4" />
+                          {title}
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    </NavLink>
+                  )
+                })}
+              </SidebarMenu>
+            }
           </SidebarGroup>
         </div>
       </SidebarContent>
       <SidebarRail />
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={user} />
       </SidebarFooter>
     </Sidebar>
   );
