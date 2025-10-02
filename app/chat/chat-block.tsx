@@ -39,7 +39,7 @@ export default function ChatBlock({ chatId, initialMessages, docId }: ChatBlockP
   return (
     <div className="flex-1 flex flex-col h-full overflow-y-auto">
       <ChatMessageArea scrollButtonAlignment="center">
-        <div className="max-w-2xl mx-auto w-full px-4 py-8 space-y-4">
+        <div className="max-w-2xl mx-auto w-full px-1 py-2 space-y-1 text-xs">
           {messages?.map((message) => {
             if (message.role !== "user") {
               return (

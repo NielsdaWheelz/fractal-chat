@@ -53,7 +53,7 @@ export default function Document() {
         onSelectionEnd={handleSelectionEnd}
         onPopoverShow={handlePopoverShow}
         onPopoverHide={handlePopoverHide}>
-        <div className="flex-1 flex flex-col h-full overflow-y-auto" dangerouslySetInnerHTML={docContent()}>
+        <div className="flex-1 flex flex-col h-full overflow-y-auto p-8" dangerouslySetInnerHTML={docContent()}>
         </div>
       </HighlightPopover>
     </>

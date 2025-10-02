@@ -65,7 +65,7 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
       <SidebarContent>
         {/* New Document Button */}
         <Form method="post" action="document-create" onSubmit={handleSubmit}>
-          <input className="" type="text" name="url" value={url} onInput={handleInput} placeholder="new document url"/>
+          <input className="text-xs py-2 pl-4 pr-2" type="text" name="url" value={url} onInput={handleInput} placeholder="new document url"/>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -92,7 +92,7 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
                 return (
                   <NavLink key={document.id} to={"/workspace/document/" + document.id}>
                     <SidebarMenuItem key={document.id}>
-                      <SidebarMenuButton className="w-full justify-start">
+                      <SidebarMenuButton className="w-full justify-start text-xs">
                         <FileText className="mr-2 h-4 w-4" />
                         {title}
                       </SidebarMenuButton>
