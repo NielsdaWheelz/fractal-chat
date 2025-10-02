@@ -27,13 +27,13 @@ const Layout = ({ loaderData }: Route.ComponentProps) => {
     <div className="flex flex-row w-full h-full">
       <div className="max-w-[20%] flex flex-col gap-4 p-4 bg-gray-200">
         <Button className="text-xs" onClick={handleClick}>Sign Out</Button>
-        <Form method="post" action="chat">
+        <Form method="post" action="chat-create">
           <Button className="text-xs" type="submit">Create Chat</Button>
         </Form>
         {
           loaderData.map((chat) =>
             <NavLink key={chat.id} to={"/workspace/chat/" + chat.id}>
-              <Button className="text-xs w-full">{chat.id.substring(0, 8)}</Button>
+              <Button className="text-xs w-full">Chat - {chat.id.substring(0, 8)}</Button>
             </NavLink>)
         }
       </div>

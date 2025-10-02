@@ -31,7 +31,7 @@ type Pages = {
       "id": string;
     };
   };
-  "/workspace/chat": {
+  "/workspace/chat-create": {
     params: {};
   };
 };
@@ -39,7 +39,7 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/api/auth/*" | "/api/chat/*" | "/workspace" | "/workspace/chat/:id" | "/workspace/chat";
+    page: "/" | "/api/auth/*" | "/api/chat/*" | "/workspace" | "/workspace/chat/:id" | "/workspace/chat-create";
   };
   "routes/home.tsx": {
     id: "routes/home";
@@ -55,14 +55,14 @@ type RouteFiles = {
   };
   "routes/layout.tsx": {
     id: "routes/layout";
-    page: "/workspace" | "/workspace/chat/:id" | "/workspace/chat";
+    page: "/workspace" | "/workspace/chat/:id" | "/workspace/chat-create";
   };
   "routes/chat-with-id.tsx": {
     id: "routes/chat-with-id";
     page: "/workspace/chat/:id";
   };
-  "routes/chat.tsx": {
-    id: "routes/chat";
-    page: "/workspace/chat";
+  "routes/chat-create.tsx": {
+    id: "routes/chat-create";
+    page: "/workspace/chat-create";
   };
 };
