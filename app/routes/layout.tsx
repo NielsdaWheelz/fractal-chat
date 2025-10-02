@@ -16,8 +16,8 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "~/components/ui/sidebar";
-import { SidebarApp as SidebarLeft } from "~/components/sidebar-left";
-import { SidebarApp as SidebarRight } from "~/components/sidebar-right";
+import { SidebarApp as SidebarLeft } from "~/components/sidebar-app-left";
+import { SidebarApp as SidebarRight } from "~/components/sidebar-app-right";
 
 
 export const loader = async ({ request }: Route.LoaderArgs) => {
