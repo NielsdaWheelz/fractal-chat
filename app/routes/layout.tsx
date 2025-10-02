@@ -2,7 +2,7 @@ import type { Route } from "./+types/layout";
 import { Outlet, redirect } from "react-router";
 import { getSession } from "./api.auth";
 import { getUser } from "~/utils/auth.server";
-import { getChats } from "..";
+import { getChats, getDocuments } from "..";
 import { Button } from "~/components/ui/button";
 import {
   Breadcrumb,
@@ -25,14 +25,16 @@ export const loader = async ({ request }: Route.LoaderArgs) => {
   const user = session.user
   const userId = await getUser(request)
   const chats = userId ? (await getChats(userId)) : []
-  return { user, chats }
+  const documents = userId ? (await getDocuments(userId)) : []
+  return { user, chats, documents }
 }
 
 const Layout = ({ loaderData }: Route.ComponentProps) => {
   return (
     <>
+    {/* documents chats */}
       <SidebarProvider>
-        <SidebarApp data={loaderData} />
+        <SidebarApp side="left" data={loaderData.documents} user={loaderData.user} />
         <SidebarInset className="flex flex-col h-screen overflow-y-auto">
           <header className="sticky top-0 flex h-14 shrink-0 items-center gap-2 bg-background">
             <div className="flex flex-1 items-center gap-2 px-3">
@@ -52,6 +54,31 @@ const Layout = ({ loaderData }: Route.ComponentProps) => {
           <Outlet />
         </SidebarInset>
       </SidebarProvider>
+
+      {/* chats sidebar */}
+
+      <SidebarProvider>
+        <SidebarApp side="right" data={loaderData.chats} user={loaderData.user} />
+        <SidebarInset className="flex flex-col h-screen overflow-y-auto">
+          <header className="sticky top-0 flex h-14 shrink-0 items-center gap-2 bg-background">
+            <div className="flex flex-1 items-center gap-2 px-3">
+              <SidebarTrigger />
+              <Separator orientation="vertical" className="mr-2 h-4" />
+              <Breadcrumb>
+                <BreadcrumbList>
+                  <BreadcrumbItem>
+                    <BreadcrumbPage className="line-clamp-1">
+                      {/* Title */}
+                    </BreadcrumbPage>
+                  </BreadcrumbItem>
+                </BreadcrumbList>
+              </Breadcrumb>
+            </div>
+          </header>
+          <Outlet />
+        </SidebarInset>
+      </SidebarProvider>
+
     </>
   )
 }

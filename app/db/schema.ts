@@ -6,6 +6,17 @@ export const chatTable = pgTable("chat", {
   messages: text("messages").notNull()
 })
 
+export const documentTable = pgTable("document", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  url: text("url").notNull(),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  textContent: text("textContent"),
+  authors: text("authors").notNull(),
+  publishedTime: text("published_time").notNull()
+})
+
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),

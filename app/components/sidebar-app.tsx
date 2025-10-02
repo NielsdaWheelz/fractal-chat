@@ -23,13 +23,14 @@ import { NavUser } from "~/components/nav-user";
 import { MessageCircle, SquarePen } from "lucide-react";
 import type { ComponentProps } from "react";
 import { Form, NavLink } from "react-router";
+import Chat from "~/routes/chat";
 
 type UIMessagePart = { type: string; text?: string }
 type UIMessage = { role: string; parts: UIMessagePart[] }
 type ChatListItem = { id: string; messages?: UIMessage[] }
 type SidebarAppProps = { data: { chats: ChatListItem[]; user: { name: string; email: string; avatar: string } } } & ComponentProps<typeof Sidebar>
 
-export function SidebarApp({  data, ...props }: SidebarAppProps) {
+export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
   return (
     <Sidebar className="border-r-0" {...props}>
       <SidebarHeader>
@@ -41,6 +42,7 @@ export function SidebarApp({  data, ...props }: SidebarAppProps) {
             <span className="text-lg font-semibold">simple-ai</span>
           </div>
           {/* New Chat Button */}
+          {(side === "right") ?
           <Form method="post" action="chat-create">
             <TooltipProvider>
               <Tooltip>
@@ -56,6 +58,22 @@ export function SidebarApp({  data, ...props }: SidebarAppProps) {
               </Tooltip>
             </TooltipProvider>
           </Form>
+          : 
+          <Form method="post" action="document-create">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button size="icon" variant="ghost" type="submit">
+                    <SquarePen className="h-5 w-5" />
+                    <span className="sr-only">New Document</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>New Chat</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </Form>}
         </div>
       </SidebarHeader>
       <SidebarContent>
@@ -64,7 +82,7 @@ export function SidebarApp({  data, ...props }: SidebarAppProps) {
           <SidebarGroup>
             <SidebarGroupLabel>Recent</SidebarGroupLabel>
             <SidebarMenu>
-              {data.chats.map((chat: ChatListItem) => {
+              {data.map((chat: ChatListItem) => {
                 let title = chat.id
                 try {
                   const firstUserMessage = (chat.messages ?? []).find((m: UIMessage) => m.role === "user")
