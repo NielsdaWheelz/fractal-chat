@@ -16,7 +16,8 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "~/components/ui/sidebar";
-import { SidebarApp } from "~/components/sidebar-app";
+import { SidebarApp as SidebarLeft } from "~/components/sidebar-left";
+import { SidebarApp as SidebarRight } from "~/components/sidebar-right";
 
 
 export const loader = async ({ request }: Route.LoaderArgs) => {
@@ -34,7 +35,7 @@ const Layout = ({ loaderData }: Route.ComponentProps) => {
     <>
     {/* documents chats */}
       <SidebarProvider>
-        <SidebarApp side="left" data={loaderData.documents} user={loaderData.user} />
+        <SidebarLeft side="left" data={loaderData.documents} user={loaderData.user} />
         <SidebarInset className="flex flex-col h-screen overflow-y-auto">
           <header className="sticky top-0 flex h-14 shrink-0 items-center gap-2 bg-background">
             <div className="flex flex-1 items-center gap-2 px-3">
@@ -57,6 +58,27 @@ const Layout = ({ loaderData }: Route.ComponentProps) => {
 
       {/* chats sidebar */}
 
+      <SidebarProvider>
+        <SidebarRight side="right" data={loaderData.chats} user={loaderData.user} />
+        <SidebarInset className="flex flex-col h-screen overflow-y-auto">
+          <header className="sticky top-0 flex h-14 shrink-0 items-center gap-2 bg-background">
+            <div className="flex flex-1 items-center gap-2 px-3">
+              <SidebarTrigger />
+              <Separator orientation="vertical" className="mr-2 h-4" />
+              <Breadcrumb>
+                <BreadcrumbList>
+                  <BreadcrumbItem>
+                    <BreadcrumbPage className="line-clamp-1">
+                      {/* Title */}
+                    </BreadcrumbPage>
+                  </BreadcrumbItem>
+                </BreadcrumbList>
+              </Breadcrumb>
+            </div>
+          </header>
+          <Outlet />
+        </SidebarInset>
+      </SidebarProvider>
     </>
   )
 }

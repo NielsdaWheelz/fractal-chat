@@ -43,7 +43,7 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
   }
 
   return (
-    <Sidebar className="border-r-0" {...props}>
+    <Sidebar className="border-r-0" {...props} side="left">
       <SidebarHeader>
         <div className="flex items-center justify-between p-2">
           <div className="flex items-center gap-3">
