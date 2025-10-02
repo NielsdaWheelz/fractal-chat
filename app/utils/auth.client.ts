@@ -30,13 +30,6 @@ export const clientSignUp = async (email, password, name) => {
 
 
 export const clientGoogleSignIn = async () => {
-  // await authClient.signIn.social({
-  //   provider: "google",
-  //   idToken: {
-  //     token: token, // Google ID Token,
-  //     accessToken: accessToken// Google Access Token
-  //   }
-  // });
   authClient.signIn.social({ provider: "google", callbackURL: "/" })
 };
 

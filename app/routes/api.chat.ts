@@ -1,21 +1,21 @@
-import type { LoaderFunctionArgs, ActionFunctionArgs } from "@remix-run/node"
 import { openai } from "@ai-sdk/openai"
-import { streamText, convertToModelMessages, tool, stepCountIs } from "ai"
+import { streamText, convertToModelMessages, tool, stepCountIs, createIdGenerator } from "ai"
 import { z } from "zod"
 import type { UIMessage } from "ai"
+import { requireUser } from "~/utils/auth.server"
+import { saveChat } from ".."
+import type { Route } from "../+types/root"
 
 export const maxDuration = 30
 
-// export async function loader({ request }: LoaderFunctionArgs) {
-// }
-
-export async function action({ request }: ActionFunctionArgs) {
-  const { messages }: { messages: UIMessage[] } = await request.json();
+export async function action({ request }: Route.ActionArgs) {
+  const userId = await requireUser(request)
+  const { id, messages }: { id: string, messages: UIMessage[] } = await request.json();
 
   const result = streamText({
-    model: openai('gpt-5-nano'),
+    model: openai("gpt-5-nano"),
     messages: convertToModelMessages(messages),
-    stopWhen: stepCountIs(5), // stop after a maximum of 5 steps if tools were called
+    stopWhen: stepCountIs(5),
     tools: {
       weather: tool({
         description: 'Get the weather in a location',
@@ -30,5 +30,14 @@ export async function action({ request }: ActionFunctionArgs) {
     },
   });
 
-  return result.toUIMessageStreamResponse();
+  return result.toUIMessageStreamResponse({
+    generateMessageId: createIdGenerator(),
+    onFinish: (data) => {
+      saveChat({
+        id: id,
+        userId: userId,
+        messages: [...messages, ...data.messages]
+      })
+    }
+  });
 }

@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { Form } from "react-router"
-import { clientSignUp, clientGoogleSignIn } from "~/utils/auth-client"
+import { clientSignUp, clientGoogleSignIn } from "~/utils/auth.client"
 
 const SignUp = () => {
   const [email, setEmail] = useState("")

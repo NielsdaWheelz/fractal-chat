@@ -1,8 +1,10 @@
 import { pgTable, text, timestamp, boolean } from "drizzle-orm/pg-core";
 
-// export const chatTable = pgTable("chat", {
-//   id: integer().primaryKey().generatedAlwaysAsIdentity(),
-// });
+export const chatTable = pgTable("chat", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  messages: text("messages").notNull()
+})
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
