@@ -35,11 +35,16 @@ export const loader = async ({ request }: Route.LoaderArgs) => {
 }
 
 const Layout = ({ loaderData }: Route.ComponentProps) => {
+  const uiUser = {
+    name: loaderData.user.name,
+    email: loaderData.user.email,
+    avatar: (loaderData.user.image as string | undefined) ?? "",
+  }
   return (
     <>
       {/* documents chats */}
       <LeftSidebarProvider>
-        <SidebarLeft side="left" data={loaderData.documents} user={loaderData.user} />
+        <SidebarLeft side="left" data={loaderData.documents} user={uiUser} />
         <RightSidebarProvider>
           <SidebarInset className="flex flex-col h-screen overflow-y-auto">
             <header className="sticky top-0 flex h-14 shrink-0 items-center gap-2 bg-background">
@@ -60,7 +65,7 @@ const Layout = ({ loaderData }: Route.ComponentProps) => {
             </header>
             <Outlet />
           </SidebarInset>
-          <SidebarRight side="right" data={loaderData.chats} user={loaderData.user} />
+          <SidebarRight side="right" data={loaderData.chats} user={uiUser} />
           {/* <SidebarInset className="flex flex-col h-screen overflow-y-auto">
           </SidebarInset> */}
         </RightSidebarProvider>
