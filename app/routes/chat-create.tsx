@@ -13,6 +13,6 @@ export async function action({ request, params }: ActionFunctionArgs) {
     messages: []
   }
   await saveChat(chat)
-  // throw redirect("/workspace/chat/" + chat.id)
-  // return new Response(JSON.stringify({ id: chat.id }), { status: 200, headers: { "Content-Type": "application/json" } })
+  // Redirect to the newly created chat route
+  throw redirect(`/workspace/document/${docId}/chat/${chat.id}`)
 }

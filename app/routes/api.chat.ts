@@ -10,7 +10,7 @@ export const maxDuration = 30
 
 export async function action({ request }: Route.ActionArgs) {
   const userId = await requireUser(request)
-  const { id, documentId, messages }: { id: string, documentId: string, messages: UIMessage[] } = await request.json();
+  const { id, documentId, selection, messages }: { id: string, documentId: string, selection: string, messages: UIMessage[] } = await request.json();
 
   const result = streamText({
     model: openai("gpt-5-nano"),

@@ -10,13 +10,15 @@ import {
 } from "~/components/ui/chat-message";
 import { ChatMessageArea } from "~/components/ui/chat-message-area";
 import { TextDotsLoader } from "~/components/ui/loader";
-import { useState } from "react";
-import { redirect, useLoaderData } from "react-router";
+import { useState, type MutableRefObject } from "react";
+import { redirect, useLoaderData, useOutletContext } from "react-router";
 import { requireUser } from "~/utils/auth.server";
 import { getChat } from "..";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { MessageTool } from "~/chat/message-tool";
+import { Button } from "~/components/ui/button";
+import { X } from "lucide-react";
 
 
 export async function loader({ request, params }: { request: Request; params: { id?: string; chatId?: string } }) {
@@ -35,6 +37,7 @@ export async function loader({ request, params }: { request: Request; params: { 
 
 export default function Chat() {
   const { chat } = useLoaderData<typeof loader>() as { chat: { id: string; messages: any[] } };
+  const { selectionRef } = useOutletContext<{ selectionRef: MutableRefObject<string> }>();
   const { messages, sendMessage, status, stop } = useChat({
     id: chat.id,
     messages: chat.messages,
@@ -42,11 +45,28 @@ export default function Chat() {
   });
   const [message, setMessage] = useState("");
   const isLoading = status === "submitted" || status === "streaming"
+  const [includeSelection, setIncludeSelection] = useState<boolean>(() => {
+    try {
+      return !!selectionRef?.current?.trim();
+    } catch {
+      return false;
+    }
+  });
+
+  const selectedText = selectionRef?.current ?? "";
+  const truncatedSelection = selectedText.length > 80
+    ? `${selectedText.slice(0, 40)}...${selectedText.slice(selectedText.length - 40)}`
+    : selectedText;
 
   const handleSubmit = () => {
     if (!message.trim()) return;
-    sendMessage({ text: message });
+    const textToSend = includeSelection && selectedText
+      ? `${selectedText}\n\n${message}`
+      : message;
+    sendMessage({ text: textToSend });
     setMessage("");
+    setIncludeSelection(false);
+    if (selectionRef) selectionRef.current = "";
   };
 
   return (
@@ -107,6 +127,14 @@ export default function Chat() {
         </div>
       </ChatMessageArea>
       <div className="px-2 py-4 max-w-2xl mx-auto w-full">
+        {includeSelection && selectedText && (
+          <div className="mb-2 text-xs border rounded-md p-2 bg-muted/40 flex items-start gap-2">
+            <div className="flex-1 whitespace-pre-wrap break-words">{truncatedSelection}</div>
+            <Button size="icon" variant="ghost" onClick={() => setIncludeSelection(false)} aria-label="Remove selection">
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
         <ChatInput
           value={message}
           onChange={(e) => setMessage(e.target.value)}

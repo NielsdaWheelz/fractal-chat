@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type MutableRefObject } from "react";
 import { Button } from "~/components/ui/button";
 import {
   Sidebar,
@@ -13,6 +13,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
+  useSidebar,
 } from "~/components/ui/sidebar-right";
 import {
   Tooltip,
@@ -30,14 +31,16 @@ type UIMessagePart = { type: string; text?: string }
 type UIMessage = { role: string; parts: UIMessagePart[] }
 type ChatListItem = { id: string; messages?: UIMessage[] }
 type UserInfo = { name: string; email: string; avatar: string }
-type SidebarAppProps = { data: any[]; user: UserInfo; side: "left" | "right" } & ComponentProps<typeof Sidebar>
+type SidebarAppProps = { data: any[]; user: UserInfo; side: "left" | "right"; selectionRef?: MutableRefObject<string> } & ComponentProps<typeof Sidebar>
 
-export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
+export function SidebarApp({ side, data, user, selectionRef, ...props }: SidebarAppProps) {
+  const { setOpen } = useSidebar()
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null)
   const [chats, setChats] = useState<ChatListItem[]>(data as ChatListItem[])
   const fetcher = useFetcher<any>()
+  const params = useParams()
 
-  const handleSubmit = (event) => {
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     const form = event.currentTarget as HTMLFormElement
     const input = form.querySelector('input[name="url"]') as HTMLInputElement
     const value = window.prompt("Enter a URL to import", input?.value || "") || ""
@@ -57,6 +60,22 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
       setSelectedChatId(newId)
     }
   }, [fetcher.state, fetcher.data])
+
+  // Sync selected chat with URL param if present
+  useEffect(() => {
+    if (params.chatId) {
+      const id = params.chatId as string
+      setSelectedChatId(id)
+      setChats((prev) => (prev.some((c) => c.id === id) ? prev : [{ id, messages: [] }, ...prev]))
+      setOpen(true)
+    }
+  }, [params.chatId])
+
+  useEffect(() => {
+    if (selectedChatId) {
+      setOpen(true)
+    }
+  }, [selectedChatId])
 
   const selectedChat = useMemo(() => chats.find(c => c.id === selectedChatId) || null, [chats, selectedChatId])
 
@@ -150,7 +169,7 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
           )}
           {selectedChat && (
             <div className="h-full">
-              <ChatBlock chatId={selectedChat.id} initialMessages={selectedChatMessages} docId={useParams().id} />
+              <ChatBlock chatId={selectedChat.id} initialMessages={selectedChatMessages} docId={useParams().id as string} selectionRef={selectionRef} />
             </div>
           )}
         </div>
