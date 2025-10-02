@@ -1,5 +1,5 @@
 import { APIError } from "better-auth/api"
-import { auth } from '../utils/auth'
+import { auth } from '../utils/auth.server'
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "@remix-run/node"
 
 export async function loader({ request }: LoaderFunctionArgs) {

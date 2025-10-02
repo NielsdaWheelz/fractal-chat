@@ -16,14 +16,13 @@ export const loader = async({ request }: Route.LoaderArgs) => {
   if(!session?.user) {
     return { user: null}
   } else {
-    // If logged in, send them to the workspace as the main page
     return redirect("/workspace")
   }
 }
 
 export default function Home() {
   
-  const data = useLoaderData<typeof loader>();
+  // const data = useLoaderData<typeof loader>();
 
   return (
     <>

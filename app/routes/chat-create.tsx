@@ -1,5 +1,5 @@
 import { redirect, type ActionFunctionArgs } from "react-router"
-import { requireUser } from "~/utils/auth"
+import { requireUser } from "~/utils/auth.server"
 import { saveChat } from ".."
 
 // POST /chat will create a new chat

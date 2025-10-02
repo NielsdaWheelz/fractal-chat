@@ -2,7 +2,7 @@ import { openai } from "@ai-sdk/openai"
 import { streamText, convertToModelMessages, tool, stepCountIs, createIdGenerator } from "ai"
 import { z } from "zod"
 import type { UIMessage } from "ai"
-import { requireUser } from "~/utils/auth"
+import { requireUser } from "~/utils/auth.server"
 import { saveChat } from ".."
 import type { Route } from "../+types/root"
 

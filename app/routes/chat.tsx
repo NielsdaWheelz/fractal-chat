@@ -2,9 +2,9 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import type React from "react";
 import { Button } from "~/components/ui/button";
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { redirect, type LoaderFunctionArgs } from "react-router";
-import { requireUser } from "~/utils/auth";
+import { requireUser } from "~/utils/auth.server";
 import { getChat } from "..";
 import { Loader } from "~/components/ui/loader"
 import { PromptInput, PromptInputAction, PromptInputActions, PromptInputTextarea } from "~/components/ui/prompt-input"

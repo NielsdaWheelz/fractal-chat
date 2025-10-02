@@ -57,8 +57,8 @@ type RouteFiles = {
     id: "routes/layout";
     page: "/workspace" | "/workspace/chat/:id" | "/workspace/chat-create";
   };
-  "routes/chat-with-id.tsx": {
-    id: "routes/chat-with-id";
+  "routes/chat.tsx": {
+    id: "routes/chat";
     page: "/workspace/chat/:id";
   };
   "routes/chat-create.tsx": {

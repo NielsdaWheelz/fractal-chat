@@ -1,10 +1,10 @@
 import type { Route } from "./+types/layout";
 import { Form, NavLink, Outlet, redirect, useNavigate } from "react-router";
 import { getSession } from "./api.auth";
-import { getUser } from "~/utils/auth";
+import { getUser } from "~/utils/auth.server";
 import { getChats } from "..";
 import { Button } from "~/components/ui/button";
-import { clientSignOut } from "~/utils/auth-client";
+import { clientSignOut } from "~/utils/auth.client";
 
 export const loader = async ({ request }: Route.LoaderArgs) => {
   const session = await getSession(request)
@@ -30,11 +30,10 @@ const Layout = ({ loaderData }: Route.ComponentProps) => {
         <Form method="post" action="chat-create">
           <Button className="text-xs" type="submit">Create Chat</Button>
         </Form>
-        {
-          loaderData.map((chat) =>
-            <NavLink key={chat.id} to={"/workspace/chat/" + chat.id}>
-              <Button className="text-xs w-full">Chat - {chat.id.substring(0, 8)}</Button>
-            </NavLink>)
+        {loaderData.map((chat) =>
+          <NavLink key={chat.id} to={"/workspace/chat/" + chat.id}>
+            <Button className="text-xs w-full">Chat - {chat.id.substring(0, 8)}</Button>
+          </NavLink>)
         }
       </div>
       <Outlet />

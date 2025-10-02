@@ -1,5 +1,4 @@
-import { pgTable, text, integer, varchar, timestamp, boolean, jsonb } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
+import { pgTable, text, timestamp, boolean } from "drizzle-orm/pg-core";
 
 export const chatTable = pgTable("chat", {
   id: text("id").primaryKey(),
@@ -66,31 +65,3 @@ export const verification = pgTable("verification", {
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
 });
-
-// // Relations
-// export const userRelations = relations(user, ({ many }) => ({
-//   chats: many(chatTable),
-// }));
-
-// export const chatRelations = relations(chatTable, ({ one, many }) => ({
-//   user: one(user, {
-//     fields: [chatTable.userId],
-//     references: [user.id],
-//   }),
-//   messages: many(messageTable),
-// }));
-
-// export const messageRelations = relations(messageTable, ({ one, many }) => ({
-//   chat: one(chatTable, {
-//     fields: [messageTable.chatId],
-//     references: [chatTable.id],
-//   }),
-//   toolCalls: many(toolCallTable),
-// }));
-
-// export const toolCallRelations = relations(toolCallTable, ({ one }) => ({
-//   message: one(messageTable, {
-//     fields: [toolCallTable.messageId],
-//     references: [messageTable.id],
-//   }),
-// }));
