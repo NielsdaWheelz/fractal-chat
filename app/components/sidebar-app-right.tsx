@@ -12,7 +12,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-} from "~/components/ui/sidebar";
+} from "~/components/ui/sidebar-right";
 import {
   Tooltip,
   TooltipContent,

@@ -13,9 +13,13 @@ import {
 import { Separator } from "~/components/ui/separator";
 import {
   SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "~/components/ui/sidebar";
+  SidebarProvider as LeftSidebarProvider,
+  SidebarTriggerLeft,
+} from "~/components/ui/sidebar-left";
+import {
+  SidebarProvider as RightSidebarProvider,
+  SidebarTriggerRight,
+} from "~/components/ui/sidebar-right";
 import { SidebarApp as SidebarLeft } from "~/components/sidebar-app-left";
 import { SidebarApp as SidebarRight } from "~/components/sidebar-app-right";
 
@@ -33,52 +37,34 @@ export const loader = async ({ request }: Route.LoaderArgs) => {
 const Layout = ({ loaderData }: Route.ComponentProps) => {
   return (
     <>
-    {/* documents chats */}
-      <SidebarProvider>
+      {/* documents chats */}
+      <LeftSidebarProvider>
         <SidebarLeft side="left" data={loaderData.documents} user={loaderData.user} />
-        <SidebarInset className="flex flex-col h-screen overflow-y-auto">
-          <header className="sticky top-0 flex h-14 shrink-0 items-center gap-2 bg-background">
-            <div className="flex flex-1 items-center gap-2 px-3">
-              <SidebarTrigger />
-              <Separator orientation="vertical" className="mr-2 h-4" />
-              <Breadcrumb>
-                <BreadcrumbList>
-                  <BreadcrumbItem>
-                    <BreadcrumbPage className="line-clamp-1">
-                      {/* Title */}
-                    </BreadcrumbPage>
-                  </BreadcrumbItem>
-                </BreadcrumbList>
-              </Breadcrumb>
-            </div>
-          </header>
-          <Outlet />
-        </SidebarInset>
-      </SidebarProvider>
-
-      {/* chats sidebar */}
-
-      <SidebarProvider>
-        <SidebarRight side="right" data={loaderData.chats} user={loaderData.user} />
-        <SidebarInset className="flex flex-col h-screen overflow-y-auto">
-          <header className="sticky top-0 flex h-14 shrink-0 items-center gap-2 bg-background">
-            <div className="flex flex-1 items-center gap-2 px-3">
-              <SidebarTrigger />
-              <Separator orientation="vertical" className="mr-2 h-4" />
-              <Breadcrumb>
-                <BreadcrumbList>
-                  <BreadcrumbItem>
-                    <BreadcrumbPage className="line-clamp-1">
-                      {/* Title */}
-                    </BreadcrumbPage>
-                  </BreadcrumbItem>
-                </BreadcrumbList>
-              </Breadcrumb>
-            </div>
-          </header>
-          <Outlet />
-        </SidebarInset>
-      </SidebarProvider>
+        <RightSidebarProvider>
+          <SidebarInset className="flex flex-col h-screen overflow-y-auto">
+            <header className="sticky top-0 flex h-14 shrink-0 items-center gap-2 bg-background">
+              <div className="flex flex-1 items-center gap-2 px-3">
+                <SidebarTriggerLeft />
+                <Separator orientation="vertical" className="mr-2 h-4" />
+                <Breadcrumb>
+                  <BreadcrumbList>
+                    <BreadcrumbItem>
+                      <BreadcrumbPage className="line-clamp-1">
+                        {/* Title */}
+                      </BreadcrumbPage>
+                    </BreadcrumbItem>
+                  </BreadcrumbList>
+                </Breadcrumb>
+                <SidebarTriggerRight />
+              </div>
+            </header>
+            <Outlet />
+          </SidebarInset>
+          <SidebarRight side="right" data={loaderData.chats} user={loaderData.user} />
+          {/* <SidebarInset className="flex flex-col h-screen overflow-y-auto">
+          </SidebarInset> */}
+        </RightSidebarProvider>
+      </LeftSidebarProvider>
     </>
   )
 }
