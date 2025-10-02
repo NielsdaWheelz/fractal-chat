@@ -16,12 +16,19 @@ export async function loader({ request, params }: { request: Request; params: { 
   return { document: document }
 }
 
-function CustomPopover() {
+const CustomPopover = () => {
   const { currentSelection, setShowPopover } = useHighlightPopover();
-
+  let truncSel = ""
+  if (currentSelection.length > 30) {
+    // If the string is longer than maxLength, truncate it and add "..."
+    truncSel = currentSelection.slice(0, 25) + '...' + currentSelection.slice(currentSelection.length - 25, currentSelection.length);
+  } else {
+    // If the string is not longer than maxLength, return it as is
+    truncSel = currentSelection;
+  }
   return (
-    <div className="bg-white border rounded-md p-2 shadow-lg select-none">
-      <p>You selected: {currentSelection}</p>
+    <div className="bg-white border rounded-md p-2 shadow-lg select-none text-xs">
+      <p>{truncSel}</p>
       <button className="font-semibold" onClick={() => setShowPopover(false)}>Close</button>
     </div>
   );
