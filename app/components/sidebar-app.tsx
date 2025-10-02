@@ -24,7 +24,12 @@ import { MessageCircle, SquarePen } from "lucide-react";
 import type { ComponentProps } from "react";
 import { Form, NavLink } from "react-router";
 
-export function SidebarApp({  data, ...props }) {
+type UIMessagePart = { type: string; text?: string }
+type UIMessage = { role: string; parts: UIMessagePart[] }
+type ChatListItem = { id: string; messages?: UIMessage[] }
+type SidebarAppProps = { data: { chats: ChatListItem[]; user: { name: string; email: string; avatar: string } } } & ComponentProps<typeof Sidebar>
+
+export function SidebarApp({  data, ...props }: SidebarAppProps) {
   return (
     <Sidebar className="border-r-0" {...props}>
       <SidebarHeader>
@@ -59,16 +64,26 @@ export function SidebarApp({  data, ...props }) {
           <SidebarGroup>
             <SidebarGroupLabel>Recent</SidebarGroupLabel>
             <SidebarMenu>
-              {data.chats.map((chat) => (
-                <NavLink key={chat.id} to={"/workspace/chat/" + chat.id}>
-                  <SidebarMenuItem key={chat.id}>
-                    <SidebarMenuButton className="w-full justify-start">
-                      <MessageCircle className="mr-2 h-4 w-4" />
-                      {chat.id}
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                </NavLink>
-              ))}
+              {data.chats.map((chat: ChatListItem) => {
+                let title = chat.id
+                try {
+                  const firstUserMessage = (chat.messages ?? []).find((m: UIMessage) => m.role === "user")
+                  const firstLine = firstUserMessage?.parts?.find((p: UIMessagePart) => p.type === "text")?.text?.split("\n")[0]
+                  if (firstLine && firstLine.trim().length > 0) {
+                    title = firstLine.trim()
+                  }
+                } catch {}
+                return (
+                  <NavLink key={chat.id} to={"/workspace/chat/" + chat.id}>
+                    <SidebarMenuItem key={chat.id}>
+                      <SidebarMenuButton className="w-full justify-start">
+                        <MessageCircle className="mr-2 h-4 w-4" />
+                        {title}
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  </NavLink>
+                )
+              })}
             </SidebarMenu>
           </SidebarGroup>
         </div>

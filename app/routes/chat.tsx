@@ -9,6 +9,7 @@ import {
   ChatMessageContent,
 } from "~/components/ui/chat-message";
 import { ChatMessageArea } from "~/components/ui/chat-message-area";
+import { TextDotsLoader } from "~/components/ui/loader";
 import { useState } from "react";
 import { redirect, useLoaderData } from "react-router";
 import { requireUser } from "~/utils/auth.server";
@@ -114,6 +115,11 @@ export default function Chat() {
           <ChatInputTextArea placeholder="Type a message..." />
           <ChatInputSubmit />
         </ChatInput>
+        {isLoading && (
+          <div className="mt-2 flex items-center gap-2">
+            <TextDotsLoader text="Thinking" size="sm" />
+          </div>
+        )}
       </div>
     </div>
   );
