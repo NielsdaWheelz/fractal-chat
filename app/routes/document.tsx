@@ -16,11 +16,15 @@ export async function loader({ request, params }: { request: Request; params: { 
   return { document: document }
 }
 
+
 export default function Document() {
   const { document } = useLoaderData<typeof loader>() as { document: { id: string; content: string } };
+  const docContent = () => {
+    return { __html: document.content }
+  }
+
   return (
-    <div className="flex-1 flex flex-col h-full overflow-y-auto">
-      {(document.content)}
+    <div className="flex-1 flex flex-col h-full overflow-y-auto" dangerouslySetInnerHTML={docContent()}>
     </div>
   );
 }
