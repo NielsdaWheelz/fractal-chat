@@ -13,19 +13,6 @@ type ChatMessage = {
 
 const Message = ({ message }: { message: ChatMessage }) => {
   const parts = message.parts ?? []
-  const [copied, setCopied] = useState(false)
-
-  const copyAll = async () => {
-    const text = parts
-      .filter((p) => p.type === 'text')
-      .map((p) => (p as { text?: string }).text ?? '')
-      .join('\n')
-    try {
-      await navigator.clipboard.writeText(text)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 1200)
-    } catch (_) {}
-  }
 
   return (
     <div className="flex flex-col gap-8">
