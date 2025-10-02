@@ -29,6 +29,13 @@
       "when": 1759419209600,
       "tag": "0003_clumsy_lucky_pierre",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1759427738058,
+      "tag": "0004_damp_wiccan",
+      "breakpoints": true
     }
   ]
 }

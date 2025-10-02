@@ -14,4 +14,5 @@ export async function action({ request, params }: ActionFunctionArgs) {
   }
   await saveChat(chat)
   // throw redirect("/workspace/chat/" + chat.id)
+  // return new Response(JSON.stringify({ id: chat.id }), { status: 200, headers: { "Content-Type": "application/json" } })
 }

@@ -24,12 +24,12 @@ import { SidebarApp as SidebarLeft } from "~/components/sidebar-app-left";
 import { SidebarApp as SidebarRight } from "~/components/sidebar-app-right";
 
 
-export const loader = async ({ request }: Route.LoaderArgs) => {
+export const loader = async ({ request, params }: Route.LoaderArgs) => {
   const session = await getSession(request)
   if (!session?.user) return redirect("/")
   const user = session.user
   const userId = await getUser(request)
-  const chats = userId ? (await getChats(userId)) : []
+  const chats = userId && params?.id ? (await getChats(userId, params.id)) : []
   const documents = userId ? (await getDocuments(userId)) : []
   return { user, chats, documents }
 }

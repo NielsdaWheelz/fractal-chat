@@ -38,11 +38,11 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
   }
 
   const handleSubmit = (event) => {
-    event.preventDefault()
+    // event.preventDefault()
     const form = event.currentTarget as HTMLFormElement
 
     const input = form.querySelector('input[name="url"]') as HTMLInputElement
-    const value = window.prompt("Enter a URL to import", input?.value || "") || ""
+    // const value = window.prompt("Enter a URL to import", input?.value || "") || ""
     if (!value.trim()) {
       event.preventDefault()
       return

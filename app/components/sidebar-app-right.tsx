@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "~/components/ui/button";
 import {
   Sidebar,
@@ -20,9 +21,10 @@ import {
   TooltipTrigger,
 } from "~/components/ui/tooltip";
 import { NavUser } from "~/components/nav-user";
-import { MessageCircle, MessageCirclePlus } from "lucide-react";
+import { ArrowLeft, MessageCircle, MessageCirclePlus } from "lucide-react";
 import type { ComponentProps } from "react";
-import { Form, NavLink } from "react-router";
+import { Form, useFetcher, useParams } from "react-router";
+import ChatBlock from "~/chat/chat-block";
 
 type UIMessagePart = { type: string; text?: string }
 type UIMessage = { role: string; parts: UIMessagePart[] }
@@ -31,6 +33,10 @@ type UserInfo = { name: string; email: string; avatar: string }
 type SidebarAppProps = { data: any[]; user: UserInfo; side: "left" | "right" } & ComponentProps<typeof Sidebar>
 
 export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
+  const [selectedChatId, setSelectedChatId] = useState<string | null>(null)
+  const [chats, setChats] = useState<ChatListItem[]>(data as ChatListItem[])
+  const fetcher = useFetcher<any>()
+
   const handleSubmit = (event) => {
     const form = event.currentTarget as HTMLFormElement
     const input = form.querySelector('input[name="url"]') as HTMLInputElement
@@ -39,18 +45,50 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
       event.preventDefault()
       return
     }
-    if (input) input.value = value.trim()
   }
+  useEffect(() => {
+    setChats(data as ChatListItem[])
+  }, [data])
+
+  useEffect(() => {
+    if (fetcher.state === "idle" && fetcher.data?.id) {
+      const newId = fetcher.data.id as string
+      setChats((prev) => [{ id: newId, messages: [] }, ...prev])
+      setSelectedChatId(newId)
+    }
+  }, [fetcher.state, fetcher.data])
+
+  const selectedChat = useMemo(() => chats.find(c => c.id === selectedChatId) || null, [chats, selectedChatId])
+
+  const headerTitle = useMemo(() => {
+    if (!selectedChat) return "chats"
+    let title = selectedChat.id
+    try {
+      const firstUserMessage = (selectedChat.messages ?? []).find((m: UIMessage) => m.role === "user")
+      const firstLine = firstUserMessage?.parts?.find((p: UIMessagePart) => p.type === "text")?.text?.split("\n")[0]
+      if (firstLine && firstLine.trim().length > 0) {
+        title = firstLine.trim()
+      }
+    } catch { }
+    return title
+  }, [selectedChat])
 
   return (
     <Sidebar className="border-r-0" {...props} side="right">
       <SidebarHeader>
         <div className="flex items-center justify-between p-2">
-          <div className="flex items-center gap-3">
-            <span className="text-md font-semibold">chats</span>
+          <div className="flex items-center gap-2">
+            {selectedChat && (
+              <Button size="icon" variant="ghost" onClick={() => setSelectedChatId(null)}>
+                <ArrowLeft className="h-5 w-5" />
+                <span className="sr-only">Back</span>
+              </Button>
+            )}
+            <span className="text-md font-semibold">{headerTitle}</span>
           </div>
           {/* New Chat Button */}
-          <Form method="post" action="chat-create">
+          {/* <fetcher.Form method="post" action="chat-create"> */}
+          <Form method="post" action={`/workspace/document/${useParams().id}/chat-create`}>
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -65,36 +103,41 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
               </Tooltip>
             </TooltipProvider>
           </Form>
+          {/* </fetcher.Form> */}
         </div>
       </SidebarHeader>
       <SidebarContent>
         <div className="flex flex-col gap-4">
-          {/* Recent Chats */}
-          <SidebarGroup>
-            <SidebarGroupLabel>Recent</SidebarGroupLabel>
-            <SidebarMenu>
-              {data.map((chat: ChatListItem) => {
-                let title = chat.id
-                try {
-                  const firstUserMessage = (chat.messages ?? []).find((m: UIMessage) => m.role === "user")
-                  const firstLine = firstUserMessage?.parts?.find((p: UIMessagePart) => p.type === "text")?.text?.split("\n")[0]
-                  if (firstLine && firstLine.trim().length > 0) {
-                    title = firstLine.trim()
-                  }
-                } catch { }
-                return (
-                  <NavLink key={chat.id} to={"/workspace/chat/" + chat.id}>
+          {!selectedChat && (
+            <SidebarGroup>
+              <SidebarGroupLabel>Recent</SidebarGroupLabel>
+              <SidebarMenu>
+                {chats.map((chat: ChatListItem) => {
+                  let title = chat.id
+                  try {
+                    const firstUserMessage = (chat.messages ?? []).find((m: UIMessage) => m.role === "user")
+                    const firstLine = firstUserMessage?.parts?.find((p: UIMessagePart) => p.type === "text")?.text?.split("\n")[0]
+                    if (firstLine && firstLine.trim().length > 0) {
+                      title = firstLine.trim()
+                    }
+                  } catch { }
+                  return (
                     <SidebarMenuItem key={chat.id}>
-                      <SidebarMenuButton className="w-full justify-start">
+                      <SidebarMenuButton className="w-full justify-start" onClick={() => setSelectedChatId(chat.id)}>
                         <MessageCircle className="mr-2 h-4 w-4" />
                         {title}
                       </SidebarMenuButton>
                     </SidebarMenuItem>
-                  </NavLink>
-                )
-              })}
-            </SidebarMenu>
-          </SidebarGroup>
+                  )
+                })}
+              </SidebarMenu>
+            </SidebarGroup>
+          )}
+          {selectedChat && (
+            <div className="h-full">
+              <ChatBlock chatId={selectedChat.id} initialMessages={selectedChat.messages ?? []} />
+            </div>
+          )}
         </div>
       </SidebarContent>
       <SidebarRail />

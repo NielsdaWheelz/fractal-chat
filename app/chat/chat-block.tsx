@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   ChatInput,
   ChatInputSubmit,
@@ -9,39 +10,24 @@ import {
   ChatMessageContent,
 } from "~/components/ui/chat-message";
 import { ChatMessageArea } from "~/components/ui/chat-message-area";
-import { TextDotsLoader } from "~/components/ui/loader";
-import { useState } from "react";
-import { redirect, useLoaderData } from "react-router";
-import { requireUser } from "~/utils/auth.server";
-import { getChat } from "..";
+import { MessageTool } from "~/chat/message-tool";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import { MessageTool } from "~/chat/message-tool";
 
+type ChatBlockProps = {
+  chatId: string;
+  initialMessages: any[];
+};
 
-export async function loader({ request, params }: { request: Request; params: { id?: string; chatId?: string } }) {
-  const userId = await requireUser(request)
-  const docId = params.id
-  const chatId = params.chatId
-  if (!docId || !chatId) {
-    throw redirect("/")
-  }
-  const chat = await getChat(chatId, userId, docId)
-  if (!chat) {
-    throw redirect("/workspace/document/" + docId)
-  }
-  return { chat }
-}
-
-export default function Chat() {
-  const { chat } = useLoaderData<typeof loader>() as { chat: { id: string; messages: any[] } };
+export default function ChatBlock({ chatId, initialMessages }: ChatBlockProps) {
   const { messages, sendMessage, status, stop } = useChat({
-    id: chat.id,
-    messages: chat.messages,
+    id: chatId,
+    messages: initialMessages,
     transport: new DefaultChatTransport(),
   });
+
   const [message, setMessage] = useState("");
-  const isLoading = status === "submitted" || status === "streaming"
+  const isLoading = status === "submitted" || status === "streaming";
 
   const handleSubmit = () => {
     if (!message.trim()) return;
@@ -67,17 +53,17 @@ export default function Chat() {
                       }
                       case 'tool-weather': {
                         return (
-                  <MessageTool
-                    key={`${message.id}-${i}`}
-                    part={{
-                      type: part.type as string,
-                      state: (part as any).state,
-                      input: (part as any).input as any,
-                      output: (part as any).output as any,
-                      toolCallId: (part as any).toolCallId,
-                      errorText: (part as any).errorText,
-                    }}
-                  />
+                          <MessageTool
+                            key={`${message.id}-${i}`}
+                            part={{
+                              type: part.type as string,
+                              state: (part as any).state,
+                              input: (part as any).input as any,
+                              output: (part as any).output as any,
+                              toolCallId: (part as any).toolCallId,
+                              errorText: (part as any).errorText,
+                            }}
+                          />
                         )
                       }
                     }
@@ -117,11 +103,6 @@ export default function Chat() {
           <ChatInputTextArea placeholder="Type a message..." />
           <ChatInputSubmit />
         </ChatInput>
-        {isLoading && (
-          <div className="mt-2 flex items-center gap-2">
-            <TextDotsLoader text="Thinking" size="sm" />
-          </div>
-        )}
       </div>
     </div>
   );
