@@ -2,7 +2,6 @@ import type { Route } from "./+types/home";
 import { getSession } from "./api.auth"
 import SignUp from "../users/signUp"
 import SignIn from "../users/signIn"
-import { clientSignOut } from "~/utils/auth-client"
 import { useLoaderData, redirect } from "react-router";
 
 export function meta({ }: Route.MetaArgs) {
@@ -22,13 +21,10 @@ export const loader = async({ request }: Route.LoaderArgs) => {
   }
 }
 
-const handleClick = () => {
-  clientSignOut()
-}
-
 export default function Home() {
   
-  let data = useLoaderData<typeof loader>();
+  const data = useLoaderData<typeof loader>();
+
   return (
     <>
       <SignIn />
