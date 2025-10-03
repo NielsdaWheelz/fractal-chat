@@ -5,6 +5,8 @@ import type { UIMessage } from "ai"
 import { requireUser } from "~/utils/auth.server"
 import { saveChat } from ".."
 import type { Route } from "../+types/root"
+import sysprompt from "../assets/sysprompt.txt"
+import { embedAndSearch } from "./api.document"
 
 export const maxDuration = 30
 
@@ -14,18 +16,19 @@ export async function action({ request }: Route.ActionArgs) {
 
   const result = streamText({
     model: openai("gpt-5-nano"),
+    system: sysprompt,
     messages: convertToModelMessages(messages),
     stopWhen: stepCountIs(5),
     tools: {
-      weather: tool({
-        description: 'Get the weather in a location',
+      searchDocuments: tool({
+        description: 'Search all documents for matching chunks of text.',
         inputSchema: z.object({
-          location: z.string().describe('The location to get the weather for'),
+          query: z.string().describe('The query for which you would like to return matches.'),
+          topK: z.number().describe('The number of results to return.'),
         }),
-        execute: async ({ location }) => ({
-          location,
-          temperature: 72 + Math.floor(Math.random() * 21) - 10,
-        }),
+        execute: async ({query, topK}) => {
+          return await embedAndSearch(userId, query, topK);
+        },
       }),
     },
   });

@@ -11,6 +11,7 @@ import {
 } from "~/components/ui/chat-message";
 import { ChatMessageArea } from "~/components/ui/chat-message-area";
 import { MessageTool } from "~/chat/message-tool";
+import { SearchResultsTool } from "~/chat/search-results-tool";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 
@@ -19,6 +20,8 @@ type ChatBlockProps = {
   initialMessages: any[];
   docId: string
   selectionRef?: React.MutableRefObject<string>
+  includeSelection?: boolean
+  setIncludeSelection?: (value: boolean) => void
 };
 
 export default function ChatBlock({ chatId, initialMessages, docId, selectionRef, includeSelection, setIncludeSelection }: ChatBlockProps) {
@@ -31,7 +34,7 @@ export default function ChatBlock({ chatId, initialMessages, docId, selectionRef
   const [message, setMessage] = useState("");
 
   const isLoading = status === "submitted" || status === "streaming";
-  
+
   const selectedText = selectionRef?.current ?? "";
   const truncatedSelection = useMemo(() => selectedText.length > 80
     ? `${selectedText.slice(0, 40)}...${selectedText.slice(selectedText.length - 40)}`
@@ -44,7 +47,7 @@ export default function ChatBlock({ chatId, initialMessages, docId, selectionRef
       : message;
     sendMessage({ text: textToSend }, { body: { documentId: docId, selection: includeSelection ? selectedText : undefined } });
     setMessage("");
-    setIncludeSelection(false);
+    setIncludeSelection?.(false);
     if (selectionRef) selectionRef.current = "";
   };
 
@@ -56,31 +59,33 @@ export default function ChatBlock({ chatId, initialMessages, docId, selectionRef
             if (message.role !== "user") {
               return (
                 <ChatMessage key={message.id} id={message.id}>
-                  <ChatMessageAvatar />
-                  {message.parts.map((part, i: number) => {
-                    switch (part.type) {
-                      case 'text': {
-                        return (
-                          <ChatMessageContent key={`${message.id}-text-${i}`} content={part.text ?? ''} />
-                        )
+                  {/* <ChatMessageAvatar /> */}
+                  <div className="flex flex-col gap-1">
+                    {message.parts.map((part, i: number) => {
+                      switch (part.type) {
+                        case 'text': {
+                          return (
+                            <ChatMessageContent key={`${message.id}-text-${i}`} content={part.text ?? ''} />
+                          )
+                        }
+                        case 'tool-searchDocuments': {
+                          return (
+                            <SearchResultsTool
+                              key={`${message.id}-${i}`}
+                              toolPart={{
+                                type: part.type as string,
+                                state: part.state,
+                                input: part.input,
+                                output: part.output,
+                                toolCallId: part.toolCallId,
+                                errorText: part.errorText,
+                              }}
+                            />
+                          )
+                        }
                       }
-                      case 'tool-weather': {
-                        return (
-                          <MessageTool
-                            key={`${message.id}-${i}`}
-                            part={{
-                              type: part.type as string,
-                              state: (part as any).state,
-                              input: (part as any).input as any,
-                              output: (part as any).output as any,
-                              toolCallId: (part as any).toolCallId,
-                              errorText: (part as any).errorText,
-                            }}
-                          />
-                        )
-                      }
-                    }
-                  })}
+                    })}
+                  </div>
                 </ChatMessage>
               );
             }
@@ -109,7 +114,7 @@ export default function ChatBlock({ chatId, initialMessages, docId, selectionRef
         {includeSelection && selectedText && (
           <div className="mb-2 text-xs border rounded-md p-2 bg-muted/40 flex items-start gap-2">
             <div className="flex-1 whitespace-pre-wrap break-words">{truncatedSelection}</div>
-            <button className="p-1" onClick={() => setIncludeSelection(false)} aria-label="Remove selection">✕</button>
+            <button className="p-1" onClick={() => setIncludeSelection?.(false)} aria-label="Remove selection">✕</button>
           </div>
         )}
         <ChatInput
