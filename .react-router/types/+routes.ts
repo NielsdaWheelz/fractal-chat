@@ -23,15 +23,31 @@ type Pages = {
       "*": string;
     };
   };
+  "/api/document/*": {
+    params: {
+      "*": string;
+    };
+  };
   "/workspace": {
     params: {};
   };
-  "/workspace/chat/:id": {
+  "/workspace/document/:id": {
     params: {
       "id": string;
     };
   };
-  "/workspace/chat-create": {
+  "/workspace/document/:id/chat/:chatId": {
+    params: {
+      "id": string;
+      "chatId": string;
+    };
+  };
+  "/workspace/document/:id/chat-create": {
+    params: {
+      "id": string;
+    };
+  };
+  "/workspace/document-create": {
     params: {};
   };
 };
@@ -39,7 +55,7 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/api/auth/*" | "/api/chat/*" | "/workspace" | "/workspace/chat/:id" | "/workspace/chat-create";
+    page: "/" | "/api/auth/*" | "/api/chat/*" | "/api/document/*" | "/workspace" | "/workspace/document/:id" | "/workspace/document/:id/chat/:chatId" | "/workspace/document/:id/chat-create" | "/workspace/document-create";
   };
   "routes/home.tsx": {
     id: "routes/home";
@@ -53,16 +69,28 @@ type RouteFiles = {
     id: "routes/api.chat";
     page: "/api/chat/*";
   };
+  "routes/api.document.ts": {
+    id: "routes/api.document";
+    page: "/api/document/*";
+  };
   "routes/layout.tsx": {
     id: "routes/layout";
-    page: "/workspace" | "/workspace/chat/:id" | "/workspace/chat-create";
+    page: "/workspace" | "/workspace/document/:id" | "/workspace/document/:id/chat/:chatId" | "/workspace/document/:id/chat-create" | "/workspace/document-create";
+  };
+  "routes/document.tsx": {
+    id: "routes/document";
+    page: "/workspace/document/:id" | "/workspace/document/:id/chat/:chatId" | "/workspace/document/:id/chat-create";
   };
   "routes/chat.tsx": {
     id: "routes/chat";
-    page: "/workspace/chat/:id";
+    page: "/workspace/document/:id/chat/:chatId";
   };
   "routes/chat-create.tsx": {
     id: "routes/chat-create";
-    page: "/workspace/chat-create";
+    page: "/workspace/document/:id/chat-create";
+  };
+  "routes/document-create.tsx": {
+    id: "routes/document-create";
+    page: "/workspace/document-create";
   };
 };

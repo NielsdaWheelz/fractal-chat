@@ -1,3 +1,4 @@
+import { useMemo, useState } from "react";
 import {
   ChatInput,
   ChatInputSubmit,
@@ -9,61 +10,39 @@ import {
   ChatMessageContent,
 } from "~/components/ui/chat-message";
 import { ChatMessageArea } from "~/components/ui/chat-message-area";
-import { TextDotsLoader } from "~/components/ui/loader";
-import { useState, type MutableRefObject } from "react";
-import { redirect, useLoaderData, useOutletContext } from "react-router";
-import { requireUser } from "~/utils/auth.server";
-import { getChat } from "..";
+import { MessageTool } from "~/chat/message-tool";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import { MessageTool } from "~/chat/message-tool";
-import { Button } from "~/components/ui/button";
-import { X } from "lucide-react";
 
+type ChatBlockProps = {
+  chatId: string;
+  initialMessages: any[];
+  docId: string
+  selectionRef?: React.MutableRefObject<string>
+};
 
-export async function loader({ request, params }: { request: Request; params: { id?: string; chatId?: string } }) {
-  const userId = await requireUser(request)
-  const docId = params.id
-  const chatId = params.chatId
-  if (!docId || !chatId) {
-    throw redirect("/")
-  }
-  const chat = await getChat(chatId, userId, docId)
-  if (!chat) {
-    throw redirect("/workspace/document/" + docId)
-  }
-  return { chat }
-}
-
-export default function Chat() {
-  const { chat } = useLoaderData<typeof loader>() as { chat: { id: string; messages: any[] } };
-  const { selectionRef } = useOutletContext<{ selectionRef: MutableRefObject<string> }>();
+export default function ChatBlock({ chatId, initialMessages, docId, selectionRef, includeSelection, setIncludeSelection }: ChatBlockProps) {
   const { messages, sendMessage, status, stop } = useChat({
-    id: chat.id,
-    messages: chat.messages,
+    id: chatId,
+    messages: initialMessages,
     transport: new DefaultChatTransport(),
   });
-  const [message, setMessage] = useState("");
-  const isLoading = status === "submitted" || status === "streaming"
-  const [includeSelection, setIncludeSelection] = useState<boolean>(() => {
-    try {
-      return !!selectionRef?.current?.trim();
-    } catch {
-      return false;
-    }
-  });
 
+  const [message, setMessage] = useState("");
+
+  const isLoading = status === "submitted" || status === "streaming";
+  
   const selectedText = selectionRef?.current ?? "";
-  const truncatedSelection = selectedText.length > 80
+  const truncatedSelection = useMemo(() => selectedText.length > 80
     ? `${selectedText.slice(0, 40)}...${selectedText.slice(selectedText.length - 40)}`
-    : selectedText;
+    : selectedText, [selectedText]);
 
   const handleSubmit = () => {
     if (!message.trim()) return;
     const textToSend = includeSelection && selectedText
       ? `${selectedText}\n\n${message}`
       : message;
-    sendMessage({ text: textToSend });
+    sendMessage({ text: textToSend }, { body: { documentId: docId, selection: includeSelection ? selectedText : undefined } });
     setMessage("");
     setIncludeSelection(false);
     if (selectionRef) selectionRef.current = "";
@@ -72,8 +51,8 @@ export default function Chat() {
   return (
     <div className="flex-1 flex flex-col h-full overflow-y-auto">
       <ChatMessageArea scrollButtonAlignment="center">
-        <div className="max-w-2xl mx-auto w-full px-4 py-8 space-y-4">
-          {messages.map((message) => {
+        <div className="max-w-2xl mx-auto w-full px-1 py-2 space-y-1 text-xs">
+          {messages?.map((message) => {
             if (message.role !== "user") {
               return (
                 <ChatMessage key={message.id} id={message.id}>
@@ -87,17 +66,17 @@ export default function Chat() {
                       }
                       case 'tool-weather': {
                         return (
-                  <MessageTool
-                    key={`${message.id}-${i}`}
-                    part={{
-                      type: part.type as string,
-                      state: (part as any).state,
-                      input: (part as any).input as any,
-                      output: (part as any).output as any,
-                      toolCallId: (part as any).toolCallId,
-                      errorText: (part as any).errorText,
-                    }}
-                  />
+                          <MessageTool
+                            key={`${message.id}-${i}`}
+                            part={{
+                              type: part.type as string,
+                              state: (part as any).state,
+                              input: (part as any).input as any,
+                              output: (part as any).output as any,
+                              toolCallId: (part as any).toolCallId,
+                              errorText: (part as any).errorText,
+                            }}
+                          />
                         )
                       }
                     }
@@ -130,9 +109,7 @@ export default function Chat() {
         {includeSelection && selectedText && (
           <div className="mb-2 text-xs border rounded-md p-2 bg-muted/40 flex items-start gap-2">
             <div className="flex-1 whitespace-pre-wrap break-words">{truncatedSelection}</div>
-            <Button size="icon" variant="ghost" onClick={() => setIncludeSelection(false)} aria-label="Remove selection">
-              <X className="h-4 w-4" />
-            </Button>
+            <button className="p-1" onClick={() => setIncludeSelection(false)} aria-label="Remove selection">✕</button>
           </div>
         )}
         <ChatInput
@@ -145,11 +122,6 @@ export default function Chat() {
           <ChatInputTextArea placeholder="Type a message..." />
           <ChatInputSubmit />
         </ChatInput>
-        {isLoading && (
-          <div className="mt-2 flex items-center gap-2">
-            <TextDotsLoader text="Thinking" size="sm" />
-          </div>
-        )}
       </div>
     </div>
   );

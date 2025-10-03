@@ -1,0 +1,1 @@
+ALTER TABLE "chat" ADD COLUMN "document_id" text NOT NULL;

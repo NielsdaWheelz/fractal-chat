@@ -25,7 +25,7 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem,
 	useSidebar,
-} from "~/components/ui/sidebar";
+} from "~/components/ui/sidebar-left";
 import { clientSignOut } from "~/utils/auth.client";
 
 export function NavUser({

@@ -140,7 +140,7 @@ const chatMessageContentVariants = cva("flex flex-col gap-2", {
 	variants: {
 		variant: {
 			default: "",
-			bubble: "rounded-xl px-3 py-2",
+			bubble: "rounded-xl px-2",
 			full: "",
 		},
 		type: {
