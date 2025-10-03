@@ -13,7 +13,7 @@ import { TextDotsLoader } from "~/components/ui/loader";
 import { useState, type MutableRefObject } from "react";
 import { redirect, useLoaderData, useOutletContext } from "react-router";
 import { requireUser } from "~/utils/auth.server";
-import { getChat } from "../server";
+import { getChat } from "../index.server";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { MessageTool } from "~/chat/message-tool";

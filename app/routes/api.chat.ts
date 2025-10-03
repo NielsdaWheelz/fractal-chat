@@ -3,7 +3,7 @@ import { streamText, convertToModelMessages, tool, stepCountIs, createIdGenerato
 import { z } from "zod"
 import type { UIMessage } from "ai"
 import { requireUser } from "~/utils/auth.server"
-import { saveChat } from "../server"
+import { saveChat } from "../index.server"
 import type { Route } from "../+types/root"
 import sysprompt from "../assets/sysprompt.txt"
 import { embedAndSearch } from "./api.document"

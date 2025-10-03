@@ -1,7 +1,7 @@
 import type { LoaderFunctionArgs } from "react-router";
 import { requireUser } from "~/utils/auth.server";
 import { generateEmbeddings } from "./document-create";
-import { semanticSearch } from "../server";
+import { semanticSearch } from "../index.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const userId = await requireUser(request)
