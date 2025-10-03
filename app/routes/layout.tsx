@@ -64,8 +64,9 @@ const Layout = ({ loaderData }: Route.ComponentProps) => {
                 <Breadcrumb>
                   <BreadcrumbList>
                     <BreadcrumbItem>
-                      <BreadcrumbPage className="line-clamp-1">
-                        {loaderData.document?.title ?? ""}
+                      <BreadcrumbPage className="line-clamp-1 items-center bg-white">
+                        <span className="">{loaderData.document?.title ?? ""} - </span>
+                        <span className="text-xs">{loaderData.document?.authors ?? ""}</span>
                       </BreadcrumbPage>
                     </BreadcrumbItem>
                   </BreadcrumbList>
