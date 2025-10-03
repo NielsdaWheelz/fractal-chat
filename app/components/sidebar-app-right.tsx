@@ -33,7 +33,7 @@ type ChatListItem = { id: string; messages?: UIMessage[] }
 type UserInfo = { name: string; email: string; avatar: string }
 type SidebarAppProps = { data: any[]; user: UserInfo; side: "left" | "right"; selectionRef?: MutableRefObject<string> } & ComponentProps<typeof Sidebar>
 
-export function SidebarApp({ side, data, user, selectionRef, ...props }: SidebarAppProps) {
+export function SidebarApp({ side, data, user, selectionRef, includeSelection, setIncludeSelection, ...props }: SidebarAppProps) {
   const { setOpen } = useSidebar()
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null)
   const [chats, setChats] = useState<ChatListItem[]>(data as ChatListItem[])
@@ -169,7 +169,7 @@ export function SidebarApp({ side, data, user, selectionRef, ...props }: Sidebar
           )}
           {selectedChat && (
             <div className="h-full">
-              <ChatBlock chatId={selectedChat.id} initialMessages={selectedChatMessages} docId={useParams().id as string} selectionRef={selectionRef} />
+              <ChatBlock chatId={selectedChat.id} initialMessages={selectedChatMessages} docId={useParams().id as string} selectionRef={selectionRef} includeSelection={includeSelection} setIncludeSelection={setIncludeSelection} />
             </div>
           )}
         </div>

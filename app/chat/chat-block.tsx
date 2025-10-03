@@ -21,7 +21,7 @@ type ChatBlockProps = {
   selectionRef?: React.MutableRefObject<string>
 };
 
-export default function ChatBlock({ chatId, initialMessages, docId, selectionRef }: ChatBlockProps) {
+export default function ChatBlock({ chatId, initialMessages, docId, selectionRef, includeSelection, setIncludeSelection }: ChatBlockProps) {
   const { messages, sendMessage, status, stop } = useChat({
     id: chatId,
     messages: initialMessages,
@@ -29,8 +29,9 @@ export default function ChatBlock({ chatId, initialMessages, docId, selectionRef
   });
 
   const [message, setMessage] = useState("");
+
   const isLoading = status === "submitted" || status === "streaming";
-  const [includeSelection, setIncludeSelection] = useState<boolean>(() => !!selectionRef?.current?.trim());
+  
   const selectedText = selectionRef?.current ?? "";
   const truncatedSelection = useMemo(() => selectedText.length > 80
     ? `${selectedText.slice(0, 40)}...${selectedText.slice(selectedText.length - 40)}`

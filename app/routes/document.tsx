@@ -20,18 +20,22 @@ export async function loader({ request, params }: { request: Request; params: { 
 }
 
 export default function Document() {
-  const { selectionRef, setShowHighlight } = useOutletContext<{ selectionRef: React.MutableRefObject<string>, setShowHighlight: React.Dispatch<React.SetStateAction<boolean>> }>();
+  const { selectionRef, setShowHighlight, setIncludeSelection } = useOutletContext<{ selectionRef: React.MutableRefObject<string>, setShowHighlight: React.Dispatch<React.SetStateAction<boolean>> }>();
   const { document } = useLoaderData<typeof loader>() as { document: { id: string; content: string } };
   const docContent = () => {
     return { __html: document.content }
   }
   const handleSelectionStart = () => console.log('Selection started');
-  const handleSelectionEnd = (selection: string) => selectionRef.current = selection;
+  const handleSelectionEnd = (selection: string) => {
+    selectionRef.current = selection
+    // setIncludeSelection(true)
+  };
   const handlePopoverShow = () => console.log('Popover shown');
   const handlePopoverHide = () => console.log('Popover hidden');
 
   const CustomPopover = () => {
     const { currentSelection, setShowPopover } = useHighlightPopover();
+
     let truncSel = ""
     if (currentSelection.length > 30) {
       // If the string is longer than maxLength, truncate it and add "..."
@@ -44,7 +48,6 @@ export default function Document() {
       <div className="bg-white border rounded-md p-2 shadow-lg select-none text-xs flex flex-row items-center">
         <p>{truncSel}</p>
         <div className="flex flex-col">
-  
           <Form method="post" action={`/workspace/document/${useParams().id}/chat-create`}>
             <TooltipProvider>
               <Tooltip>
@@ -63,7 +66,10 @@ export default function Document() {
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button size="icon" variant="ghost" onClick={() => setShowHighlight(true)}>
+                <Button size="icon" variant="ghost" onClick={() => {
+                  setShowHighlight(true)
+                  setIncludeSelection(true)
+                  }}>
                   <MessageSquareReply className="h-2 w-2" />
                   <span className="sr-only">add to existing chat</span>
                 </Button>
@@ -77,7 +83,7 @@ export default function Document() {
       </div>
     );
   }
-  
+
 
   return (
     <>
@@ -88,7 +94,7 @@ export default function Document() {
         onSelectionEnd={handleSelectionEnd}
         onPopoverShow={handlePopoverShow}
         onPopoverHide={handlePopoverHide}>
-        <div className="flex-1 flex flex-col h-full overflow-y-auto p-8" dangerouslySetInnerHTML={docContent()}>
+        <div className="flex-1 flex flex-col h-full overflow-y-auto p-8 gap-4" dangerouslySetInnerHTML={docContent()}>
         </div>
       </HighlightPopover>
     </>

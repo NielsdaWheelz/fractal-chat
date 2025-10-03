@@ -46,11 +46,9 @@ const Layout = ({ loaderData }: Route.ComponentProps) => {
     email: loaderData.user.email,
     avatar: (loaderData.user.image as string | undefined) ?? "",
   }
-  // ref to store the selection string
   const selectionRef = useRef<string>("");
-console.log(selectionRef.current)
-  // optional state to force UI for the chat highlight box
   const [showHighlight, setShowHighlight] = useState(false);
+  const [includeSelection, setIncludeSelection] = useState<boolean>(() => !!selectionRef?.current?.trim());
 
   return (
     <>
@@ -75,9 +73,9 @@ console.log(selectionRef.current)
                 <SidebarTriggerRight />
               </div>
             </header>
-            <Outlet context={{ selectionRef, setShowHighlight }} />
+            <Outlet context={{ selectionRef, setShowHighlight, setIncludeSelection }} />
           </SidebarInset>
-          <SidebarRight side="right" data={loaderData.chats} user={uiUser} selectionRef={selectionRef} />
+          <SidebarRight side="right" data={loaderData.chats} user={uiUser} selectionRef={selectionRef} includeSelection={includeSelection} setIncludeSelection={setIncludeSelection} />
           {/* <SidebarInset className="flex flex-col h-screen overflow-y-auto">
           </SidebarInset> */}
         </RightSidebarProvider>
