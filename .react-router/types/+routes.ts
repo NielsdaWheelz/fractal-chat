@@ -37,6 +37,9 @@ type Pages = {
   "/workspace": {
     params: {};
   };
+  "/workspace/document-search": {
+    params: {};
+  };
   "/workspace/document/:id": {
     params: {
       "id": string;
@@ -61,7 +64,7 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/signin" | "/signup" | "/api/auth/*" | "/api/chat/*" | "/api/document/*" | "/workspace" | "/workspace/document/:id" | "/workspace/document/:id/chat/:chatId" | "/workspace/document/:id/chat-create" | "/workspace/document-create";
+    page: "/" | "/signin" | "/signup" | "/api/auth/*" | "/api/chat/*" | "/api/document/*" | "/workspace" | "/workspace/document-search" | "/workspace/document/:id" | "/workspace/document/:id/chat/:chatId" | "/workspace/document/:id/chat-create" | "/workspace/document-create";
   };
   "routes/home.tsx": {
     id: "routes/home";
@@ -89,7 +92,11 @@ type RouteFiles = {
   };
   "routes/layout.tsx": {
     id: "routes/layout";
-    page: "/workspace" | "/workspace/document/:id" | "/workspace/document/:id/chat/:chatId" | "/workspace/document/:id/chat-create" | "/workspace/document-create";
+    page: "/workspace" | "/workspace/document-search" | "/workspace/document/:id" | "/workspace/document/:id/chat/:chatId" | "/workspace/document/:id/chat-create" | "/workspace/document-create";
+  };
+  "routes/document-search.tsx": {
+    id: "routes/document-search";
+    page: "/workspace/document-search";
   };
   "routes/document.tsx": {
     id: "routes/document";
