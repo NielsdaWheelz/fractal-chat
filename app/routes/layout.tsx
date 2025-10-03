@@ -1,7 +1,7 @@
 import type { Route } from "./+types/layout";
 import { Outlet, redirect } from "react-router";
 import { getSession, getUser } from "~/utils/auth.server";
-import { getChats, getDocument, getDocuments } from "..";
+import { getChats, getDocument, getDocuments } from "../server";
 import { Button } from "~/components/ui/button";
 import {
   Breadcrumb,

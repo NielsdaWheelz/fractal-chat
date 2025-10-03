@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Form, redirect, useLoaderData, useOutletContext, useParams } from "react-router";
 import { requireUser } from "~/utils/auth.server";
-import { getDocument } from "..";
+import { getDocument } from "../server";
 import { HighlightPopover, useHighlightPopover } from '@omsimos/react-highlight-popover';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
 import { Button } from "~/components/ui/button";

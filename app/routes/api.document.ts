@@ -1,6 +1,6 @@
 import { requireUser } from "~/utils/auth.server";
 import type { Route } from "../+types/root";
-import { semanticSearch } from "..";
+import { semanticSearch } from "../server";
 import { generateEmbeddings } from "./document-create";
 
 export async function action({ request }: Route.ActionArgs) {

@@ -2,7 +2,7 @@ import { redirect, type ActionFunctionArgs } from "react-router"
 import { requireUser } from "~/utils/auth.server"
 import { Readability } from "@mozilla/readability"
 import { JSDOM } from "jsdom"
-import { saveDocument, saveDocumentChunks } from ".."
+import { saveDocument, saveDocumentChunks } from "../server"
 import { embedMany } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter"

@@ -1,6 +1,6 @@
 import { redirect, type ActionFunctionArgs } from "react-router"
 import { requireUser } from "~/utils/auth.server"
-import { saveChat } from ".."
+import { saveChat } from "../server"
 
 // POST /chat will create a new chat
 export async function action({ request, params }: ActionFunctionArgs) {
