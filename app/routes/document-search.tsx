@@ -1,7 +1,6 @@
 import type { LoaderFunctionArgs } from "react-router";
 import { requireUser } from "~/utils/auth.server";
-import { generateEmbeddings } from "./document-create";
-import { semanticSearch } from "../index.server";
+import { embedAndSearch } from "~/utils/document.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const userId = await requireUser(request)
@@ -9,16 +8,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
   const query = url.searchParams.get("query") ?? "";
 
-  const queryEmbeddings = await generateEmbeddings([query]);
-  const queryEmbedding = queryEmbeddings[0];
+  const result = await embedAndSearch(userId, query, topK);
 
-  const matches = await semanticSearch(userId, queryEmbedding, topK);
-
-  // return Response.json({
-  //   success: true,
-  //   results: matches,
-  //   count: matches.length,
-  // });
-
-  return matches
+  return result.results
 }
