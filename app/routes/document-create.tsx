@@ -2,9 +2,10 @@ import { redirect, type ActionFunctionArgs } from "react-router"
 import { requireUser } from "~/utils/auth.server"
 import { Readability } from "@mozilla/readability"
 import { JSDOM } from "jsdom"
-import { saveDocument } from ".."
-import { embed, embedMany } from 'ai';
+import { saveDocument, saveDocumentChunks } from ".."
+import { embedMany } from 'ai';
 import { openai } from '@ai-sdk/openai';
+import { RecursiveCharacterTextSplitter } from "langchain/text_splitter"
 
 export async function action({ request }: ActionFunctionArgs) {
   const userId = await requireUser(request)
@@ -21,38 +22,62 @@ export async function action({ request }: ActionFunctionArgs) {
   const reader = new Readability(doc)
   const article = reader.parse();
 
-  if (!article) return
+  if (!article || !article.textContent) return
 
-  // 
-  const { embeddings } = await embedMany({
-    maxParallelCalls: 100, // Limit parallel requests
-    model: openai.textEmbeddingModel('text-embedding-3-small'),
-    values: [
-      'sunny day at the beach',
-      'rainy afternoon in the city',
-      'snowy night in the mountains',
-    ],
-    providerOptions: {
-      openai: {
-        dimensions: 512, // Reduce embedding dimensions
-      },
-    },
-  });
-  // 
+  const rawText = article.textContent
 
-  const id = crypto.randomUUID()
+  const chunkedDocs = await chunkText(rawText)
 
+  const chunkTexts = chunkedDocs.map(doc => doc.pageContent)
+
+  const embeddings = await generateEmbeddings(chunkTexts)
+
+  const documentId = crypto.randomUUID()
   const document = {
-    id: id,
+    id: documentId,
     userId: userId,
     url: url,
-    title: article.title,
-    content: article.content,
+    title: article.title ?? "Untitled Document",
+    content: article.content ?? "",
     textContent: article.textContent,
-    authors: article.byline,
-    publishedTime: article.publishedTime
+    authors: article.byline ?? null,
+    publishedTime: article.publishedTime ?? null,
   }
-
   await saveDocument(document)
-  throw redirect("/workspace/document/" + document.id)
+
+  const documentChunks = chunkedDocs.map((doc, index) => ({
+    id: crypto.randomUUID(),
+    documentId: documentId,
+    text: doc.pageContent,
+    chunkIndex: index,
+    embedding: embeddings[index],
+  }))
+
+  await saveDocumentChunks(documentChunks)
+
+  throw redirect("/workspace/document/" + documentId)
 }
+
+export const chunkText = async (rawText: string) => {
+  const splitter = new RecursiveCharacterTextSplitter({
+    chunkSize: 500,
+    chunkOverlap: 50,
+  });
+
+  const docs = await splitter.createDocuments([rawText]);
+  return docs; // Each doc has { pageContent, metadata }
+}
+
+export const generateEmbeddings = async (chunkTexts: string[]) => {
+  const { embeddings } = await embedMany({
+    maxParallelCalls: 100,
+    model: openai.textEmbeddingModel('text-embedding-3-small'),
+    values: chunkTexts,
+    providerOptions: {
+      openai: {
+        dimensions: 512,
+      },
+    },
+  })
+  return embeddings
+};

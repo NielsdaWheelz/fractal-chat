@@ -14,6 +14,32 @@ CREATE TABLE "account" (
 	"updated_at" timestamp NOT NULL
 );
 --> statement-breakpoint
+CREATE TABLE "chat" (
+	"id" text PRIMARY KEY NOT NULL,
+	"user_id" text NOT NULL,
+	"document_id" text NOT NULL,
+	"messages" text NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "document_chunks" (
+	"id" text PRIMARY KEY NOT NULL,
+	"document_id" text NOT NULL,
+	"text" text NOT NULL,
+	"chunk_index" integer NOT NULL,
+	"embedding" vector(512) NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "document" (
+	"id" text PRIMARY KEY NOT NULL,
+	"user_id" text NOT NULL,
+	"url" text NOT NULL,
+	"title" text NOT NULL,
+	"content" text NOT NULL,
+	"textContent" text,
+	"authors" text,
+	"published_time" text
+);
+--> statement-breakpoint
 CREATE TABLE "session" (
 	"id" text PRIMARY KEY NOT NULL,
 	"expires_at" timestamp NOT NULL,

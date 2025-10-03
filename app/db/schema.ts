@@ -23,9 +23,7 @@ export const documentChunksTable = pgTable("document_chunks", {
   documentId: text("document_id").notNull(),
   text: text("text").notNull(),
   chunkIndex: integer("chunk_index").notNull(),
-  authors: text("authors"),
-  publishedTime: text("published_time"),
-  embedding: vector("embedding", { dimensions: 1536 }).notNull(),
+  embedding: vector("embedding", { dimensions: 512 }).notNull(),
   // metadata: jsonb("metadata").$type<{
   //   page?: number;
   //   section?: string;
