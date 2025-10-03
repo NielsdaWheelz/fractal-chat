@@ -13,6 +13,12 @@ type Pages = {
   "/": {
     params: {};
   };
+  "/signin": {
+    params: {};
+  };
+  "/signup": {
+    params: {};
+  };
   "/api/auth/*": {
     params: {
       "*": string;
@@ -55,11 +61,19 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/api/auth/*" | "/api/chat/*" | "/api/document/*" | "/workspace" | "/workspace/document/:id" | "/workspace/document/:id/chat/:chatId" | "/workspace/document/:id/chat-create" | "/workspace/document-create";
+    page: "/" | "/signin" | "/signup" | "/api/auth/*" | "/api/chat/*" | "/api/document/*" | "/workspace" | "/workspace/document/:id" | "/workspace/document/:id/chat/:chatId" | "/workspace/document/:id/chat-create" | "/workspace/document-create";
   };
   "routes/home.tsx": {
     id: "routes/home";
     page: "/";
+  };
+  "routes/sign-in.tsx": {
+    id: "routes/sign-in";
+    page: "/signin";
+  };
+  "routes/sign-up.tsx": {
+    id: "routes/sign-up";
+    page: "/signup";
   };
   "routes/api.auth.ts": {
     id: "routes/api.auth";

@@ -1,7 +1,6 @@
 import type { Route } from "./+types/home";
 import { getSession } from "./api.auth"
-import SignUp from "../users/signUp"
-import SignIn from "../users/signIn"
+import SignIn from "./sign-in"
 import { useLoaderData, redirect } from "react-router";
 
 export function meta({ }: Route.MetaArgs) {
@@ -27,7 +26,6 @@ export default function Home() {
   return (
     <>
       <SignIn />
-      <SignUp />
     </>
   )
 }
