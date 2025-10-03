@@ -100,8 +100,11 @@ const documentObjectToRow = (document: {
 
 export async function semanticSearch(userId: string, queryEmbedding: number[], topK = 5) {
   // cosine similarity: 1 - (vector1 <=> vector2)
-  // <=> computes cosine distance, so subtract from 1 for similarity
-  const similarity = sql<number>`1 - (${documentChunksTable.embedding} <=> ${queryEmbedding}::vector)`;
+  // <=> computes cosine distance, so `1 -` for similarity
+  // const similarity = sql<number>`1 - (${documentChunksTable.embedding} <=> ${queryEmbedding}::vector)`;
+  // Format the embedding array as a PostgreSQL vector literal string: '[1,2,3,...]'
+  const vectorString = `[${queryEmbedding.join(',')}]`;
+  const similarity = sql<number>`1 - (${documentChunksTable.embedding} <=> ${vectorString}::vector)`;
 
   const results = await db
     .select({
