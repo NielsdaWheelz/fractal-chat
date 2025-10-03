@@ -1,5 +1,5 @@
 import type { Route } from "./+types/home";
-import { getSession } from "./api.auth"
+import { getSession } from "~/utils/auth.server"
 import SignIn from "./sign-in"
 import { useLoaderData, redirect } from "react-router";
 
