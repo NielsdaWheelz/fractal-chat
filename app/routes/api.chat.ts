@@ -6,7 +6,7 @@ import { requireUser } from "~/utils/auth.server"
 import { saveChat } from "../index.server"
 import type { Route } from "../+types/root"
 import sysprompt from "../assets/sysprompt.txt"
-import { embedAndSearch } from "./api.document"
+import { embedAndSearch } from "~/utils/document.server"
 
 export const maxDuration = 30
 
