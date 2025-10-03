@@ -3,6 +3,8 @@ import { requireUser } from "~/utils/auth.server"
 import { Readability } from "@mozilla/readability"
 import { JSDOM } from "jsdom"
 import { saveDocument } from ".."
+import { embed, embedMany } from 'ai';
+import { openai } from '@ai-sdk/openai';
 
 export async function action({ request }: ActionFunctionArgs) {
   const userId = await requireUser(request)
@@ -20,6 +22,23 @@ export async function action({ request }: ActionFunctionArgs) {
   const article = reader.parse();
 
   if (!article) return
+
+  // 
+  const { embeddings } = await embedMany({
+    maxParallelCalls: 100, // Limit parallel requests
+    model: openai.textEmbeddingModel('text-embedding-3-small'),
+    values: [
+      'sunny day at the beach',
+      'rainy afternoon in the city',
+      'snowy night in the mountains',
+    ],
+    providerOptions: {
+      openai: {
+        dimensions: 512, // Reduce embedding dimensions
+      },
+    },
+  });
+  // 
 
   const id = crypto.randomUUID()
 

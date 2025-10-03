@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, vector, integer, jsonb } from "drizzle-orm/pg-core";
 
 export const chatTable = pgTable("chat", {
   id: text("id").primaryKey(),
@@ -15,8 +15,25 @@ export const documentTable = pgTable("document", {
   content: text("content").notNull(),
   textContent: text("textContent"),
   authors: text("authors"),
-  publishedTime: text("published_time")
+  publishedTime: text("published_time"),
 })
+
+export const documentChunksTable = pgTable("document_chunks", {
+  id: text("id").primaryKey(),
+  documentId: text("document_id").notNull(),
+  text: text("text").notNull(),
+  chunkIndex: integer("chunk_index").notNull(),
+  authors: text("authors"),
+  publishedTime: text("published_time"),
+  embedding: vector("embedding", { dimensions: 1536 }).notNull(),
+  // metadata: jsonb("metadata").$type<{
+  //   page?: number;
+  //   section?: string;
+  //   source?: string;
+  //   [key: string]: any;
+  // }>(),
+})
+
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
