@@ -33,15 +33,17 @@ type SidebarAppProps = { data: any[]; user: UserInfo; side: "left" | "right" } &
 export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
   const [url, setUrl] = useState("")
   const [searchResults, setSearchResults] = useState([])
+  const [query, setQuery] = useState("")
 
   const fetcher = useFetcher();
-  let results = fetcher.data ?? [];
 
   useEffect(() => {
-    if (results.length > 0) {
-      setSearchResults(results);
+    if (fetcher.data && fetcher.data.length > 0) {
+      setSearchResults(fetcher.data);
+    } else if (fetcher.state === 'idle' && fetcher.data?.length === 0) {
+      setSearchResults([]);
     }
-  }, [results]);
+  }, [fetcher.data, fetcher.state]);
 
   const handleSearchSubmit = (event) => {
     const form = event.currentTarget as HTMLFormElement
@@ -84,16 +86,15 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
         </div>
       </SidebarHeader>
       <SidebarContent>
-        {/* New Document Button */}
         <fetcher.Form method="get" action="/workspace/document-search" onSubmit={handleSearchSubmit}>
-          <input className="text-xs py-2 pl-4 pr-2" type="text" name="query" placeholder="search" />
+          <input className="text-xs py-2 pl-4 pr-2" type="text" name="query" placeholder="search" value={query} onChange={(e) => {setQuery(e.target.value)}}/>
           {searchResults.length > 0 ? <>
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button size="icon" variant="ghost" onClick={() => {
                     setSearchResults([])
-                    results = []
+                    setQuery("")
                   }}>
                     <SearchX className="h-5 w-5" />
                     <span className="sr-only">clear search</span>
