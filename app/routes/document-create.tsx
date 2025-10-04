@@ -48,11 +48,11 @@ export async function action({ request }: ActionFunctionArgs) {
       .split(/,|\sand\s|\s&\s/)
       .map(name => name.trim())
       .filter(name => name.length > 0);
-    
+
     for (const authorName of authorNames) {
       const existingAuthors = await getAuthors(userId, authorName);
       const existingAuthor = existingAuthors.find(author => author.name.toLowerCase() === authorName.toLowerCase());
-      
+
       let authorId: string;
       if (existingAuthor) {
         authorId = existingAuthor.id;
@@ -60,7 +60,7 @@ export async function action({ request }: ActionFunctionArgs) {
         const newAuthor = await createAuthor(userId, authorName);
         authorId = newAuthor.id;
       }
-      
+
       await linkDocumentToAuthor(documentId, authorId);
     }
   }

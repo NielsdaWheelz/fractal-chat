@@ -45,8 +45,8 @@ export default function Document() {
       truncSel = currentSelection;
     }
     return (
-      <div className="bg-white border rounded-md p-2 shadow-lg select-none text-xs flex flex-row items-center">
-        <p>{truncSel}</p>
+      <div className="bg-white border rounded-md p-2 select-none text-xs flex flex-row items-center">
+        <p className="">{truncSel}</p>
         <div className="flex flex-col">
           <Form method="post" action={`/workspace/document/${useParams().id}/chat-create`}>
             <TooltipProvider>
