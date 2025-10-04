@@ -1,7 +1,7 @@
 import type { Route } from "./+types/layout";
 import { Outlet, redirect } from "react-router";
 import { getSession, getUser } from "~/utils/auth.server";
-import { getChats, getDocument, getDocuments } from "../index.server";
+import { getChats, getDocument, getDocumentAuthors, getDocuments } from "../index.server";
 import { Button } from "~/components/ui/button";
 import {
   Breadcrumb,
@@ -33,10 +33,12 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
   const chats = userId && docId ? (await getChats(userId, docId)) : []
   const documents = userId ? (await getDocuments(userId)) : []
   let document
+  let authors
   if (params?.id) {
     document = await getDocument(params.id, userId)
+    authors = getDocumentAuthors(document.id)
   }
-  return { user, chats, documents, document }
+  return { user, chats, documents, document, authors }
 }
 
 const Layout = ({ loaderData }: Route.ComponentProps) => {
@@ -65,7 +67,7 @@ const Layout = ({ loaderData }: Route.ComponentProps) => {
                     <BreadcrumbItem>
                       <BreadcrumbPage className="line-clamp-1 items-center bg-white">
                         <span className="">{loaderData.document?.title ?? ""} - </span>
-                        <span className="text-xs">{loaderData.document?.authors ?? ""}</span>
+                        <span className="text-xs">{loaderData.authors ?? ""}</span>
                       </BreadcrumbPage>
                     </BreadcrumbItem>
                   </BreadcrumbList>
