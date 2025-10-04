@@ -14,6 +14,8 @@ import { MessageTool } from "~/chat/message-tool";
 import { SearchResultsTool } from "~/chat/search-results-tool";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
+import { extractMentionIds } from "~/utils/mention-parser";
+import { MentionMessageContent } from "~/components/ui/mention-message-content";
 
 type ChatBlockProps = {
   chatId: string;
@@ -45,7 +47,19 @@ export default function ChatBlock({ chatId, initialMessages, docId, selectionRef
     const textToSend = includeSelection && selectedText
       ? `${selectedText}\n\n${message}`
       : message;
-    sendMessage({ text: textToSend }, { body: { documentId: docId, selection: includeSelection ? selectedText : undefined } });
+    
+    const mentions = extractMentionIds(textToSend);
+    
+    sendMessage(
+      { text: textToSend }, 
+      { 
+        body: { 
+          documentId: docId, 
+          selection: includeSelection ? selectedText : undefined,
+          mentions
+        } 
+      }
+    );
     setMessage("");
     setIncludeSelection?.(false);
     if (selectionRef) selectionRef.current = "";
@@ -65,7 +79,7 @@ export default function ChatBlock({ chatId, initialMessages, docId, selectionRef
                       switch (part.type) {
                         case 'text': {
                           return (
-                            <ChatMessageContent key={`${message.id}-text-${i}`} content={part.text ?? ''} />
+                            <MentionMessageContent key={`${message.id}-text-${i}`} content={part.text ?? ''} />
                           )
                         }
                         case 'tool-searchDocuments': {
@@ -100,7 +114,7 @@ export default function ChatBlock({ chatId, initialMessages, docId, selectionRef
                   switch (part.type) {
                     case 'text': {
                       return (
-                        <ChatMessageContent key={`${message.id}-text-${i}`} content={part.text ?? ''} />
+                        <MentionMessageContent key={`${message.id}-text-${i}`} content={part.text ?? ''} />
                       )
                     }
                   }

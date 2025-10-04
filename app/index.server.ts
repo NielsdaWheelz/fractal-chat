@@ -1,7 +1,7 @@
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
-import { and, eq, sql, desc } from 'drizzle-orm';
-import { chatTable, documentChunksTable, documentTable } from '~/db/schema'
+import { and, eq, sql, desc, ilike, inArray } from 'drizzle-orm';
+import { chatTable, documentChunksTable, documentTable, authorTable, documentAuthorsTable } from '~/db/schema'
 
 const client = postgres(process.env.DATABASE_URL!);
 export const db = drizzle(client);
@@ -29,16 +29,7 @@ export const getChats = async (userId: string, documentId: string) => {
   return results
 }
 
-export const saveDocument = async (document: {
-  id: string;
-  userId: string;
-  url: string;
-  title: string;
-  content: string;
-  textContent: string | null;
-  authors: string | null;
-  publishedTime: string | null;
-}) => {
+export const saveDocument = async (document) => {
   const dbDocument = documentObjectToRow(document)
   return await db.insert(documentTable).values(dbDocument).onConflictDoUpdate({ target: documentTable.id, set: dbDocument })
 }
@@ -71,7 +62,6 @@ const documentRowToObject = (row: typeof documentTable.$inferSelect) => {
     title: row.title,
     content: row.content,
     textContent: row.textContent,
-    authors: row.authors,
     publishedTime: row.publishedTime
   }
 }
@@ -83,7 +73,6 @@ const documentObjectToRow = (document: {
   title: string;
   content: string;
   textContent: string | null;
-  authors: string | null;
   publishedTime: string | null;
 }) => {
   return {
@@ -93,18 +82,23 @@ const documentObjectToRow = (document: {
     title: document.title,
     content: document.content,
     textContent: document.textContent,
-    authors: document.authors,
     publishedTime: document.publishedTime
   }
 }
 
-export async function semanticSearch(userId: string, queryEmbedding: number[], topK = 5) {
+export async function semanticSearch(userId: string, queryEmbedding: number[], topK = 5, documentIds?: string[]) {
   // cosine similarity: 1 - (vector1 <=> vector2)
   // <=> computes cosine distance, so `1 -` for similarity
   // const similarity = sql<number>`1 - (${documentChunksTable.embedding} <=> ${queryEmbedding}::vector)`;
   // Format the embedding array as a PostgreSQL vector literal string: '[1,2,3,...]'
   const vectorString = `[${queryEmbedding.join(',')}]`;
   const similarity = sql<number>`1 - (${documentChunksTable.embedding} <=> ${vectorString}::vector)`;
+
+  const whereConditions = [eq(documentTable.userId, userId)];
+  
+  if (documentIds && documentIds.length > 0) {
+    whereConditions.push(inArray(documentTable.id, documentIds));
+  }
 
   const results = await db
     .select({
@@ -114,15 +108,15 @@ export async function semanticSearch(userId: string, queryEmbedding: number[], t
       documentId: documentTable.id,
       documentTitle: documentTable.title,
       documentUrl: documentTable.url,
-      authors: documentTable.authors,
       publishedTime: documentTable.publishedTime,
       similarity,
     })
     .from(documentChunksTable)
     .innerJoin(documentTable, eq(documentChunksTable.documentId, documentTable.id))
-    .where(eq(documentTable.userId, userId))
+    .where(and(...whereConditions))
     .orderBy(desc(similarity))
     .limit(topK);
+    // i'm a fucking genius
 
   return results;
 }
@@ -168,6 +162,78 @@ const chatObjectToRow = (chat: {
     documentId: chat.documentId,
     messages: JSON.stringify(chat.messages)
   }
+}
+
+// Author-related functions
+export const getAuthors = async (userId: string, searchTerm?: string) => {
+  const whereConditions = [eq(authorTable.userId, userId)];
+  
+  if (searchTerm) {
+    whereConditions.push(ilike(authorTable.name, `%${searchTerm}%`));
+  }
+  
+  const results = await db
+    .select()
+    .from(authorTable)
+    .where(and(...whereConditions))
+    .orderBy(authorTable.name)
+    .limit(10);
+    
+  return results.map(r => ({ id: r.id, name: r.name }));
+}
+
+export const getAuthor = async (id: string, userId: string) => {
+  const results = await db.select().from(authorTable).where(and(eq(authorTable.id, id), eq(authorTable.userId, userId)));
+  if (results.length === 0) return null;
+  return { id: results[0].id, name: results[0].name };
+}
+
+export const createAuthor = async (userId: string, name: string) => {
+  const id = crypto.randomUUID();
+  const result = await db.insert(authorTable).values({ id, userId, name }).returning();
+  return { id: result[0].id, name: result[0].name };
+}
+
+export const getAuthorDocuments = async (authorId: string, userId: string) => {
+  const results = await db
+    .select({ documentId: documentAuthorsTable.documentId })
+    .from(documentAuthorsTable)
+    .innerJoin(documentTable, eq(documentAuthorsTable.documentId, documentTable.id))
+    .where(and(eq(documentAuthorsTable.authorId, authorId), eq(documentTable.userId, userId)));
+  
+  return results.map(r => r.documentId);
+}
+
+export const linkDocumentToAuthor = async (documentId: string, authorId: string) => {
+  const id = crypto.randomUUID();
+  await db.insert(documentAuthorsTable).values({ id, documentId, authorId }).onConflictDoNothing();
+}
+
+export const getDocumentAuthors = async (documentId: string) => {
+  const results = await db
+    .select({ id: authorTable.id, name: authorTable.name })
+    .from(documentAuthorsTable)
+    .innerJoin(authorTable, eq(documentAuthorsTable.authorId, authorTable.id))
+    .where(eq(documentAuthorsTable.documentId, documentId));
+  
+  return results;
+}
+
+export const searchDocumentsForMention = async (userId: string, searchTerm?: string) => {
+  const whereConditions = [eq(documentTable.userId, userId)];
+  
+  if (searchTerm) {
+    whereConditions.push(ilike(documentTable.title, `%${searchTerm}%`));
+  }
+  
+  const results = await db
+    .select({ id: documentTable.id, title: documentTable.title, url: documentTable.url })
+    .from(documentTable)
+    .where(and(...whereConditions))
+    .orderBy(desc(documentTable.id))
+    .limit(10);
+    
+  return results;
 }
 
 main();
