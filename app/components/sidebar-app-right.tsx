@@ -79,11 +79,25 @@ export function SidebarApp({ side, data, user, selectionRef, includeSelection, s
 
   const selectedChat = useMemo(() => chats.find(c => c.id === selectedChatId) || null, [chats, selectedChatId])
 
+  const convertMessages = (messages) => {
+    if (Array.isArray(messages)) return messages as UIMessage[]
+    if (typeof messages === "string") {
+      try {
+        const parsed = JSON.parse(messages)
+        return Array.isArray(parsed) ? (parsed as UIMessage[]) : []
+      } catch {
+        return [] as UIMessage[]
+      }
+    }
+    return [] as UIMessage[]
+  }
+
   const headerTitle = useMemo(() => {
     if (!selectedChat) return "chats"
     let title = selectedChat.id
     try {
-      const firstUserMessage = (selectedChat.messages ?? []).find((m: UIMessage) => m.role === "user")
+      const messages = convertMessages(selectedChat.messages)
+      const firstUserMessage = (messages ?? []).find((m: UIMessage) => m.role === "user")
       const firstLine = firstUserMessage?.parts?.find((p: UIMessagePart) => p.type === "text")?.text?.split("\n")[0]
       if (firstLine && firstLine.trim().length > 0) {
         title = firstLine.trim()
@@ -94,17 +108,9 @@ export function SidebarApp({ side, data, user, selectionRef, includeSelection, s
 
   const selectedChatMessages = useMemo(() => {
     if (!selectedChat) return [] as UIMessage[]
-    const raw: unknown = (selectedChat as any).messages
-    if (Array.isArray(raw)) return raw as UIMessage[]
-    if (typeof raw === "string") {
-      try {
-        const parsed = JSON.parse(raw)
-        return Array.isArray(parsed) ? (parsed as UIMessage[]) : []
-      } catch {
-        return [] as UIMessage[]
-      }
-    }
-    return [] as UIMessage[]
+    const raw = (selectedChat).messages
+    const messages = convertMessages(raw)
+    return messages
   }, [selectedChat])
 
   return (
@@ -149,7 +155,8 @@ export function SidebarApp({ side, data, user, selectionRef, includeSelection, s
                 {chats.map((chat: ChatListItem) => {
                   let title = chat.id
                   try {
-                    const firstUserMessage = (chat.messages ?? []).find((m: UIMessage) => m.role === "user")
+                    const messages = convertMessages(chat.messages)
+                    const firstUserMessage = (messages ?? []).find((m: UIMessage) => m.role === "user")
                     const firstLine = firstUserMessage?.parts?.find((p: UIMessagePart) => p.type === "text")?.text?.split("\n")[0]
                     if (firstLine && firstLine.trim().length > 0) {
                       title = firstLine.trim()
@@ -159,7 +166,7 @@ export function SidebarApp({ side, data, user, selectionRef, includeSelection, s
                     <SidebarMenuItem key={chat.id}>
                       <SidebarMenuButton className="w-full justify-start" onClick={() => setSelectedChatId(chat.id)}>
                         <MessageCircle className="mr-2 h-4 w-4" />
-                        {title}
+                        <span className="text-xs">{title}</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   )
