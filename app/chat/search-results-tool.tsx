@@ -25,7 +25,6 @@ type SearchResult = {
   documentId: string
   documentTitle: string
   documentUrl: string
-  authors: string | null
   publishedTime: string | null
   similarity: number
 }
@@ -74,14 +73,6 @@ const SearchResultSnippet = ({ result }: { result: SearchResult }) => {
               <span className="line-clamp-1">{result.documentTitle}</span>
               <ExternalLink className="h-2.5 w-2.5 opacity-0 transition-opacity group-hover:opacity-100" />
             </Link>
-          </div>
-          <div className="text-muted-foreground mb-1.5 flex items-center gap-1.5 text-[10px]">
-            {result.authors && (
-              <span className="line-clamp-1">by {result.authors}</span>
-            )}
-            {result.publishedTime && (
-              <span>• {new Date(result.publishedTime).toLocaleDateString()}</span>
-            )}
           </div>
         </div>
         <div className="flex items-center gap-1.5">
