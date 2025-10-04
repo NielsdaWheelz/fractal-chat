@@ -94,7 +94,7 @@ export function SidebarApp({ side, data, user, selectionRef, includeSelection, s
 
   const headerTitle = useMemo(() => {
     if (!selectedChat) return "chats"
-    let title = selectedChat.id
+    let title = "New Chat"
     try {
       const messages = convertMessages(selectedChat.messages)
       const firstUserMessage = (messages ?? []).find((m: UIMessage) => m.role === "user")
@@ -153,7 +153,7 @@ export function SidebarApp({ side, data, user, selectionRef, includeSelection, s
               <SidebarGroupLabel>Recent</SidebarGroupLabel>
               <SidebarMenu>
                 {chats.map((chat: ChatListItem) => {
-                  let title = chat.id
+                  let title = "New chat"
                   try {
                     const messages = convertMessages(chat.messages)
                     const firstUserMessage = (messages ?? []).find((m: UIMessage) => m.role === "user")
