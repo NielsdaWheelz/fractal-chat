@@ -67,7 +67,6 @@ export const saveDocumentChunks = async (chunks: Array<{
 const documentRowToObject = (row: typeof documentTable.$inferSelect) => {
   return {
     id: row.id,
-    userId: row.userId,
     url: row.url,
     title: row.title,
     content: row.content,
