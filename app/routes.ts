@@ -7,6 +7,7 @@ export default [
   route("api/auth/*", "routes/api.auth.ts"),
   route("api/chat/*", "routes/api.chat.ts"),
   route("api/document/*", "routes/api.document.ts"),
+  route("api/upload/*", "routes/api.upload.ts"),
   route("/workspace", "routes/layout.tsx", [
     route("document-search", "routes/document-search.tsx"),
     route("document/:id", "routes/document.tsx", [

@@ -34,6 +34,11 @@ type Pages = {
       "*": string;
     };
   };
+  "/api/upload/*": {
+    params: {
+      "*": string;
+    };
+  };
   "/workspace": {
     params: {};
   };
@@ -64,7 +69,7 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/signin" | "/signup" | "/api/auth/*" | "/api/chat/*" | "/api/document/*" | "/workspace" | "/workspace/document-search" | "/workspace/document/:id" | "/workspace/document/:id/chat/:chatId" | "/workspace/document/:id/chat-create" | "/workspace/document-create";
+    page: "/" | "/signin" | "/signup" | "/api/auth/*" | "/api/chat/*" | "/api/document/*" | "/api/upload/*" | "/workspace" | "/workspace/document-search" | "/workspace/document/:id" | "/workspace/document/:id/chat/:chatId" | "/workspace/document/:id/chat-create" | "/workspace/document-create";
   };
   "routes/home.tsx": {
     id: "routes/home";
@@ -89,6 +94,10 @@ type RouteFiles = {
   "routes/api.document.ts": {
     id: "routes/api.document";
     page: "/api/document/*";
+  };
+  "routes/api.upload.ts": {
+    id: "routes/api.upload";
+    page: "/api/upload/*";
   };
   "routes/layout.tsx": {
     id: "routes/layout";

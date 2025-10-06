@@ -23,6 +23,7 @@ import { NavUser } from "~/components/nav-user";
 import { FilePlus2, BookOpenText, FileText, Search, SearchX } from "lucide-react";
 import { useEffect, useState, type ComponentProps } from "react";
 import { Form, NavLink, useFetcher } from "react-router";
+import UploadForm from "./upload-form";
 
 type UIMessagePart = { type: string; text?: string }
 type UIMessage = { role: string; parts: UIMessagePart[] }
@@ -87,7 +88,7 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
       </SidebarHeader>
       <SidebarContent>
         <fetcher.Form method="get" action="/workspace/document-search" onSubmit={handleSearchSubmit}>
-          <input className="text-xs py-2 pl-4 pr-2" type="text" name="query" placeholder="search" value={query} onChange={(e) => {setQuery(e.target.value)}}/>
+          <input className="text-xs py-2 pl-4 pr-2" type="text" name="query" placeholder="search" value={query} onChange={(e) => { setQuery(e.target.value) }} />
           {searchResults.length > 0 ? <>
             <TooltipProvider>
               <Tooltip>
@@ -141,6 +142,7 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
             </Tooltip>
           </TooltipProvider>
         </Form>
+        <UploadForm />
         <div className="flex flex-col gap-4">
           <SidebarGroup>
             {/* Recent Chats */}
