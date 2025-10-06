@@ -100,7 +100,7 @@ export const annotation = pgTable("annotation", {
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   docId: text("doc_id").notNull().references(() => documentTable.id, { onDelete: "cascade" }),
-  perms: text("perm_ids").array().notNull(),
+  perms: text("perm_ids").array(),
   body: text("body"),
   highlight: text("highlights")
 })
