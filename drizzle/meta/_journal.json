@@ -43,6 +43,13 @@
       "when": 1759779462880,
       "tag": "0005_harsh_spot",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1759782199444,
+      "tag": "0006_busy_wild_pack",
+      "breakpoints": true
     }
   ]
 }

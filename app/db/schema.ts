@@ -10,7 +10,6 @@ export const chatTable = pgTable("chat", {
 
 export const documentTable = pgTable("document", {
   id: text("id").primaryKey(),
-  userId: text("user_id").notNull(),
   url: text("url").notNull(),
   title: text("title").notNull(),
   content: text("content").notNull(),
