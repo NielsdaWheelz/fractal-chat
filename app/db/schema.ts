@@ -115,12 +115,15 @@ export const comment = pgTable("comment", {
     .references(() => annotation.id, { onDelete: "cascade" })
 })
 
-export const group = pgTable("group", {
+export const groupTable = pgTable("group", {
   id: text("id").primaryKey(),
   name: text("name"),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
 })
 
-export const group_member = pgTable("group_member", {
+export const groupMemberTable = pgTable("group_member", {
   groupId: text("group_id")
     .notNull()
     .references(() => group.id, { onDelete: "cascade" }),
@@ -129,7 +132,7 @@ export const group_member = pgTable("group_member", {
     .references(() => user.id, { onDelete: "cascade" }),
 })
 
-export const group_document = pgTable("group_document", {
+export const groupDocumentTable = pgTable("group_document", {
   groupId: text("group_id")
     .notNull()
     .references(() => group.id, { onDelete: "cascade" }),
