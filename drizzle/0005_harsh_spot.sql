@@ -1,0 +1,1 @@
+ALTER TABLE "annotation" ALTER COLUMN "perm_ids" DROP NOT NULL;
