@@ -105,16 +105,36 @@ export const annotation = pgTable("annotation", {
 })
 
 export const comment = pgTable("comment", {
-    id: text("id").primaryKey(),
-    body: text("body"),
-    userID: text("user_id")
+  id: text("id").primaryKey(),
+  body: text("body"),
+  userID: text("user_id")
     .notNull()
-    .references(() => user.id, {onDelete: "cascade"}),
-    annotationId: text("annotation_id")
+    .references(() => user.id, { onDelete: "cascade" }),
+  annotationId: text("annotation_id")
     .notNull()
-    .references(() => annotation.id, {onDelete: "cascade"})
+    .references(() => annotation.id, { onDelete: "cascade" })
 })
 
+export const group = pgTable("group", {
+  id: text("id").primaryKey(),
+  name: text("name"),
+})
+
+export const group_member = pgTable("group_member", {
+  groupId: text("group_id")
+    .notNull()
+    .references(() => group.id, { onDelete: "cascade" }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+})
+
+export const group_document = pgTable("group_document", {
+  groupId: text("group_id")
+    .notNull()
+    .references(() => group.id, { onDelete: "cascade" }),
+  documentId: text("document_id").notNull().references(() => documentTable.id, { onDelete: "cascade" }),
+})
 
 export const verification = pgTable("verification", {
   id: text("id").primaryKey(),
