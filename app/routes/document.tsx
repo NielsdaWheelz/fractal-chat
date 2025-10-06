@@ -6,6 +6,7 @@ import { HighlightPopover, useHighlightPopover } from '@omsimos/react-highlight-
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
 import { Button } from "~/components/ui/button";
 import { MessageCirclePlus, MessageSquareReply } from "lucide-react";
+import DocumentContents from "~/components/document/DocumentContents";
 
 export async function loader({ request, params }: { request: Request; params: { id?: string } }) {
   const userId = await requireUser(request)
@@ -22,9 +23,11 @@ export async function loader({ request, params }: { request: Request; params: { 
 export default function Document() {
   const { selectionRef, setShowHighlight, setIncludeSelection } = useOutletContext<{ selectionRef: React.MutableRefObject<string>, setShowHighlight: React.Dispatch<React.SetStateAction<boolean>> }>();
   const { document } = useLoaderData<typeof loader>() as { document: { id: string; content: string } };
+
   const docContent = () => {
     return { __html: document.content }
   }
+
   const handleSelectionStart = () => console.log('Selection started');
   const handleSelectionEnd = (selection: string) => {
     selectionRef.current = selection
@@ -69,7 +72,7 @@ export default function Document() {
                 <Button size="icon" variant="ghost" onClick={() => {
                   setShowHighlight(true)
                   setIncludeSelection(true)
-                  }}>
+                }}>
                   <MessageSquareReply className="h-2 w-2" />
                   <span className="sr-only">add to existing chat</span>
                 </Button>
@@ -93,9 +96,9 @@ export default function Document() {
         onSelectionStart={handleSelectionStart}
         onSelectionEnd={handleSelectionEnd}
         onPopoverShow={handlePopoverShow}
-        onPopoverHide={handlePopoverHide}>
-        <div className="flex-1 flex flex-col h-full overflow-y-auto p-8 gap-4" dangerouslySetInnerHTML={docContent()}>
-        </div>
+        onPopoverHide={handlePopoverHide}
+      >
+        <DocumentContents documentHTML={docContent()} />
       </HighlightPopover>
     </>
   );
