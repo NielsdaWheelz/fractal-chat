@@ -87,7 +87,7 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
       </SidebarHeader>
       <SidebarContent>
         <fetcher.Form method="get" action="/workspace/document-search" onSubmit={handleSearchSubmit}>
-          <input className="text-xs py-2 pl-4 pr-2" type="text" name="query" placeholder="search" value={query} onChange={(e) => {setQuery(e.target.value)}}/>
+          <input className="text-xs py-2 pl-4 pr-2" type="text" name="query" placeholder="search" value={query} onChange={(e) => { setQuery(e.target.value) }} />
           {searchResults.length > 0 ? <>
             <TooltipProvider>
               <Tooltip>
@@ -178,7 +178,7 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
                       ? document.title
                       : (document.url || document.id)
                     return (
-                      <NavLink key={document.id} to={"/workspace/document/" + document.id}>
+                      <NavLink className="truncate" key={document.id} to={"/workspace/document/" + document.id}>
                         <SidebarMenuItem key={document.id}>
                           <SidebarMenuButton className="w-full justify-start text-xs">
                             <FileText className="mr-2 h-4 w-4" />
