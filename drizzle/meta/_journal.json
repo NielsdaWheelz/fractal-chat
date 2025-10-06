@@ -22,6 +22,20 @@
       "when": 1759582558695,
       "tag": "0002_abandoned_the_professor",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1759778976550,
+      "tag": "0003_open_nemesis",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1759779101210,
+      "tag": "0004_majestic_darkstar",
+      "breakpoints": true
     }
   ]
 }

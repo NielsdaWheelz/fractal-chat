@@ -1,4 +1,5 @@
 import { pgTable, text, timestamp, boolean, vector, integer } from "drizzle-orm/pg-core";
+import { id } from "zod/v4/locales";
 
 export const chatTable = pgTable("chat", {
   id: text("id").primaryKey(),
@@ -50,6 +51,7 @@ export const user = pgTable("user", {
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").default(false).notNull(),
   image: text("image"),
+  friends: text("friends").array(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()
@@ -91,6 +93,29 @@ export const account = pgTable("account", {
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
 });
+
+export const annotation = pgTable("annotation", {
+  id: text("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  docId: text("doc_id").notNull().references(() => documentTable.id, { onDelete: "cascade" }),
+  perms: text("perm_ids").array().notNull(),
+  body: text("body"),
+  highlight: text("highlights")
+})
+
+export const comment = pgTable("comment", {
+    id: text("id").primaryKey(),
+    body: text("body"),
+    userID: text("user_id")
+    .notNull()
+    .references(() => user.id, {onDelete: "cascade"}),
+    annotationId: text("annotation_id")
+    .notNull()
+    .references(() => annotation.id, {onDelete: "cascade"})
+})
+
 
 export const verification = pgTable("verification", {
   id: text("id").primaryKey(),
