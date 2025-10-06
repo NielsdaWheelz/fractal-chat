@@ -1,7 +1,7 @@
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 import { and, eq, sql, desc, ilike, inArray } from 'drizzle-orm';
-import { chatTable, documentChunksTable, documentTable, authorTable, documentAuthorsTable } from '~/db/schema'
+import { chatTable, documentChunksTable, documentTable, authorTable, documentAuthorsTable, user, annotation } from '~/db/schema'
 
 const client = postgres(process.env.DATABASE_URL!);
 export const db = drizzle(client);
@@ -10,13 +10,23 @@ async function main() {
   db
 }
 
-export const getDocuments = async (userId: string) => {
-  const results = await db.select().from(documentTable).where(eq(documentTable.userId, userId))
+export const saveAnnotations = async (annotationToSave: any) => {
+  const dbAnnotation = annotationObjectToRow(annotationToSave)
+    return await db.insert(annotation).values(dbAnnotation).onConflictDoUpdate({ target: annotation.id, set: dbAnnotation })
+}
+
+export const getAnnotations = async (userID: string, doc_id: string) => {
+  const result = await db.select().from(annotation).where(and(eq(annotation.userId, userID), eq(annotation.docId, doc_id)));
+    return result
+}
+
+export const getDocuments = async () => {
+  const results = await db.select().from(documentTable)
   return results
 }
 
-export const getDocument = async (id: string, userId: string) => {
-  const results = await db.select().from(documentTable).where(and(eq(documentTable.id, id), eq(documentTable.userId, userId)))
+export const getDocument = async (id: string) => {
+  const results = await db.select().from(documentTable).where(eq(documentTable.id, id))
   if (results.length == 0) {
     return null
   } else {
@@ -29,7 +39,7 @@ export const getChats = async (userId: string, documentId: string) => {
   return results
 }
 
-export const saveDocument = async (document) => {
+export const saveDocument = async (document: any) => {
   const dbDocument = documentObjectToRow(document)
   return await db.insert(documentTable).values(dbDocument).onConflictDoUpdate({ target: documentTable.id, set: dbDocument })
 }
@@ -85,6 +95,26 @@ const documentObjectToRow = (document: {
     publishedTime: document.publishedTime
   }
 }
+
+const annotationObjectToRow = (annotation: {
+  id: string;
+  userId: string;
+  docId: string;
+  perms: string;
+  body: string;
+  highlight: string;
+}) => {
+  return {
+    id: annotation.id,
+    userId: annotation.userId,
+    docId: annotation.docId,
+    perms: annotation.perms ? [annotation.perms] : [],
+    body: annotation.body,
+    highlight: annotation.highlight,
+  }
+}
+
+
 
 export async function semanticSearch(userId: string, queryEmbedding: number[], topK = 5, documentIds?: string[]) {
   // cosine similarity: 1 - (vector1 <=> vector2)
