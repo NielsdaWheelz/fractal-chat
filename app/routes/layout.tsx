@@ -56,7 +56,6 @@ const Layout = ({ loaderData }: Route.ComponentProps) => {
     email: loaderData.user.email,
     avatar: (loaderData.user.image as string | undefined) ?? "",
   }
-  console.log(loaderData);
   const selectionRef = useRef<string>("");
   const [showHighlight, setShowHighlight] = useState(false);
   const [includeSelection, setIncludeSelection] = useState<boolean>(() => !!selectionRef?.current?.trim());
