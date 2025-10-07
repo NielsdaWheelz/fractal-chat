@@ -10,6 +10,19 @@
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
+/* Base color for annotation highlights */
+.anno-mark {
+  background-color: #e9d8fd; /* light purple */
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+/* Hover color when you move your mouse over a highlight */
+.anno-mark:hover {
+  background-color: #ffea80; /* brighter yellow */
+}
+
+
 html,
 body {
   @apply bg-white dark:bg-gray-950;
