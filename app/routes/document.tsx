@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   Form,
   redirect,
@@ -67,9 +67,6 @@ export default function Document() {
   const docContent = () => {
     return { __html: document.content };
   };
-
-  const [typeAnnotate, settypeAnnotate] = useState();
-
   const [annotationJson, setAnnotationJson] = useState("");
 
   function onPrepareSubmit() {
@@ -98,35 +95,22 @@ export default function Document() {
 
   const handleSelectionStart = () => console.log("Selection started");
   const handleSelectionEnd = () => {
-    const sel = window.getSelection?.();
-    if (!sel || sel.rangeCount === 0) return;
+  const sel = window.getSelection?.();
+  if (!sel || sel.rangeCount === 0) return;
+  const range = sel.getRangeAt(0);
+  const containerEl = window.document.getElementById("doc-container");
+  if (!containerEl) return;
 
-    const range = sel.getRangeAt(0);
-    // The container is the element you pass to HighlightPopover; in your JSX it's the inner <div>
-    const containerEl = window.document.getElementById("doc-container");
-    if (!containerEl) return;
+  const { start, end } = rangeToOffsets(containerEl, range);
+  if (start < 0 || end <= start) return;
 
-    const { start, end } = rangeToOffsets(containerEl, range);
-    if (start < 0 || end < 0 || start === end) return;
+  const textOnly = containerEl.textContent ?? "";
+  const quote = sliceSafe(textOnly, start, end);
+  const prefix = sliceSafe(textOnly, start - 30, start);
+  const suffix = sliceSafe(textOnly, end, end + 30);
+  selectionRef.current = JSON.stringify({ start, end, quote, prefix, suffix });
 
-    const textOnly = containerEl.textContent ?? "";
-    const quote = sliceSafe(textOnly, start, end);
-    const prefix = sliceSafe(textOnly, start - 30, start);
-    const suffix = sliceSafe(textOnly, end, end + 30);
-
-    // Save these where you need them (state, ref, or post immediately)
-    // Example: put a JSON payload into your existing selectionRef for now:
-    selectionRef.current = JSON.stringify({
-      start,
-      end,
-      quote,
-      prefix,
-      suffix,
-    });
-
-    // If you want the popover to appear right away:
-    // setShowHighlight(true); setIncludeSelection(true);
-  };
+};
 
   const handlePopoverShow = () => console.log("Popover shown");
   const handlePopoverHide = () => console.log("Popover hidden");
@@ -211,7 +195,7 @@ export default function Document() {
 
     return (
       <div className="bg-white border rounded-md p-2 select-none text-xs flex flex-row items-center">
-        <p className="">{truncSel}</p>
+        <p className="w-50">{currentSelection}</p>
         <div className="flex flex-col">
           <Form method="post" action={`/workspace/document/${useParams().id}/chat-create`}>
             <TooltipProvider>
@@ -287,7 +271,7 @@ export default function Document() {
         onPopoverShow={handlePopoverShow}
         onPopoverHide={handlePopoverHide}
       >
-        <DocumentContents documentHTML={docContent()} />
+        <DocumentContents documentHTML={docContent()} annotations={annotations} />
       </HighlightPopover>
     </>
   );
