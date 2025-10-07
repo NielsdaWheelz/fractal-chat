@@ -50,6 +50,13 @@
       "when": 1759782199444,
       "tag": "0006_busy_wild_pack",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1759790542312,
+      "tag": "0007_minor_firebird",
+      "breakpoints": true
     }
   ]
 }

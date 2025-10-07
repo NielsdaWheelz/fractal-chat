@@ -1,5 +1,4 @@
-import { pgTable, text, timestamp, boolean, vector, integer } from "drizzle-orm/pg-core";
-import { id } from "zod/v4/locales";
+import { pgTable, text, timestamp, boolean, vector, integer, varchar } from "drizzle-orm/pg-core";
 
 export const chatTable = pgTable("chat", {
   id: text("id").primaryKey(),
@@ -100,8 +99,12 @@ export const annotation = pgTable("annotation", {
     .references(() => user.id, { onDelete: "cascade" }),
   docId: text("doc_id").notNull().references(() => documentTable.id, { onDelete: "cascade" }),
   perms: text("perm_ids").array(),
+  start: integer("start").notNull(),
+  end: integer("end").notNull(),
+  quote: text("quote"),
+  prefix: text("prefix"),
+  suffix: text("suffix"),
   body: text("body"),
-  highlight: text("highlights")
 })
 
 export const comment = pgTable("comment", {
