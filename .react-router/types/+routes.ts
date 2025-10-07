@@ -56,6 +56,11 @@ type Pages = {
       "id": string;
     };
   };
+  "/workspace/document/:id/save-annotation": {
+    params: {
+      "id": string;
+    };
+  };
   "/workspace/document-create": {
     params: {};
   };
@@ -64,7 +69,7 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/signin" | "/signup" | "/api/auth/*" | "/api/chat/*" | "/api/document/*" | "/workspace" | "/workspace/document-search" | "/workspace/document/:id" | "/workspace/document/:id/chat/:chatId" | "/workspace/document/:id/chat-create" | "/workspace/document-create";
+    page: "/" | "/signin" | "/signup" | "/api/auth/*" | "/api/chat/*" | "/api/document/*" | "/workspace" | "/workspace/document-search" | "/workspace/document/:id" | "/workspace/document/:id/chat/:chatId" | "/workspace/document/:id/chat-create" | "/workspace/document/:id/save-annotation" | "/workspace/document-create";
   };
   "routes/home.tsx": {
     id: "routes/home";
@@ -92,7 +97,7 @@ type RouteFiles = {
   };
   "routes/layout.tsx": {
     id: "routes/layout";
-    page: "/workspace" | "/workspace/document-search" | "/workspace/document/:id" | "/workspace/document/:id/chat/:chatId" | "/workspace/document/:id/chat-create" | "/workspace/document-create";
+    page: "/workspace" | "/workspace/document-search" | "/workspace/document/:id" | "/workspace/document/:id/chat/:chatId" | "/workspace/document/:id/chat-create" | "/workspace/document/:id/save-annotation" | "/workspace/document-create";
   };
   "routes/document-search.tsx": {
     id: "routes/document-search";
@@ -100,7 +105,7 @@ type RouteFiles = {
   };
   "routes/document.tsx": {
     id: "routes/document";
-    page: "/workspace/document/:id" | "/workspace/document/:id/chat/:chatId" | "/workspace/document/:id/chat-create";
+    page: "/workspace/document/:id" | "/workspace/document/:id/chat/:chatId" | "/workspace/document/:id/chat-create" | "/workspace/document/:id/save-annotation";
   };
   "routes/chat.tsx": {
     id: "routes/chat";
@@ -109,6 +114,10 @@ type RouteFiles = {
   "routes/chat-create.tsx": {
     id: "routes/chat-create";
     page: "/workspace/document/:id/chat-create";
+  };
+  "routes/save-annotation.ts": {
+    id: "routes/save-annotation";
+    page: "/workspace/document/:id/save-annotation";
   };
   "routes/document-create.tsx": {
     id: "routes/document-create";

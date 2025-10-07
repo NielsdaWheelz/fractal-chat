@@ -313,6 +313,8 @@ const annotationObjectToRow = (annotation: {
   perms: string;
   body: string;
   highlight: string;
+  start: number;
+  end: number;
 }) => {
   return {
     id: annotation.id,
@@ -321,6 +323,8 @@ const annotationObjectToRow = (annotation: {
     perms: annotation.perms ? [annotation.perms] : [],
     body: annotation.body,
     highlight: annotation.highlight,
+    start: annotation.start,
+    end: annotation.end,
   }
 }
 

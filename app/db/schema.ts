@@ -138,6 +138,13 @@ export const annotation = pgTable("annotation", {
     .defaultNow()
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
+  perms: text("perm_ids").array(),
+  start: integer("start").notNull(),
+  end: integer("end").notNull(),
+  quote: text("quote"),
+  prefix: text("prefix"),
+  suffix: text("suffix"),
+  body: text("body"),
 })
 
 export const comment = pgTable("comment", {
