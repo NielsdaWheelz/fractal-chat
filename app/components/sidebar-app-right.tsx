@@ -18,7 +18,6 @@ import {
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "~/components/ui/tooltip";
 import { NavUser } from "~/components/nav-user";
@@ -129,19 +128,17 @@ export function SidebarApp({ side, data, user, selectionRef, includeSelection, s
           {/* New Chat Button */}
           {/* <fetcher.Form method="post" action="chat-create"> */}
           <Form method="post" action={`/workspace/document/${useParams().id}/chat-create`}>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button size="icon" variant="ghost" type="submit">
-                    <MessageCirclePlus className="h-5 w-5" />
-                    <span className="sr-only">New Chat</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>New Chat</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button size="icon" variant="ghost" type="submit">
+                  <MessageCirclePlus className="h-5 w-5" />
+                  <span className="sr-only">New Chat</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>New Chat</p>
+              </TooltipContent>
+            </Tooltip>
           </Form>
           {/* </fetcher.Form> */}
         </div>

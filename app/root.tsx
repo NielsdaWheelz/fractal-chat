@@ -9,6 +9,7 @@ import {
 
 import type { Route } from "./+types/root";
 import "./app.css";
+import { TooltipProvider } from "@radix-ui/react-tooltip";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -32,11 +33,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <script src="https://accounts.google.com/gsi/client" async defer></script>
         <Meta />
         <Links />
+
       </head>
       <body>
-        {children}
-        <ScrollRestoration />
-        <Scripts />
+        <TooltipProvider delayDuration={500}>
+          {children}
+          <ScrollRestoration />
+          <Scripts />
+        </TooltipProvider>
       </body>
     </html>
   );

@@ -77,7 +77,7 @@ export default function Document() {
     let parsed: any = null;
     try {
       parsed = JSON.parse(selectionRef.current);
-    } catch {}
+    } catch { }
 
     if (!parsed) return false;
 
@@ -191,7 +191,7 @@ export default function Document() {
       let parsed: any = null;
       try {
         parsed = JSON.parse(selectionRef.current);
-      } catch {}
+      } catch { }
       if (!parsed) return false;
 
       setAnnotationJson(
@@ -214,63 +214,43 @@ export default function Document() {
         <p className="">{truncSel}</p>
         <div className="flex flex-col">
           <Form method="post" action={`/workspace/document/${useParams().id}/chat-create`}>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button size="icon" variant="ghost" type="submit">
-                    <MessageCirclePlus className="h-2 w-2" />
-                    <span className="sr-only">New Chat</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>New Chat</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </Form>
-          <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button size="icon" variant="ghost" onClick={() => {
-                  setShowHighlight(true)
-                  setIncludeSelection(true)
-                }}>
-                  <MessageSquareReply className="h-2 w-2" />
-                  <span className="sr-only">add to existing chat</span>
+                <Button size="icon" variant="ghost" type="submit">
+                  <MessageCirclePlus className="h-2 w-2" />
+                  <span className="sr-only">New Chat</span>
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>add to existing chat</p>
+                <p>New Chat</p>
               </TooltipContent>
             </Tooltip>
-          </TooltipProvider>
+          </Form>
           <Form
-        method="post"
-        action={`save-annotation`}
-      >
-        <input type="hidden" name="annotation" value={annotationJson} />
-       
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                size="icon"
-                variant="ghost"
-                type="submit"
-                onClick={(e) => {
-                  if (!prepare()) e.preventDefault(); 
-                }}
-              >
-                <MessageSquareReply className="h-2 w-2" />
-                <span className="sr-only">add annotation</span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>add annotation</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      </Form>
+            method="post"
+            action={`save-annotation`}
+          >
+            <input type="hidden" name="annotation" value={annotationJson} />
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  type="submit"
+                  onClick={(e) => {
+                    if (!prepare()) e.preventDefault();
+                  }}
+                >
+                  <MessageSquareReply className="h-2 w-2" />
+                  <span className="sr-only">add annotation</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>add annotation</p>
+              </TooltipContent>
+            </Tooltip>
+          </Form>
         </div>
       </div>
     );
