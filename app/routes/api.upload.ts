@@ -28,20 +28,19 @@ export async function action({ request }: ActionFunctionArgs) {
             book.flow.map(ch => book.getChapterRawAsync(ch.id))
         )
 
-        // const documentId = crypto.randomUUID()
-        // const document = {
-        //   id: documentId,
-        //   userId: userId,
-        //   url: url,
-        //   title: "The Tempest",
-        //   content: article.content ?? "",
-        //   textContent: article.textContent,
-        //   publishedTime: article.publishedTime ?? null,
-        // }
-        // await saveDocument(document)
-
         const html = htmlChapters.join('\n')
-        saveDocument({ html })
+
+        const documentId = crypto.randomUUID()
+        const document = {
+            id: documentId,
+            userId: userId,
+            url: "epub",
+            title: "The Tempest",
+            content: html,
+            textContent: null,
+            publishedTime: null,
+        }
+        await saveDocument(document)
     } finally {
         await unlink(tmpPath).catch(() => { });
     }
