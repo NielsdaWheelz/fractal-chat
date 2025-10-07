@@ -13,7 +13,11 @@ export default [
     route("document/:id", "routes/document.tsx", [
       route("chat/:chatId", "routes/chat.tsx"),
       route("chat-create", "routes/chat-create.tsx"),
+      route("save-annotation", "routes/save-annotation.ts")
+
     ]),
+
+
     route("document-create", "routes/document-create.tsx")
   ]),
 ] satisfies RouteConfig;
