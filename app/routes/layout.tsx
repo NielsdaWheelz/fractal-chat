@@ -22,6 +22,7 @@ import {
 import { SidebarApp as SidebarLeft } from "~/components/sidebar-app-left";
 import { SidebarApp as SidebarRight } from "~/components/sidebar-app-right";
 import { useRef, useState } from "react";
+import { TooltipProvider } from "../components/ui/tooltip";
 
 
 export const loader = async ({ request, params }: Route.LoaderArgs) => {
@@ -54,34 +55,36 @@ const Layout = ({ loaderData }: Route.ComponentProps) => {
   return (
     <>
       {/* documents chats */}
-      <LeftSidebarProvider>
-        <SidebarLeft side="left" data={loaderData.documents} user={uiUser} />
-        <RightSidebarProvider>
-          <SidebarInset className="flex flex-col h-screen overflow-y-auto">
-            <header className="sticky top-0 flex h-14 shrink-0 items-center gap-2 z-50 backdrop-blur-sm rounded-md">
-              <div className="flex flex-1 justify-between items-center gap-2 px-3">
-                <SidebarTriggerLeft />
-                {/* <Separator orientation="vertical" className="mr-2 h-4" /> */}
-                <Breadcrumb>
-                  <BreadcrumbList>
-                    <BreadcrumbItem>
-                      <BreadcrumbPage className="line-clamp-1 items-center">
-                        <span className="">{loaderData.document?.title ?? ""} - </span>
-                        <span className="text-xs">{loaderData.authors ?? ""}</span>
-                      </BreadcrumbPage>
-                    </BreadcrumbItem>
-                  </BreadcrumbList>
-                </Breadcrumb>
-                <SidebarTriggerRight />
-              </div>
-            </header>
-            <Outlet context={{ selectionRef, setShowHighlight, setIncludeSelection }} />
-          </SidebarInset>
-          <SidebarRight side="right" data={loaderData.chats} user={uiUser} selectionRef={selectionRef} includeSelection={includeSelection} setIncludeSelection={setIncludeSelection} />
-          {/* <SidebarInset className="flex flex-col h-screen overflow-y-auto">
-          </SidebarInset> */}
-        </RightSidebarProvider>
-      </LeftSidebarProvider>
+      <TooltipProvider delayDuration={1500}>
+        <LeftSidebarProvider>
+          <SidebarLeft side="left" data={loaderData.documents} user={uiUser} />
+          <RightSidebarProvider>
+            <SidebarInset className="flex flex-col h-screen overflow-y-auto">
+              <header className="sticky top-0 flex h-14 shrink-0 items-center gap-2 z-50 backdrop-blur-sm rounded-md">
+                <div className="flex flex-1 justify-between items-center gap-2 px-3">
+                  <SidebarTriggerLeft />
+                  {/* <Separator orientation="vertical" className="mr-2 h-4" /> */}
+                  <Breadcrumb>
+                    <BreadcrumbList>
+                      <BreadcrumbItem>
+                        <BreadcrumbPage className="line-clamp-1 items-center">
+                          <span className="">{loaderData.document?.title ?? ""} - </span>
+                          <span className="text-xs">{loaderData.authors ?? ""}</span>
+                        </BreadcrumbPage>
+                      </BreadcrumbItem>
+                    </BreadcrumbList>
+                  </Breadcrumb>
+                  <SidebarTriggerRight />
+                </div>
+              </header>
+              <Outlet context={{ selectionRef, setShowHighlight, setIncludeSelection }} />
+            </SidebarInset>
+            <SidebarRight side="right" data={loaderData.chats} user={uiUser} selectionRef={selectionRef} includeSelection={includeSelection} setIncludeSelection={setIncludeSelection} />
+            {/* <SidebarInset className="flex flex-col h-screen overflow-y-auto">
+            </SidebarInset> */}
+          </RightSidebarProvider>
+        </LeftSidebarProvider>
+      </TooltipProvider>
     </>
   )
 }
