@@ -1,18 +1,27 @@
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
-import { and, eq, sql, desc, ilike, inArray, or } from 'drizzle-orm';
+import { and, eq, sql, desc, ilike, inArray, or, ne } from 'drizzle-orm';
 import { chatTable, documentChunksTable, groupTable, documentTable, authorTable, documentAuthorsTable, user, annotation, groupMemberTable, groupDocumentTable, comment, permissionTable } from '~/db/schema'
 
 const client = postgres(process.env.DATABASE_URL!);
 export const db = drizzle(client);
 
+const tableMap = {
+  chat: chatTable,
+  annotation,
+  comment,
+  document: documentTable,
+} as const
+
 async function main() {
   db
 }
+
 // createGroup(userId, name)
 export const saveGroup = async (group) => {
   const dbGroup = documentObjectToRow(group)
-  return await db.insert(groupTable).values(dbGroup).onConflictDoUpdate({ target: groupTable.id, set: dbGroup })
+  const groupArray = await db.insert(groupTable).values(dbGroup).onConflictDoUpdate({ target: groupTable.id, set: dbGroup })
+  return groupRowToObject(groupArray[0])
 }
 
 // getGroup(groupId)
@@ -21,11 +30,11 @@ export const getGroup = async (groupId) => {
   if (!groups) return null
   const users = await db.select().from(groupMemberTable).leftJoin(user, eq(groupMemberTable.userId, user.id)).where(eq(groupMemberTable.userId, groupId))
   const documents = await db.select().from(groupDocumentTable).leftJoin(documentTable, eq(groupDocumentTable.documentId, documentTable.id)).where(eq(groupDocumentTable.groupId, groupId))
-  const results = { ...groups, users, documents }
-  if (results.length === 0) {
+  const result = { ...groups, users, documents }
+  if (result.length === 0) {
     return null
   } else {
-    return results
+    return result
   }
 }
 
@@ -36,7 +45,8 @@ export const getGroups = async (userId) => {
 
 // updateGroup(groupId, data)
 export const updateGroup = async (group) => {
-  return await db.insert(groupTable).values(group).onConflictDoUpdate({ target: groupTable.id, set: group })
+  const groupRow = groupObjectToRow(group)
+  return await db.insert(groupTable).values(groupRow).onConflictDoUpdate({ target: groupTable.id, set: groupRow })
 }
 
 // deleteGroup(groupId)
@@ -85,7 +95,7 @@ export const deletePermission = async (resourceType, resourceId, principalType, 
 }
 
 // getPermissionsForResource(resourceType, resourceId)
-// → All principals that can access a resource.
+// all principals that can access a resource.
 export const getPermissionsforResource = async (resourceType, resourceId) => {
   return await db
     .select()
@@ -105,7 +115,7 @@ export const getPermissionsforResource = async (resourceType, resourceId) => {
 }
 
 // getPermissionsForPrincipal(principalType, principalId)
-// All resources a user/group/link can access.
+// all resources a user/group/link can access.
 export const getPermissionsForPrincipal = async (principalType, principalId) => {
   return await db
     .select()
@@ -134,24 +144,9 @@ export const getPermissionsForPrincipal = async (principalType, principalId) => 
 
 // checkPermission(userId, resourceType, resourceId)
 export const checkPermission = async (userId, resourceType, resourceId) => {
-  let resourceTable
-  switch (resourceType) {
-    case "chat":
-      resourceTable = chatTable
-      break
-    case "annotation":
-      resourceTable = annotation
-      break
-    case "comment":
-      resourceTable = comment
-      break
-    case "document":
-      resourceTable = documentTable
-      break
-    default:
-      resourceTable = "invalid resource type"
-      break
-  }
+  const resourceTable = tableMap[resourceType as keyof typeof tableMap]
+  if (!resourceTable) throw new Error(`Invalid resource type: ${resourceType}`)
+
   // Direct permission exists for the user
   const owned = await db
     .select()
@@ -160,61 +155,98 @@ export const checkPermission = async (userId, resourceType, resourceId) => {
 
   if (owned.length > 0) return "write";
 
-  const userGroupIds = (await getGroups(userId)).map(group => group.id)
-  const results = await db
-    .select()
-    .from(permissionTable)
-    .where(
-      and(
-        eq(permissionTable.resourceType, resourceType),
-        eq(permissionTable.resourceId, resourceId),
-        or(
-          and(
-            eq(permissionTable.principalType, "user"),
-            eq(permissionTable.principalId, userId),
-          ),
-          // OR The user is in a group that has permission
-          and(
-            eq(permissionTable.principalType, "group"),
-            inArray(permissionTable.principalId, userGroupIds),
-          ),
-          // OR A public/share_link permission exists.
-          and(
-            eq(permissionTable.principalType, "public"),
-          ),
-          and(
-            eq(permissionTable.principalType, "share_link"),
-          ),
+  const userGroups = await getGroups(userId)
+  const userGroupIds = userGroups.map(g => g.id)
+
+  const hasPermission = async (type, id) => {
+    const perms = await db
+      .select()
+      .from(permissionTable)
+      .where(
+        and(
+          eq(permissionTable.resourceType, type),
+          eq(permissionTable.resourceId, id),
+          or(
+            and(
+              eq(permissionTable.principalType, "user"),
+              eq(permissionTable.principalId, userId),
+            ),
+            // OR The user is in a group that has permission
+            and(
+              eq(permissionTable.principalType, "group"),
+              inArray(permissionTable.principalId, userGroupIds),
+            ),
+            // OR A public/share_link permission exists.
+            and(
+              eq(permissionTable.principalType, "public"),
+            ),
+            and(
+              eq(permissionTable.principalType, "share_link"),
+            ),
+          )
         )
       )
-    )
-  if (results.length === 0) return "none"
+    return perms.length > 0
+  }
+
+  const directPerms = await hasPermission(resourceType, resourceId)
+
+  if (directPerms) return "read"
+
+  const parents = []
+  if (resourceType === "comment") {
+    const comment = await getComment(resourceId)
+    const parent = await getAnnotation(comment.annotationId)
+    parents.push({ resourceType: "annotation", resourceId: annotation.id })
+  }
+
+  if (resourceType === "annotation") {
+    const annotation = await getAnnotation(resourceId)
+    const parent = await getDocument(annotation.docId)
+    parents.push({ resourceType: "document", resourceId: document.id })
+  }
+
+  for (parent of parents) {
+    const perm = hasPermission(parent.resourceType, parent.resourceId)
+    if (perm.length > 0) return "read"
+  }
+
+  return "none"
 }
 
 // makePrivate(useraId, resourceType, resourceId)
+export const makePrivate = async (userId: string, resourceType: string, resourceId: string) => {
+  const resourceTable = tableMap[resourceType as keyof typeof tableMap]
+  if (!resourceTable) throw new Error(`Invalid resource type: ${resourceType}`)
 
-// getSharedResources(userId) — list all docs/comments shared with that user.
+  // Direct permission exists for the user
+  const owned = await db
+    .select()
+    .from(resourceTable)
+    .where(and(eq(resourceTable.id, resourceId), eq(resourceTable.userId, userId)));
 
-// resolveAccess(userId, resourceType, resourceId) — all the above
+  if (owned.length === 0) throw new Error("User does not own this resource");
 
-const groupRowToObject = (row: typeof groupTable.$inferSelect) => {
-  return {
-    id: row.id,
-    name: row.name,
-    userId: row.userId
-  }
+  return await db
+    .delete(permissionTable)
+    .where(and(
+      eq(permissionTable.resourceType, resourceType),
+      eq(permissionTable.resourceId, resourceId),
+      and(
+        ne(permissionTable.principalType, "user"),
+        ne(permissionTable.principalId, userId)
+      )
+    ))
 }
 
-const groupObjectToRow = (group: {
-  id: string;
-  name: string;
-  userId: string;
-}) => {
-  return {
-    id: group.id,
-    name: group.name,
-    userId: group.userId,
-  }
+export const getComment = async (commentId: string) => {
+  const commentRow = await db.select().from(comment).where(eq(comment.id, commentId))
+  return commentRowToObject(commentRow[0])
+}
+
+export const getAnnotation = async (annotationId: string) => {
+  const annotationRow = await db.select().from(annotation).where(eq(annotation.id, annotationId))
+  return annotationRowToObject(annotationRow[0])
 }
 
 export const saveAnnotations = async (annotationToSave: any) => {
@@ -275,61 +307,6 @@ export const saveDocumentChunks = async (chunks: Array<{
   return await db.insert(documentChunksTable).values(dbChunks);
 }
 
-const documentRowToObject = (row: typeof documentTable.$inferSelect) => {
-  return {
-    id: row.id,
-    url: row.url,
-    title: row.title,
-    content: row.content,
-    textContent: row.textContent,
-    publishedTime: row.publishedTime
-  }
-}
-
-const documentObjectToRow = (document: {
-  id: string;
-  userId: string;
-  url: string;
-  title: string;
-  content: string;
-  textContent: string | null;
-  publishedTime: string | null;
-}) => {
-  return {
-    id: document.id,
-    userId: document.userId,
-    url: document.url,
-    title: document.title,
-    content: document.content,
-    textContent: document.textContent,
-    publishedTime: document.publishedTime
-  }
-}
-
-const annotationObjectToRow = (annotation: {
-  id: string;
-  userId: string;
-  docId: string;
-  perms: string;
-  body: string;
-  highlight: string;
-  start: number;
-  end: number;
-}) => {
-  return {
-    id: annotation.id,
-    userId: annotation.userId,
-    docId: annotation.docId,
-    perms: annotation.perms ? [annotation.perms] : [],
-    body: annotation.body,
-    highlight: annotation.highlight,
-    start: annotation.start,
-    end: annotation.end,
-  }
-}
-
-
-
 export async function semanticSearch(userId: string, queryEmbedding: number[], topK = 5, documentIds?: string[]) {
   // cosine similarity: 1 - (vector1 <=> vector2)
   // <=> computes cosine distance, so `1 -` for similarity
@@ -365,7 +342,6 @@ export async function semanticSearch(userId: string, queryEmbedding: number[], t
   return results;
 }
 
-
 export const getChat = async (id: string, userId: string, documentId: string) => {
   const results = await db.select().from(chatTable).where(and(eq(chatTable.id, id), eq(chatTable.userId, userId), eq(chatTable.documentId, documentId)))
   if (results.length == 0) {
@@ -380,32 +356,11 @@ export const saveChat = async (chat: {
   userId: string;
   documentId: string;
   messages: any[];
+  createdAt: Date;
+  updatedAt: Date
 }) => {
   const dbChat = chatObjectToRow(chat)
   return await db.insert(chatTable).values(dbChat).onConflictDoUpdate({ target: chatTable.id, set: dbChat })
-}
-
-const chatRowToObject = (row: typeof chatTable.$inferSelect) => {
-  return {
-    id: row.id,
-    userId: row.userId,
-    documentId: row.documentId,
-    messages: JSON.parse(row.messages)
-  }
-}
-
-const chatObjectToRow = (chat: {
-  id: string;
-  userId: string;
-  documentId: string;
-  messages: any[];
-}) => {
-  return {
-    id: chat.id,
-    userId: chat.userId,
-    documentId: chat.documentId,
-    messages: JSON.stringify(chat.messages)
-  }
 }
 
 // Author-related functions
@@ -426,15 +381,15 @@ export const getAuthors = async (userId: string, searchTerm?: string) => {
   return results.map(r => ({ id: r.id, name: r.name }));
 }
 
-export const getAuthor = async (id: string, userId: string) => {
+export const getAuthor = async (id: string) => {
   const results = await db.select().from(authorTable).where(and(eq(authorTable.id, id), eq(authorTable.userId, userId)));
   if (results.length === 0) return null;
-  return { id: results[0].id, name: results[0].name };
+  return authorRowToObject(results[0]);
 }
 
 export const createAuthor = async (userId: string, name: string) => {
   const id = crypto.randomUUID();
-  const result = await db.insert(authorTable).values({ id, userId, name }).returning();
+  const result = await db.insert(authorTable).values({ id: id, userId: userId, name: name }).returning();
   return { id: result[0].id, name: result[0].name };
 }
 
@@ -478,6 +433,212 @@ export const searchDocumentsForMention = async (userId: string, searchTerm?: str
     .limit(10);
 
   return results;
+}
+
+const documentRowToObject = (row: typeof documentTable.$inferSelect) => {
+  return {
+    id: row.id,
+    url: row.url,
+    title: row.title,
+    content: row.content,
+    textContent: row.textContent,
+    publishedTime: row.publishedTime,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt
+  }
+}
+
+const documentObjectToRow = (document: {
+  id: string;
+  userId: string;
+  url: string;
+  title: string;
+  content: string;
+  textContent: string | null;
+  publishedTime: string | null;
+  createdAt: Date;
+  updatedAt: Date
+}) => {
+  return {
+    id: document.id,
+    userId: document.userId,
+    url: document.url,
+    title: document.title,
+    content: document.content,
+    textContent: document.textContent,
+    publishedTime: document.publishedTime,
+    createdAt: document.createdAt,
+    updatedAt: document.updatedAt
+  }
+}
+
+const authorRowToObject = (row: typeof authorTable.$inferSelect) => {
+  return {
+    id: row.id,
+    name: row.name,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt
+  }
+}
+
+const authorObjectToRow = (author: {
+  id: string;
+  name: string;
+  createdAt: Date;
+  updatedAt: Date;
+}) => {
+  return {
+    id: author.id,
+    name: author.name,
+    createdAt: author.createdAt,
+    updatedAt: author.updatedAt
+  }
+}
+
+const annotationObjectToRow = (annotation: {
+  id: string;
+  userId: string;
+  documentId: string;
+  body: string;
+  highlight: string;
+  createdAt: Date;
+  updatedAt: Date;
+}) => {
+  return {
+    id: annotation.id,
+    userId: annotation.userId,
+    documentId: annotation.documentId,
+    body: annotation.body,
+    highlight: annotation.highlight,
+    createdAt: annotation.createdAt,
+    updatedAt: annotation.updatedAt
+  }
+}
+
+const annotationRowToObject = (row: typeof annotation.$inferSelect) => {
+  return {
+    id: row.id,
+    userId: row.userId,
+    documentId: row.documentId,
+    body: row.body,
+    highlight: row.highlight,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt
+  }
+}
+
+const commentObjectToRow = (comment: {
+  id: string;
+  body: string;
+  userId: string;
+  annotationId: string;
+  createdAt: Date;
+  updatedAt: Date;
+}) => {
+  return {
+    id: comment.id,
+    body: comment.body,
+    userId: comment.userId,
+    annotationId: comment.annotationId,
+    createdAt: comment.createdAt,
+    updatedAt: comment.updatedAt
+  }
+}
+
+const commentRowToObject = (row: typeof comment.$inferSelect) => {
+  return {
+    id: row.id,
+    body: row.body,
+    userId: row.userId,
+    annotationId: row.annotationId,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt
+  }
+}
+
+const permissionObjectToRow = (permission: {
+  resourceType: string;
+  resourceId: string;
+  principalType: string;
+  principalId: string;
+  createdAt: Date;
+  updatedAt: Date;
+}) => {
+  return {
+    resourceType: permission.resourceType,
+    resourceId: permission.resourceId,
+    principalType: permission.principalType,
+    principalId: permission.principalId,
+    createdAt: permission.createdAt,
+    updatedAt: permission.updatedAt
+  }
+}
+
+const permissionRowToObject = (row: typeof permissionTable.$inferSelect) => {
+  return {
+    resourceType: row.resourceType,
+    resourceId: row.resourceId,
+    principalType: row.principalType,
+    principalId: row.principalId,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt
+  }
+}
+
+
+const groupRowToObject = (row: typeof groupTable.$inferSelect) => {
+  return {
+    id: row.id,
+    name: row.name,
+    userId: row.userId,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt
+  }
+}
+
+const groupObjectToRow = (group: {
+  id: string;
+  name: string;
+  userId: string;
+  createdAt: Date;
+  updatedAt: Date;
+}) => {
+  return {
+    id: group.id,
+    name: group.name,
+    userId: group.userId,
+    createdAt: group.createdAt,
+    updatedAt: group.updatedAt
+  }
+}
+
+const chatRowToObject = (row: typeof chatTable.$inferSelect) => {
+  return {
+    id: row.id,
+    userId: row.userId,
+    documentId: row.documentId,
+    messages: JSON.parse(row.messages),
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt
+  }
+}
+
+const chatObjectToRow = (chat: {
+  id: string;
+  userId: string;
+  documentId: string;
+  messages: any[];
+  createdAt: Date;
+  updatedAt: Date;
+}) => {
+  return {
+    id: chat.id,
+    userId: chat.userId,
+    documentId: chat.documentId,
+    messages: JSON.stringify(chat.messages),
+    createdAt: chat.createdAt,
+    updatedAt: chat.updatedAt
+  }
 }
 
 main();
