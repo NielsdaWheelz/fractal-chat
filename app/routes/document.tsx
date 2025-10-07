@@ -99,19 +99,18 @@ export const CustomPopover = memo(function CustomPopover({
     >
       <p className="mb-3 text-sm text-gray-700 font-medium break-words">{selectionText}</p>
       <div className="flex flex-row gap-3 items-center">
-      <Form
-        method="post"
-        action={`/workspace/document/${docId}/save-annotation`}
-        onSubmit={onSubmit}
-        className="flex flex-row gap-2 items-center"
+      <Form method="post" action={`/workspace/document/${docId}/save-annotation`} onSubmit={onSubmit}>
+        <input ref={hiddenRef} type="hidden" name="annotation" />
+        <input
+          ref={noteRef}
+          type="text"
           name="note"
           placeholder="Type text..."
           value={annotationText}
           onChange={(e) => setAnnotationText(e.currentTarget.value)}
-          // Quality-of-life:
           autoFocus
           onMouseDown={(e) => e.stopPropagation()} // don’t bubble to selection logic
-        >
+        />
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -223,6 +222,7 @@ export default function Document() {
       suffix: parsed.suffix,
       body: "Empty Note Body",
     };
+
 
     setAnnotationJson(JSON.stringify(payload));
     return true;
