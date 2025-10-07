@@ -29,6 +29,7 @@ type PopoverProps = {
   selectionRef: React.MutableRefObject<string>;
   // optional: position; if you want to move with selection
   x?: number; y?: number;
+  onRequestClose: () => void;   
 };
 
 // memo prevents unnecessary re-renders; most important is that the component
@@ -39,12 +40,27 @@ export const CustomPopover = memo(function CustomPopover({
   annotationText,
   setAnnotationText,
   selectionRef,
+  onRequestClose,
   x = 0,
   y = 0,
 }: PopoverProps) {
+    const rootRef   = useRef<HTMLDivElement>(null);
   const hiddenRef = useRef<HTMLInputElement>(null);
   const noteRef = useRef<HTMLInputElement>(null);
 
+  useEffect(() => {
+    const handlePointerDown = (e: PointerEvent) => {
+      const el = rootRef.current;
+      if (!el) return;
+      // If click is outside the popover, close it
+      if (!el.contains(e.target as Node)) {
+        onRequestClose();
+      }
+    };
+    // capture = true so we see the event even if inner handlers stopPropagation
+    document.addEventListener("pointerdown", handlePointerDown, true);
+    return () => document.removeEventListener("pointerdown", handlePointerDown, true);
+  }, [onRequestClose]);
   const onSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
     let parsed: any = null;
     try { parsed = JSON.parse(selectionRef.current); } catch {}
@@ -65,24 +81,48 @@ export const CustomPopover = memo(function CustomPopover({
 
   return (
     <div
+      ref={rootRef}
       style={{
-        position: "fixed",
-        left: x,
-        top: y,
-        background: "white",
-        border: "1px solid #ccc",
-        padding: "6px 8px",
-        borderRadius: 8,
-        boxShadow: "0 6px 18px rgba(0,0,0,0.15)",
-        zIndex: 1000,
-        pointerEvents: "auto",
+      position: "fixed",
+      left: x,
+      top: y,
+      background: "white",
+      border: "1px solid #e5e7eb",
+      padding: "16px 20px",
+      borderRadius: 12,
+      boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
+      zIndex: 1,
+      minWidth: 320,
+      maxWidth: 400,
+      pointerEvents: "auto",
       }}
-      // Don’t let mouse down collapse selection; but DO allow focus.
-      onMouseDown={(e) => e.stopPropagation()}
     >
-      <p className="max-w-[380px] truncate">{selectionText}</p>
-
-      {/* Example: “new chat” button kept here if you want */}
+      <p className="mb-3 text-sm text-gray-700 font-medium break-words">{selectionText}</p>
+      <div className="flex flex-row gap-3 items-center">
+      <Form
+        method="post"
+        action={`/workspace/document/${docId}/save-annotation`}
+        onSubmit={onSubmit}
+        className="flex flex-row gap-2 items-center"
+          name="note"
+          placeholder="Type text..."
+          value={annotationText}
+          onChange={(e) => setAnnotationText(e.currentTarget.value)}
+          // Quality-of-life:
+          autoFocus
+          onMouseDown={(e) => e.stopPropagation()} // don’t bubble to selection logic
+        >
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button size="icon" variant="ghost" className="ml-1"  type="submit">
+                <MessageSquareReply className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>add annotation</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </Form>
       <Form method="post" action={`/workspace/document/${docId}/chat-create`}>
         <TooltipProvider>
           <Tooltip>
@@ -95,31 +135,21 @@ export const CustomPopover = memo(function CustomPopover({
           </Tooltip>
         </TooltipProvider>
       </Form>
-
-      <Form method="post" action={`/workspace/document/${docId}/save-annotation`} onSubmit={onSubmit}>
-        <input ref={hiddenRef} type="hidden" name="annotation" />
-        <input
-          ref={noteRef}
-          type="text"
-          name="note"
-          placeholder="Type text..."
-          value={annotationText}
-          onChange={(e) => setAnnotationText(e.currentTarget.value)}
-          // Quality-of-life:
-          autoFocus
-          onMouseDown={(e) => e.stopPropagation()} // don’t bubble to selection logic
-        />
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button size="icon" variant="ghost" type="submit">
-                <MessageSquareReply className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>add annotation</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      </Form>
+      <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button size="icon" variant="ghost"  onClick={() => {
+                  }}>
+                  <MessageSquareReply className="h-2 w-2" />
+                  <span className="sr-only">add to existing chat</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>add to existing chat</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          </div>
     </div>
   );
 });
@@ -194,8 +224,8 @@ export default function Document() {
   setSelectionText(quote);
   setPopup({
     text: quote,
-    x: rect.left + rect.width / 2,
-    y: rect.top - 30,
+    x: rect.left,
+    y: rect.top+40,
   });
 
   };
@@ -254,6 +284,7 @@ export default function Document() {
             selectionRef={selectionRef}
             x={popup.x}
             y={popup.y}
+            onRequestClose={() => setPopup(null)} 
           />
         </div>
       )}
