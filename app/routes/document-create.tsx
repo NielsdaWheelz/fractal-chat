@@ -2,10 +2,13 @@ import { redirect, type ActionFunctionArgs } from "react-router"
 import { requireUser } from "~/utils/auth.server"
 import { Readability } from "@mozilla/readability"
 import { JSDOM } from "jsdom"
-import { saveDocument, saveDocumentChunks, getAuthors, createAuthor, linkDocumentToAuthor } from "../index.server"
+// import { saveDocument, saveDocumentChunks, getAuthors, createAuthor, linkDocumentToAuthor } from "../index.server"
 import { chunkText, generateEmbeddings } from "~/utils/document.server"
 
 export async function action({ request }: ActionFunctionArgs) {
+  const { saveDocument, saveDocumentChunks } = await import("../index.server")
+
+
   const userId = await requireUser(request)
   const formData = await request.formData()
   const url = String(formData.get("url") || "").trim()
@@ -42,28 +45,28 @@ export async function action({ request }: ActionFunctionArgs) {
   }
   await saveDocument(document)
 
-  if (article.byline) {
-    // split by ',' 'and' '&'
-    const authorNames = article.byline
-      .split(/,|\sand\s|\s&\s/)
-      .map(name => name.trim())
-      .filter(name => name.length > 0);
+  // if (article.byline) {
+  //   // split by ',' 'and' '&'
+  //   const authorNames = article.byline
+  //     .split(/,|\sand\s|\s&\s/)
+  //     .map(name => name.trim())
+  //     .filter(name => name.length > 0);
 
-    for (const authorName of authorNames) {
-      const existingAuthors = await getAuthors(userId, authorName);
-      const existingAuthor = existingAuthors.find(author => author.name.toLowerCase() === authorName.toLowerCase());
+  //   for (const authorName of authorNames) {
+  //     const existingAuthors = await getAuthors(userId, authorName);
+  //     const existingAuthor = existingAuthors.find(author => author.name.toLowerCase() === authorName.toLowerCase());
 
-      let authorId: string;
-      if (existingAuthor) {
-        authorId = existingAuthor.id;
-      } else {
-        const newAuthor = await createAuthor(userId, authorName);
-        authorId = newAuthor.id;
-      }
+  //     let authorId: string;
+  //     if (existingAuthor) {
+  //       authorId = existingAuthor.id;
+  //     } else {
+  //       const newAuthor = await createAuthor(userId, authorName);
+  //       authorId = newAuthor.id;
+  //     }
 
-      await linkDocumentToAuthor(documentId, authorId);
-    }
-  }
+  //     await linkDocumentToAuthor(documentId, authorId);
+  //   }
+  // }
 
   const documentChunks = chunkedDocs.map((doc, index) => ({
     id: crypto.randomUUID(),
