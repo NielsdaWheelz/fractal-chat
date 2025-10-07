@@ -40,10 +40,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
   await saveAnnotations({
     id: crypto.randomUUID(),
     userId,
-    docId: id,
+    documentId: params.id,
     start,
     end,
-    quote: quote ?? "",
+    highlights: quote ?? "",
     prefix: prefix ?? "",
     suffix: suffix ?? "",
     body: body ?? "",

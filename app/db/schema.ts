@@ -131,8 +131,6 @@ export const annotation = pgTable("annotation", {
     .references(() => user.id, { onDelete: "cascade" }),
   documentId: text("document_id").notNull().references(() => documentTable.id, { onDelete: "cascade" }),
   body: text("body"),
-  highlight: text("highlights"),
-  // visibility: visibilityEnum("visibility").default("private").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()
