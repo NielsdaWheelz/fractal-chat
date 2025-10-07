@@ -71,7 +71,6 @@ function NotePopover({
       role="dialog"
       aria-label="Annotation"
     >
-      {quote && <p className="text-xs text-gray-500 mb-2">“{quote}”</p>}
       <p className="text-sm">{note || "(no note saved)"}</p>
     </div>
   );
