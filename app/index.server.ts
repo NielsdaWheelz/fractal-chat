@@ -255,7 +255,7 @@ export const saveAnnotations = async (annotationToSave: any) => {
 }
 
 export const getAnnotations = async (userID: string, doc_id: string) => {
-  const result = await db.select().from(annotation).where(and(eq(annotation.userId, userID), eq(annotation.docId, doc_id)));
+  const result = await db.select().from(annotation).where(and(eq(annotation.userId, userID), eq(annotation.documentId, doc_id)));
   return result
 }
 
