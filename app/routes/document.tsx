@@ -19,23 +19,26 @@ import {
 import { Button } from "~/components/ui/button";
 import { MessageCirclePlus, MessageSquareReply } from "lucide-react";
 import DocumentContents from "~/components/document/DocumentContents";
+import { Tweet } from "./tweet";
 
 
 type PopoverProps = {
   docId: string;
+  docTitle: string;
   selectionText: string;
   annotationText: string;
   setAnnotationText: (v: string) => void;
   selectionRef: React.MutableRefObject<string>;
   // optional: position; if you want to move with selection
   x?: number; y?: number;
-  onRequestClose: () => void;   
+  onRequestClose: () => void;
 };
 
 // memo prevents unnecessary re-renders; most important is that the component
 // TYPE is stable by being top-level. Memo is a nice-to-have.
 export const CustomPopover = memo(function CustomPopover({
   docId,
+  docTitle,
   selectionText,
   annotationText,
   setAnnotationText,
@@ -44,7 +47,7 @@ export const CustomPopover = memo(function CustomPopover({
   x = 0,
   y = 0,
 }: PopoverProps) {
-    const rootRef   = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
   const hiddenRef = useRef<HTMLInputElement>(null);
   const noteRef = useRef<HTMLInputElement>(null);
 
@@ -63,7 +66,7 @@ export const CustomPopover = memo(function CustomPopover({
   }, [onRequestClose]);
   const onSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
     let parsed: any = null;
-    try { parsed = JSON.parse(selectionRef.current); } catch {}
+    try { parsed = JSON.parse(selectionRef.current); } catch { }
     if (!parsed) { e.preventDefault(); return; }
 
     const payload = {
@@ -83,48 +86,47 @@ export const CustomPopover = memo(function CustomPopover({
     <div
       ref={rootRef}
       style={{
-      position: "fixed",
-      left: x,
-      top: y,
-      background: "white",
-      border: "1px solid #e5e7eb",
-      padding: "16px 20px",
-      borderRadius: 12,
-      boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
-      zIndex: 1,
-      minWidth: 320,
-      maxWidth: 400,
-      pointerEvents: "auto",
+        position: "fixed",
+        left: x,
+        top: y,
+        background: "white",
+        border: "1px solid #e5e7eb",
+        padding: "16px 20px",
+        borderRadius: 12,
+        boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
+        zIndex: 1,
+        minWidth: 320,
+        maxWidth: 500,
+        pointerEvents: "auto",
       }}
     >
       <p className="mb-3 text-sm text-gray-700 font-medium break-words">{selectionText}</p>
       <div className="flex flex-row gap-3 items-center">
-      <Form method="post" action={`/workspace/document/${docId}/save-annotation`} onSubmit={onSubmit}>
-        <input ref={hiddenRef} type="hidden" name="annotation" />
-        <input
-          ref={noteRef}
-          type="text"
-          name="note"
-          placeholder="Type text..."
-          value={annotationText}
-          onChange={(e) => setAnnotationText(e.currentTarget.value)}
-          // Quality-of-life:
-          autoFocus
-          onMouseDown={(e) => e.stopPropagation()} // don’t bubble to selection logic
-        />
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button size="icon" variant="ghost" className="ml-1"  type="submit">
-                <MessageSquareReply className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>add annotation</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      </Form>
-      <Form method="post" action={`/workspace/document/${docId}/chat-create`}>
-        <TooltipProvider>
+        <Form method="post" action={`/workspace/document/${docId}/save-annotation`} onSubmit={onSubmit}>
+          <input ref={hiddenRef} type="hidden" name="annotation" />
+          <input
+            ref={noteRef}
+            type="text"
+            name="note"
+            placeholder="Type text..."
+            value={annotationText}
+            onChange={(e) => setAnnotationText(e.currentTarget.value)}
+            // Quality-of-life:
+            autoFocus
+            onMouseDown={(e) => e.stopPropagation()} // don’t bubble to selection logic
+          />
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button size="icon" variant="ghost" className="ml-1" type="submit">
+                  <MessageSquareReply className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>add annotation</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </Form>
+        <Form method="post" action={`/workspace/document/${docId}/chat-create`}>
           <Tooltip>
             <TooltipTrigger asChild>
               <Button size="icon" variant="ghost" type="submit">
@@ -133,30 +135,38 @@ export const CustomPopover = memo(function CustomPopover({
             </TooltipTrigger>
             <TooltipContent>New Chat</TooltipContent>
           </Tooltip>
-        </TooltipProvider>
-      </Form>
-      <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button size="icon" variant="ghost"  onClick={() => {
-                  }}>
-                  <MessageSquareReply className="h-2 w-2" />
-                  <span className="sr-only">add to existing chat</span>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>add to existing chat</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          </div>
+        </Form>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button size="icon" variant="ghost" onClick={() => {
+            }}>
+              <MessageSquareReply className="h-2 w-2" />
+              <span className="sr-only">add to existing chat</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>add to existing chat</p>
+          </TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button size="icon" variant="ghost" onClick={() => {
+            }}>
+              <Tweet title={docTitle} annotationText={annotationText} selectionText={selectionText}></Tweet>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Tweet Annotation</p>
+          </TooltipContent>
+        </Tooltip>
+      </div>
     </div>
   );
 });
 
 
 type LoaderData = {
-  document: { id: string; content: string };
+  document: { id: string; content: string, title: string };
   annotations: Array<{
     id: string;
     start: number;
@@ -244,13 +254,13 @@ export default function Document() {
     const prefix = sliceSafe(textOnly, start - 30, start);
     const suffix = sliceSafe(textOnly, end, end + 30);
     selectionRef.current = JSON.stringify({ start, end, quote, prefix, suffix });
-     const rect = range.getBoundingClientRect();
-  setSelectionText(quote);
-  setPopup({
-    text: quote,
-    x: rect.left,
-    y: rect.top+40,
-  });
+    const rect = range.getBoundingClientRect();
+    setSelectionText(quote);
+    setPopup({
+      text: quote,
+      x: rect.left,
+      y: rect.top + 40,
+    });
 
   };
   const handlePopoverShow = () => console.log("Popover shown");
@@ -294,21 +304,22 @@ export default function Document() {
     return s.slice(a, b);
   }
 
-    const [popup, setPopup] = useState<{ text: string; x: number; y: number } | null>(null);
-    
+  const [popup, setPopup] = useState<{ text: string; x: number; y: number } | null>(null);
+
   return (
     <>
       {popup && (
         <div data-annotation-popover>
           <CustomPopover
             docId={id!}
+            docTitle={document.title}
             selectionText={selectionText}
             annotationText={annotationText}
             setAnnotationText={setannotationText}
             selectionRef={selectionRef}
             x={popup.x}
             y={popup.y}
-            onRequestClose={() => setPopup(null)} 
+            onRequestClose={() => setPopup(null)}
           />
         </div>
       )}
