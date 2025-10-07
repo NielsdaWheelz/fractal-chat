@@ -3,7 +3,7 @@ import { Form, redirect, useLoaderData, useOutletContext, useParams } from "reac
 import { requireUser } from "~/utils/auth.server";
 import { getDocument } from "../index.server";
 import { HighlightPopover, useHighlightPopover } from '@omsimos/react-highlight-popover';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "~/components/ui/tooltip";
 import { Button } from "~/components/ui/button";
 import { MessageCirclePlus, MessageSquareReply } from "lucide-react";
 import DocumentContents from "~/components/document/DocumentContents";
@@ -52,36 +52,32 @@ export default function Document() {
         <p className="">{truncSel}</p>
         <div className="flex flex-col">
           <Form method="post" action={`/workspace/document/${useParams().id}/chat-create`}>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button size="icon" variant="ghost" type="submit">
-                    <MessageCirclePlus className="h-2 w-2" />
-                    <span className="sr-only">New Chat</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>New Chat</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </Form>
-          <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button size="icon" variant="ghost" onClick={() => {
-                  setShowHighlight(true)
-                  setIncludeSelection(true)
-                }}>
-                  <MessageSquareReply className="h-2 w-2" />
-                  <span className="sr-only">add to existing chat</span>
+                <Button size="icon" variant="ghost" type="submit">
+                  <MessageCirclePlus className="h-2 w-2" />
+                  <span className="sr-only">New Chat</span>
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>add to existing chat</p>
+                <p>New Chat</p>
               </TooltipContent>
             </Tooltip>
-          </TooltipProvider>
+          </Form>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button size="icon" variant="ghost" onClick={() => {
+                setShowHighlight(true)
+                setIncludeSelection(true)
+              }}>
+                <MessageSquareReply className="h-2 w-2" />
+                <span className="sr-only">add to existing chat</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>add to existing chat</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
       </div>
     );
