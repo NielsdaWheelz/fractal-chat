@@ -510,6 +510,8 @@ const annotationObjectToRow = (annotation: {
     id: annotation.id,
     userId: annotation.userId,
     documentId: annotation.documentId,
+    start: annotation.start,
+    end: annotation.end,
     body: annotation.body,
     start: annotation.start,
     end: annotation.end,
@@ -524,12 +526,14 @@ const annotationRowToObject = (row: typeof annotation.$inferSelect) => {
     id: row.id,
     userId: row.userId,
     documentId: row.documentId,
+    start: row.start,
+    end: row.end,
     body: row.body,
     quote: row.quote,
     start: row.start,
     end: row.end,
     createdAt: row.createdAt,
-    updatedAt: row.updatedAt
+    updatedAt: row.updatedAt,
   }
 }
 

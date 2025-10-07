@@ -49,7 +49,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
     documentId: id,
     start,
     end,
-    quote: quote ?? "",
+    highlights: quote ?? "",
     prefix: prefix ?? "",
     suffix: suffix ?? "",
     body: body ?? "",
