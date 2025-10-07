@@ -1,10 +1,17 @@
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
-import { and, eq, sql, desc, ilike, inArray, or } from 'drizzle-orm';
+import { and, eq, sql, desc, ilike, inArray, or, ne } from 'drizzle-orm';
 import { chatTable, documentChunksTable, groupTable, documentTable, authorTable, documentAuthorsTable, user, annotation, groupMemberTable, groupDocumentTable, comment, permissionTable } from '~/db/schema'
 
 const client = postgres(process.env.DATABASE_URL!);
 export const db = drizzle(client);
+
+const tableMap = {
+  chat: chatTable,
+  annotation,
+  comment,
+  document: documentTable,
+} as const
 
 async function main() {
   db
@@ -134,12 +141,6 @@ export const getPermissionsForPrincipal = async (principalType, principalId) => 
 
 // checkPermission(userId, resourceType, resourceId)
 export const checkPermission = async (userId, resourceType, resourceId) => {
-  const tableMap = {
-    chat: chatTable,
-    annotation,
-    comment,
-    document: documentTable,
-  } as const
   const resourceTable = tableMap[resourceType as keyof typeof tableMap]
   if (!resourceTable) throw new Error(`Invalid resource type: ${resourceType}`)
 
@@ -155,40 +156,40 @@ export const checkPermission = async (userId, resourceType, resourceId) => {
   const userGroupIds = userGroups.map(g => g.id)
 
   const hasPermission = async (type, id) => {
-    const perms = await  db
-    .select()
-    .from(permissionTable)
-    .where(
-      and(
-        eq(permissionTable.resourceType, type),
-        eq(permissionTable.resourceId, id),
-        or(
-          and(
-            eq(permissionTable.principalType, "user"),
-            eq(permissionTable.principalId, userId),
-          ),
-          // OR The user is in a group that has permission
-          and(
-            eq(permissionTable.principalType, "group"),
-            inArray(permissionTable.principalId, userGroupIds),
-          ),
-          // OR A public/share_link permission exists.
-          and(
-            eq(permissionTable.principalType, "public"),
-          ),
-          and(
-            eq(permissionTable.principalType, "share_link"),
-          ),
+    const perms = await db
+      .select()
+      .from(permissionTable)
+      .where(
+        and(
+          eq(permissionTable.resourceType, type),
+          eq(permissionTable.resourceId, id),
+          or(
+            and(
+              eq(permissionTable.principalType, "user"),
+              eq(permissionTable.principalId, userId),
+            ),
+            // OR The user is in a group that has permission
+            and(
+              eq(permissionTable.principalType, "group"),
+              inArray(permissionTable.principalId, userGroupIds),
+            ),
+            // OR A public/share_link permission exists.
+            and(
+              eq(permissionTable.principalType, "public"),
+            ),
+            and(
+              eq(permissionTable.principalType, "share_link"),
+            ),
+          )
         )
       )
-    )
     return perms.length > 0
   }
 
   const directPerms = await hasPermission(resourceType, resourceId)
 
   if (directPerms) return "read"
-  
+
   const parents = []
   if (resourceType === "comment") {
     const comment = await getComment(resourceId)
@@ -202,38 +203,37 @@ export const checkPermission = async (userId, resourceType, resourceId) => {
     parents.push({ resourceType: "document", resourceId: document.id })
   }
 
-  const hierPerms = []
   for (parent of parents) {
     const perm = hasPermission(parent.resourceType, parent.resourceId)
     if (perm.length > 0) return "read"
   }
-  if (hierPerms.length === 0) return "none"
+
+  return "none"
 }
 
 // makePrivate(useraId, resourceType, resourceId)
+export const makePrivate = async (userId: string, resourceType: string, resourceId: string) => {
+  const resourceTable = tableMap[resourceType as keyof typeof tableMap]
+  if (!resourceTable) throw new Error(`Invalid resource type: ${resourceType}`)
 
-// getSharedResources(userId) — list all docs/comments shared with that user.
+  // Direct permission exists for the user
+  const owned = await db
+    .select()
+    .from(resourceTable)
+    .where(and(eq(resourceTable.id, resourceId), eq(resourceTable.userId, userId)));
 
-// resolveAccess(userId, resourceType, resourceId) — all the above
+  if (owned.length === 0) throw new Error("User does not own this resource");
 
-const groupRowToObject = (row: typeof groupTable.$inferSelect) => {
-  return {
-    id: row.id,
-    name: row.name,
-    userId: row.userId
-  }
-}
-
-const groupObjectToRow = (group: {
-  id: string;
-  name: string;
-  userId: string;
-}) => {
-  return {
-    id: group.id,
-    name: group.name,
-    userId: group.userId,
-  }
+  return await db
+    .delete(permissionTable)
+    .where(and(
+      eq(permissionTable.resourceType, resourceType),
+      eq(permissionTable.resourceId, resourceId),
+      and(
+        ne(permissionTable.principalType, "user"),
+        ne(permissionTable.principalId, userId)
+      )
+    ))
 }
 
 export const getComment = async (commentId) => {
@@ -302,57 +302,6 @@ export const saveDocumentChunks = async (chunks: Array<{
   return await db.insert(documentChunksTable).values(dbChunks);
 }
 
-const documentRowToObject = (row: typeof documentTable.$inferSelect) => {
-  return {
-    id: row.id,
-    url: row.url,
-    title: row.title,
-    content: row.content,
-    textContent: row.textContent,
-    publishedTime: row.publishedTime
-  }
-}
-
-const documentObjectToRow = (document: {
-  id: string;
-  userId: string;
-  url: string;
-  title: string;
-  content: string;
-  textContent: string | null;
-  publishedTime: string | null;
-}) => {
-  return {
-    id: document.id,
-    userId: document.userId,
-    url: document.url,
-    title: document.title,
-    content: document.content,
-    textContent: document.textContent,
-    publishedTime: document.publishedTime
-  }
-}
-
-const annotationObjectToRow = (annotation: {
-  id: string;
-  userId: string;
-  docId: string;
-  perms: string;
-  body: string;
-  highlight: string;
-}) => {
-  return {
-    id: annotation.id,
-    userId: annotation.userId,
-    docId: annotation.docId,
-    perms: annotation.perms ? [annotation.perms] : [],
-    body: annotation.body,
-    highlight: annotation.highlight,
-  }
-}
-
-
-
 export async function semanticSearch(userId: string, queryEmbedding: number[], topK = 5, documentIds?: string[]) {
   // cosine similarity: 1 - (vector1 <=> vector2)
   // <=> computes cosine distance, so `1 -` for similarity
@@ -406,29 +355,6 @@ export const saveChat = async (chat: {
 }) => {
   const dbChat = chatObjectToRow(chat)
   return await db.insert(chatTable).values(dbChat).onConflictDoUpdate({ target: chatTable.id, set: dbChat })
-}
-
-const chatRowToObject = (row: typeof chatTable.$inferSelect) => {
-  return {
-    id: row.id,
-    userId: row.userId,
-    documentId: row.documentId,
-    messages: JSON.parse(row.messages)
-  }
-}
-
-const chatObjectToRow = (chat: {
-  id: string;
-  userId: string;
-  documentId: string;
-  messages: any[];
-}) => {
-  return {
-    id: chat.id,
-    userId: chat.userId,
-    documentId: chat.documentId,
-    messages: JSON.stringify(chat.messages)
-  }
 }
 
 // Author-related functions
@@ -501,6 +427,212 @@ export const searchDocumentsForMention = async (userId: string, searchTerm?: str
     .limit(10);
 
   return results;
+}
+
+const documentRowToObject = (row: typeof documentTable.$inferSelect) => {
+  return {
+    id: row.id,
+    url: row.url,
+    title: row.title,
+    content: row.content,
+    textContent: row.textContent,
+    publishedTime: row.publishedTime,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt
+  }
+}
+
+const documentObjectToRow = (document: {
+  id: string;
+  userId: string;
+  url: string;
+  title: string;
+  content: string;
+  textContent: string | null;
+  publishedTime: string | null;
+  createdAt: Date;
+  updatedAt: Date
+}) => {
+  return {
+    id: document.id,
+    userId: document.userId,
+    url: document.url,
+    title: document.title,
+    content: document.content,
+    textContent: document.textContent,
+    publishedTime: document.publishedTime,
+    createdAt: document.createdAt,
+    updatedAt: document.updatedAt
+  }
+}
+
+const authorRowToObject = (row: typeof authorTable.$inferSelect) => {
+  return {
+    id: row.id,
+    name: row.name,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt
+  }
+}
+
+const authorObjectToRow = (author: {
+  id: string;
+  name: string;
+  createdAt: Date;
+  updatedAt: Date;
+}) => {
+  return {
+    id: author.id,
+    name: author.name,
+    createdAt: author.createdAt,
+    updatedAt: author.updatedAt
+  }
+}
+
+const annotationObjectToRow = (annotation: {
+  id: string;
+  userId: string;
+  documentId: string;
+  body: string;
+  highlight: string;
+  createdAt: Date;
+  updatedAt: Date;
+}) => {
+  return {
+    id: annotation.id,
+    userId: annotation.userId,
+    documentId: annotation.documentId,
+    body: annotation.body,
+    highlight: annotation.highlight,
+    createdAt: annotation.createdAt,
+    updatedAt: annotation.updatedAt
+  }
+}
+
+const annotationRowToObject = (row: typeof annotation.$inferSelect) => {
+  return {
+    id: row.id,
+    userId: row.userId,
+    documentId: row.documentId,
+    body: row.body,
+    highlight: row.highlight,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt
+  }
+}
+
+const commentObjectToRow = (comment: {
+  id: string;
+  body: string;
+  userId: string;
+  annotationId: string;
+  createdAt: Date;
+  updatedAt: Date;
+}) => {
+  return {
+    id: comment.id,
+    body: comment.body,
+    userId: comment.userId,
+    annotationId: comment.annotationId,
+    createdAt: comment.createdAt,
+    updatedAt: comment.updatedAt
+  }
+}
+
+const commentRowToObject = (row: typeof comment.$inferSelect) => {
+  return {
+    id: row.id,
+    body: row.body,
+    userId: row.userId,
+    annotationId: row.annotationId,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt
+  }
+}
+
+const permissionObjectToRow = (permission: {
+  resourceType: string;
+  resourceId: string;
+  principalType: string;
+  principalId: string;
+  createdAt: Date;
+  updatedAt: Date;
+}) => {
+  return {
+    resourceType: permission.resourceType,
+    resourceId: permission.resourceId,
+    principalType: permission.principalType,
+    principalId: permission.principalId,
+    createdAt: permission.createdAt,
+    updatedAt: permission.updatedAt
+  }
+}
+
+const permissionRowToObject = (row: typeof permissionTable.$inferSelect) => {
+  return {
+    resourceType: row.resourceType,
+    resourceId: row.resourceId,
+    principalType: row.principalType,
+    principalId: row.principalId,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt
+  }
+}
+
+
+const groupRowToObject = (row: typeof groupTable.$inferSelect) => {
+  return {
+    id: row.id,
+    name: row.name,
+    userId: row.userId,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt
+  }
+}
+
+const groupObjectToRow = (group: {
+  id: string;
+  name: string;
+  userId: string;
+  createdAt: Date;
+  updatedAt: Date;
+}) => {
+  return {
+    id: group.id,
+    name: group.name,
+    userId: group.userId,
+    createdAt: group.createdAt,
+    updatedAt: group.updatedAt
+  }
+}
+
+const chatRowToObject = (row: typeof chatTable.$inferSelect) => {
+  return {
+    id: row.id,
+    userId: row.userId,
+    documentId: row.documentId,
+    messages: JSON.parse(row.messages),
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt
+  }
+}
+
+const chatObjectToRow = (chat: {
+  id: string;
+  userId: string;
+  documentId: string;
+  messages: any[];
+  createdAt: Date;
+  updatedAt: Date;
+}) => {
+  return {
+    id: chat.id,
+    userId: chat.userId,
+    documentId: chat.documentId,
+    messages: JSON.stringify(chat.messages),
+    createdAt: chat.createdAt,
+    updatedAt: chat.updatedAt
+  }
 }
 
 main();
