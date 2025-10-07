@@ -6,7 +6,7 @@ function DocumentContents({ documentHTML }: DocumentContentsProps) {
 
     return (
         <article className='prose lg:prose-lg mx-auto px-4'>
-            <div dangerouslySetInnerHTML={documentHTML} />
+            <div id="doc-container" dangerouslySetInnerHTML={documentHTML} />
         </article>
     )
 }
