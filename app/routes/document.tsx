@@ -18,9 +18,11 @@ import {
 import { Button } from "~/components/ui/button";
 import { MessageCirclePlus, MessageSquareReply } from "lucide-react";
 import DocumentContents from "~/components/document/DocumentContents";
+import { Tweet } from "./tweet";
 
 type PopoverProps = {
   docId: string;
+  docTitle: string;
   selectionText: string;
   annotationText: string;
   setAnnotationText: (v: string) => void;
@@ -78,6 +80,7 @@ function NotePopover({
 
 export const CustomPopover = memo(function CustomPopover({
   docId,
+  docTitle,
   selectionText,
   annotationText,
   setAnnotationText,
@@ -141,7 +144,7 @@ export const CustomPopover = memo(function CustomPopover({
         boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
         zIndex: 1,
         minWidth: 320,
-        maxWidth: 400,
+        maxWidth: 500,
         pointerEvents: "auto",
       }}
     >
@@ -182,18 +185,6 @@ export const CustomPopover = memo(function CustomPopover({
           </TooltipProvider>
         </Form>
         <Form method="post" action={`/workspace/document/${docId}/chat-create`}>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button size="icon" variant="ghost" type="submit">
-                  <MessageCirclePlus className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>New Chat</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </Form>
-        <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
               <Button size="icon" variant="ghost" onClick={() => {}}>
@@ -205,14 +196,37 @@ export const CustomPopover = memo(function CustomPopover({
               <p>add to existing chat</p>
             </TooltipContent>
           </Tooltip>
-        </TooltipProvider>
+        </Form>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button size="icon" variant="ghost" onClick={() => {
+            }}>
+              <MessageSquareReply className="h-2 w-2" />
+              <span className="sr-only">add to existing chat</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>add to existing chat</p>
+          </TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button size="icon" variant="ghost" onClick={() => {
+            }}>
+              <Tweet title={docTitle} annotationText={annotationText} selectionText={selectionText}></Tweet>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Tweet Annotation</p>
+          </TooltipContent>
+        </Tooltip>
       </div>
     </div>
   );
 });
 
 type LoaderData = {
-  document: { id: string; content: string };
+  document: { id: string; content: string, title: string };
   annotations: Array<{
     id: string;
     start: number;
@@ -400,6 +414,7 @@ export default function Document() {
         <div data-annotation-popover>
           <CustomPopover
             docId={id!}
+            docTitle={document.title}
             selectionText={selectionText}
             annotationText={annotationText}
             setAnnotationText={setannotationText}
