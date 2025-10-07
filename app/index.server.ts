@@ -134,24 +134,15 @@ export const getPermissionsForPrincipal = async (principalType, principalId) => 
 
 // checkPermission(userId, resourceType, resourceId)
 export const checkPermission = async (userId, resourceType, resourceId) => {
-  let resourceTable
-  switch (resourceType) {
-    case "chat":
-      resourceTable = chatTable
-      break
-    case "annotation":
-      resourceTable = annotation
-      break
-    case "comment":
-      resourceTable = comment
-      break
-    case "document":
-      resourceTable = documentTable
-      break
-    default:
-      resourceTable = "invalid resource type"
-      break
-  }
+  const tableMap = {
+    chat: chatTable,
+    annotation,
+    comment,
+    document: documentTable,
+  } as const
+  const resourceTable = tableMap[resourceType as keyof typeof tableMap]
+  if (!resourceTable) throw new Error(`Invalid resource type: ${resourceType}`)
+
   // Direct permission exists for the user
   const owned = await db
     .select()
@@ -160,14 +151,17 @@ export const checkPermission = async (userId, resourceType, resourceId) => {
 
   if (owned.length > 0) return "write";
 
-  const userGroupIds = (await getGroups(userId)).map(group => group.id)
-  const results = await db
+  const userGroups = await getGroups(userId)
+  const userGroupIds = userGroups.map(g => g.id)
+
+  const hasPermission = async (type, id) => {
+    const perms = await  db
     .select()
     .from(permissionTable)
     .where(
       and(
-        eq(permissionTable.resourceType, resourceType),
-        eq(permissionTable.resourceId, resourceId),
+        eq(permissionTable.resourceType, type),
+        eq(permissionTable.resourceId, id),
         or(
           and(
             eq(permissionTable.principalType, "user"),
@@ -188,7 +182,32 @@ export const checkPermission = async (userId, resourceType, resourceId) => {
         )
       )
     )
-  if (results.length === 0) return "none"
+    return perms.length > 0
+  }
+
+  const directPerms = await hasPermission(resourceType, resourceId)
+
+  if (directPerms) return "read"
+  
+  const parents = []
+  if (resourceType === "comment") {
+    const comment = await getComment(resourceId)
+    const parent = await getAnnotation(comment.annotationId)
+    parents.push({ resourceType: "annotation", resourceId: annotation.id })
+  }
+
+  if (resourceType === "annotation") {
+    const annotation = await getAnnotation(resourceId)
+    const parent = await getDocument(annotation.docId)
+    parents.push({ resourceType: "document", resourceId: document.id })
+  }
+
+  const hierPerms = []
+  for (parent of parents) {
+    const perm = hasPermission(parent.resourceType, parent.resourceId)
+    if (perm.length > 0) return "read"
+  }
+  if (hierPerms.length === 0) return "none"
 }
 
 // makePrivate(useraId, resourceType, resourceId)
@@ -215,6 +234,14 @@ const groupObjectToRow = (group: {
     name: group.name,
     userId: group.userId,
   }
+}
+
+export const getComment = async (commentId) => {
+  return await db.select().from(comment).where(eq(comment.id, commentId))
+}
+
+export const getAnnotation = async (annotationId) => {
+  return await db.select().from(annotation).where(eq(annotation.id, annotationId))
 }
 
 export const saveAnnotations = async (annotationToSave: any) => {
