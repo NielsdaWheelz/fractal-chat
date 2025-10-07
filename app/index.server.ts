@@ -1,13 +1,55 @@
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 import { and, eq, sql, desc, ilike, inArray } from 'drizzle-orm';
-import { chatTable, documentChunksTable, documentTable, authorTable, documentAuthorsTable, user, annotation } from '~/db/schema'
+import { chatTable, documentChunksTable, groupTable, documentTable, authorTable, documentAuthorsTable, user, annotation, groupMemberTable, groupDocumentTable } from '~/db/schema'
 
 const client = postgres(process.env.DATABASE_URL!);
 export const db = drizzle(client);
 
 async function main() {
   db
+}
+
+export const saveGroup = async (group) => {
+  const dbGroup = documentObjectToRow(group)
+  return await db.insert(groupTable).values(dbGroup).onConflictDoUpdate({ target: groupTable.id, set: dbGroup }) 
+}
+
+export const getGroup = async (groupId) => {
+  const groups = await db.select().from(groupTable).where(eq(groupTable.id, groupId))
+  if (!groups) return null
+  const users = await db.select().from(groupMemberTable).leftJoin(user, eq(groupMemberTable.userId, user.id)).where(eq(groupMemberTable.userId, groupId))
+  const documents = await db.select().from(groupDocumentTable).leftJoin(documentTable, eq(groupDocumentTable.documentId, documentTable.id)).where(eq(groupDocumentTable.groupId, groupId))
+  const results = {...groups, users, documents}
+  if (results.length === 0) {
+    return null
+  } else {
+    return results
+  }
+}
+
+export const getGroups = async () => {
+  return await db.select().from(groupTable)
+}
+
+const groupRowToObject = (row: typeof groupTable.$inferSelect) => {
+  return {
+    id: row.id,
+    name: row.name,
+    userId: row.userId
+  }
+}
+
+const groupObjectToRow = (group: {
+  id: string;
+  name: string;
+  userId: string;
+}) => {
+  return {
+    id: group.id,
+    name: group.name,
+    userId: group.userId,
+  }
 }
 
 export const saveAnnotations = async (annotationToSave: any) => {
