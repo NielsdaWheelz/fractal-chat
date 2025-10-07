@@ -2,10 +2,13 @@ import { redirect, type ActionFunctionArgs } from "react-router"
 import { requireUser } from "~/utils/auth.server"
 import { Readability } from "@mozilla/readability"
 import { JSDOM } from "jsdom"
-import { saveDocument, saveDocumentChunks, getAuthors, createAuthor, linkDocumentToAuthor } from "../index.server"
+// import { saveDocument, saveDocumentChunks, getAuthors, createAuthor, linkDocumentToAuthor } from "../index.server"
 import { chunkText, generateEmbeddings } from "~/utils/document.server"
 
 export async function action({ request }: ActionFunctionArgs) {
+  const { saveDocument, saveDocumentChunks } = await import("../index.server")
+
+
   const userId = await requireUser(request)
   const formData = await request.formData()
   const url = String(formData.get("url") || "").trim()
