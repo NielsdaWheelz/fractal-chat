@@ -21,6 +21,7 @@ import {
 } from "~/components/ui/tooltip";
 import { Button } from "~/components/ui/button";
 import { MessageCirclePlus, MessageSquareReply } from "lucide-react";
+import DocumentContents from "~/components/document/DocumentContents";
 
 type LoaderData = {
   document: { id: string; content: string };
@@ -286,11 +287,7 @@ export default function Document() {
         onPopoverShow={handlePopoverShow}
         onPopoverHide={handlePopoverHide}
       >
-        <div
-          id="doc-container"
-          className="flex-1 flex flex-col h-full overflow-y-auto p-8 gap-4"
-          dangerouslySetInnerHTML={docContent()}
-        ></div>
+        <DocumentContents documentHTML={docContent()} />
       </HighlightPopover>
     </>
   );
