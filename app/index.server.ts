@@ -1,7 +1,7 @@
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 import { and, eq, sql, desc, ilike, inArray } from 'drizzle-orm';
-import { chatTable, documentChunksTable, groupTable, documentTable, authorTable, documentAuthorsTable, user, annotation, groupMemberTable, groupDocumentTable } from '~/db/schema'
+import { chatTable, documentChunksTable, groupTable, documentTable, authorTable, documentAuthorsTable, user, annotation, groupMemberTable, groupDocumentTable, comment } from '~/db/schema'
 
 const client = postgres(process.env.DATABASE_URL!);
 export const db = drizzle(client);
@@ -12,7 +12,7 @@ async function main() {
 
 export const saveGroup = async (group) => {
   const dbGroup = documentObjectToRow(group)
-  return await db.insert(groupTable).values(dbGroup).onConflictDoUpdate({ target: groupTable.id, set: dbGroup }) 
+  return await db.insert(groupTable).values(dbGroup).onConflictDoUpdate({ target: groupTable.id, set: dbGroup })
 }
 
 export const getGroup = async (groupId) => {
@@ -20,7 +20,7 @@ export const getGroup = async (groupId) => {
   if (!groups) return null
   const users = await db.select().from(groupMemberTable).leftJoin(user, eq(groupMemberTable.userId, user.id)).where(eq(groupMemberTable.userId, groupId))
   const documents = await db.select().from(groupDocumentTable).leftJoin(documentTable, eq(groupDocumentTable.documentId, documentTable.id)).where(eq(groupDocumentTable.groupId, groupId))
-  const results = {...groups, users, documents}
+  const results = { ...groups, users, documents }
   if (results.length === 0) {
     return null
   } else {
@@ -54,12 +54,12 @@ const groupObjectToRow = (group: {
 
 export const saveAnnotations = async (annotationToSave: any) => {
   const dbAnnotation = annotationObjectToRow(annotationToSave)
-    return await db.insert(annotation).values(dbAnnotation).onConflictDoUpdate({ target: annotation.id, set: dbAnnotation })
+  return await db.insert(annotation).values(dbAnnotation).onConflictDoUpdate({ target: annotation.id, set: dbAnnotation })
 }
 
 export const getAnnotations = async (userID: string, doc_id: string) => {
   const result = await db.select().from(annotation).where(and(eq(annotation.userId, userID), eq(annotation.docId, doc_id)));
-    return result
+  return result
 }
 
 export const getDocuments = async () => {
@@ -68,12 +68,16 @@ export const getDocuments = async () => {
 }
 
 export const getDocument = async (id: string) => {
-  const results = await db.select().from(documentTable).where(eq(documentTable.id, id))
-  if (results.length == 0) {
-    return null
-  } else {
-    return documentRowToObject(results[0])
-  }
+  const document = await db.select().from(documentTable).where(eq(documentTable.id, id))
+  if (!document) return null
+  // const annotations = await db.select().from(annotation).where(eq(annotation.docId, id))
+  // const comments = await db.select().from(comment).leftJoin(annotation, eq(comment.annotationId, annotation.id)).where(inArray(comment.annotationId, annotations.map(annotation => annotation.id)))
+  // const annotationsWithComments = annotations.map(annotation => ({
+  //   ...annotation, comments: comments.filter(comment => comment.annotationId === annotation.id)
+  // }))
+  // const results = { ...document[0], annotations: annotationsWithComments }
+  // return results
+  return document
 }
 
 export const getChats = async (userId: string, documentId: string) => {
@@ -94,7 +98,7 @@ export const saveDocumentChunks = async (chunks: Array<{
   embedding: number[];
 }>) => {
   if (chunks.length === 0) return;
-  
+
   const dbChunks = chunks.map(chunk => ({
     id: chunk.id,
     documentId: chunk.documentId,
@@ -102,7 +106,7 @@ export const saveDocumentChunks = async (chunks: Array<{
     chunkIndex: chunk.chunkIndex,
     embedding: chunk.embedding
   }));
-  
+
   return await db.insert(documentChunksTable).values(dbChunks);
 }
 
@@ -166,7 +170,7 @@ export async function semanticSearch(userId: string, queryEmbedding: number[], t
   const similarity = sql<number>`1 - (${documentChunksTable.embedding} <=> ${vectorString}::vector)`;
 
   const whereConditions = [eq(documentTable.userId, userId)];
-  
+
   if (documentIds && documentIds.length > 0) {
     whereConditions.push(inArray(documentTable.id, documentIds));
   }
@@ -187,7 +191,7 @@ export async function semanticSearch(userId: string, queryEmbedding: number[], t
     .where(and(...whereConditions))
     .orderBy(desc(similarity))
     .limit(topK);
-    // i'm a fucking genius
+  // i'm a fucking genius
 
   return results;
 }
@@ -238,18 +242,18 @@ const chatObjectToRow = (chat: {
 // Author-related functions
 export const getAuthors = async (userId: string, searchTerm?: string) => {
   const whereConditions = [eq(authorTable.userId, userId)];
-  
+
   if (searchTerm) {
     whereConditions.push(ilike(authorTable.name, `%${searchTerm}%`));
   }
-  
+
   const results = await db
     .select()
     .from(authorTable)
     .where(and(...whereConditions))
     .orderBy(authorTable.name)
     .limit(10);
-    
+
   return results.map(r => ({ id: r.id, name: r.name }));
 }
 
@@ -271,7 +275,7 @@ export const getAuthorDocuments = async (authorId: string, userId: string) => {
     .from(documentAuthorsTable)
     .innerJoin(documentTable, eq(documentAuthorsTable.documentId, documentTable.id))
     .where(and(eq(documentAuthorsTable.authorId, authorId), eq(documentTable.userId, userId)));
-  
+
   return results.map(r => r.documentId);
 }
 
@@ -286,24 +290,24 @@ export const getDocumentAuthors = async (documentId: string) => {
     .from(documentAuthorsTable)
     .innerJoin(authorTable, eq(documentAuthorsTable.authorId, authorTable.id))
     .where(eq(documentAuthorsTable.documentId, documentId));
-  
+
   return results;
 }
 
 export const searchDocumentsForMention = async (userId: string, searchTerm?: string) => {
   const whereConditions = [eq(documentTable.userId, userId)];
-  
+
   if (searchTerm) {
     whereConditions.push(ilike(documentTable.title, `%${searchTerm}%`));
   }
-  
+
   const results = await db
     .select({ id: documentTable.id, title: documentTable.title, url: documentTable.url })
     .from(documentTable)
     .where(and(...whereConditions))
     .orderBy(desc(documentTable.id))
     .limit(10);
-    
+
   return results;
 }
 
