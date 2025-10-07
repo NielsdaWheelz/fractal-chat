@@ -1,10 +1,23 @@
-import { pgTable, text, timestamp, boolean, vector, integer, varchar } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, vector, integer, pgEnum, primaryKey } from "drizzle-orm/pg-core";
+
+// export const visibilityEnum = pgEnum("visibility", ["private", "link", "group", "public"]);
+export const resourceEnum = pgEnum("resource", ["document", "annotation", "comment", "chat"]);
+export const principalEnum = pgEnum("principal", ["user", "group", "public", "share_link"]);
 
 export const chatTable = pgTable("chat", {
   id: text("id").primaryKey(),
-  userId: text("user_id").notNull(),
-  documentId: text("document_id").notNull(),
-  messages: text("messages").notNull()
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  documentId: text("document_id")
+    .notNull()
+    .references(() => documentTable.id, { onDelete: "cascade" }),
+  messages: text("messages").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => /* @__PURE__ */ new Date())
+    .notNull(),
 })
 
 export const documentTable = pgTable("document", {
@@ -14,18 +27,33 @@ export const documentTable = pgTable("document", {
   content: text("content").notNull(),
   textContent: text("textContent"),
   publishedTime: text("published_time"),
+  // visibility: visibilityEnum("visibility").default("private").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => /* @__PURE__ */ new Date())
+    .notNull(),
 })
 
 export const authorTable = pgTable("author", {
   id: text("id").primaryKey(),
-  userId: text("user_id").notNull(),
   name: text("name").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => /* @__PURE__ */ new Date())
+    .notNull(),
 })
 
 export const documentAuthorsTable = pgTable("document_authors", {
   id: text("id").primaryKey(),
   documentId: text("document_id").notNull().references(() => documentTable.id, { onDelete: "cascade" }),
   authorId: text("author_id").notNull().references(() => authorTable.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => /* @__PURE__ */ new Date())
+    .notNull(),
 })
 
 export const documentChunksTable = pgTable("document_chunks", {
@@ -40,8 +68,12 @@ export const documentChunksTable = pgTable("document_chunks", {
   //   source?: string;
   //   [key: string]: any;
   // }>(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => /* @__PURE__ */ new Date())
+    .notNull(),
 })
-
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -98,6 +130,14 @@ export const annotation = pgTable("annotation", {
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   docId: text("doc_id").notNull().references(() => documentTable.id, { onDelete: "cascade" }),
+  body: text("body"),
+  highlight: text("highlights"),
+  // visibility: visibilityEnum("visibility").default("private").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => /* @__PURE__ */ new Date())
+    .notNull(),
   perms: text("perm_ids").array(),
   start: integer("start").notNull(),
   end: integer("end").notNull(),
@@ -115,8 +155,28 @@ export const comment = pgTable("comment", {
     .references(() => user.id, { onDelete: "cascade" }),
   annotationId: text("annotation_id")
     .notNull()
-    .references(() => annotation.id, { onDelete: "cascade" })
+    .references(() => annotation.id, { onDelete: "cascade" }),
+  // visibility: visibilityEnum("visibility").default("private").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => /* @__PURE__ */ new Date())
+    .notNull(),
 })
+
+export const permissionTable = pgTable("permission", {
+  resourceType: resourceEnum().notNull(),
+  resourceId: text("resource_id").notNull(),
+  principalType: principalEnum().notNull(),
+  principalId: text("principal_id").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => /* @__PURE__ */ new Date())
+    .notNull(),
+}, (table) => [
+  primaryKey({ columns: [table.resourceType, table.resourceId, table.principalType, table.principalId] }),]
+)
 
 export const groupTable = pgTable("group", {
   id: text("id").primaryKey(),
@@ -124,23 +184,42 @@ export const groupTable = pgTable("group", {
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => /* @__PURE__ */ new Date())
+    .notNull(),
 })
 
 export const groupMemberTable = pgTable("group_member", {
   groupId: text("group_id")
     .notNull()
-    .references(() => group.id, { onDelete: "cascade" }),
+    .references(() => groupTable.id, { onDelete: "cascade" }),
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
-})
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => /* @__PURE__ */ new Date())
+    .notNull(),
+}, (table) => [
+  primaryKey({ columns: [table.groupId, table.userId] }),]
+)
 
 export const groupDocumentTable = pgTable("group_document", {
   groupId: text("group_id")
     .notNull()
-    .references(() => group.id, { onDelete: "cascade" }),
+    .references(() => groupTable.id, { onDelete: "cascade" }),
   documentId: text("document_id").notNull().references(() => documentTable.id, { onDelete: "cascade" }),
-})
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => /* @__PURE__ */ new Date())
+    .notNull(),
+}, (table) => [
+  primaryKey({ columns: [table.groupId, table.documentId] }),]
+)
 
 export const verification = pgTable("verification", {
   id: text("id").primaryKey(),
