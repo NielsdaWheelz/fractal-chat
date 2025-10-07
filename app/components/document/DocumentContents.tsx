@@ -16,14 +16,12 @@ export default function DocumentContents({
   const [html, setHtml] = useState(documentHTML.__html);
 
   useEffect(() => {
-    // only run in browser
+
     if (typeof window === "undefined") return;
 
-    // Build a DOM we can safely mutate
     const el = document.createElement("div");
     el.innerHTML = documentHTML.__html;
 
-    // Collect text nodes with their cumulative positions
     const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
     const nodes: { node: Text; start: number; end: number }[] = [];
     let pos = 0;
@@ -34,7 +32,6 @@ export default function DocumentContents({
       pos += len;
     }
 
-    // Sort annotations left→right to keep things stable
     const anns = (annotations ?? [])
       .filter(
         (a) =>
