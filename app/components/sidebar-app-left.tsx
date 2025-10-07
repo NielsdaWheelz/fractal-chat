@@ -16,13 +16,13 @@ import {
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "~/components/ui/tooltip";
 import { NavUser } from "~/components/nav-user";
 import { FilePlus2, BookOpenText, FileText, Search, SearchX } from "lucide-react";
 import { useEffect, useState, type ComponentProps } from "react";
 import { Form, NavLink, useFetcher } from "react-router";
+import UploadForm from "./upload-form";
 
 type UIMessagePart = { type: string; text?: string }
 type UIMessage = { role: string; parts: UIMessagePart[] }
@@ -87,60 +87,54 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
       </SidebarHeader>
       <SidebarContent>
         <fetcher.Form method="get" action="/workspace/document-search" onSubmit={handleSearchSubmit}>
-          <input className="text-xs py-2 pl-4 pr-2" type="text" name="query" placeholder="search" value={query} onChange={(e) => {setQuery(e.target.value)}}/>
+          <input className="text-xs py-2 pl-4 pr-2" type="text" name="query" placeholder="search" value={query} onChange={(e) => { setQuery(e.target.value) }} />
           {searchResults.length > 0 ? <>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button size="icon" variant="ghost" onClick={() => {
-                    setSearchResults([])
-                    setQuery("")
-                  }}>
-                    <SearchX className="h-5 w-5" />
-                    <span className="sr-only">clear search</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Clear Search</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button size="icon" variant="ghost" onClick={() => {
+                  setSearchResults([])
+                  setQuery("")
+                }}>
+                  <SearchX className="h-5 w-5" />
+                  <span className="sr-only">clear search</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Clear Search</p>
+              </TooltipContent>
+            </Tooltip>
           </>
             :
             <>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button size="icon" variant="ghost" type="submit">
-                      <Search className="h-5 w-5" />
-                      <span className="sr-only">search</span>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Search</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button size="icon" variant="ghost" type="submit">
+                    <Search className="h-5 w-5" />
+                    <span className="sr-only">search</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Search</p>
+                </TooltipContent>
+              </Tooltip>
             </>
           }
         </fetcher.Form>
         <Form method="post" action="document-create" onSubmit={handleNewDocSubmit}>
           <input className="text-xs py-2 pl-4 pr-2" type="text" name="url" value={url} onInput={handleUrlInput} placeholder="new document url" />
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button size="icon" variant="ghost" type="submit">
-                  <FilePlus2 className="h-5 w-5" />
-                  <span className="sr-only">New Document</span>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>New Document</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button size="icon" variant="ghost" type="submit">
+                <FilePlus2 className="h-5 w-5" />
+                <span className="sr-only">New Document</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>New Document</p>
+            </TooltipContent>
+          </Tooltip>
         </Form>
+        <UploadForm />
         <div className="flex flex-col gap-4">
           <SidebarGroup>
             {/* Recent Chats */}
@@ -155,6 +149,7 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
                   return (
                     <NavLink key={match.documentId} to={"/workspace/document/" + match.documentId}>
                       <SidebarMenuItem key={match.documentId}>
+
                         <SidebarMenuButton className="w-full justify-start text-xs flex flex-row">
                           <FileText className="mr-2 h-4 w-4" />
                           <div className="flex flex-col">
@@ -178,14 +173,21 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
                       ? document.title
                       : (document.url || document.id)
                     return (
-                      <NavLink key={document.id} to={"/workspace/document/" + document.id}>
-                        <SidebarMenuItem key={document.id}>
-                          <SidebarMenuButton className="w-full justify-start text-xs">
-                            <FileText className="mr-2 h-4 w-4" />
-                            {title}
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                      </NavLink>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <NavLink className="truncate" key={document.id} to={"/workspace/document/" + document.id}>
+                            <SidebarMenuItem key={document.id}>
+                              <SidebarMenuButton className="w-full justify-start text-xs">
+                                <FileText className="mr-2 h-4 w-4" />
+                                {title}
+                              </SidebarMenuButton>
+                            </SidebarMenuItem>
+                          </NavLink>
+                        </TooltipTrigger>
+                        <TooltipContent side="right" align="center" className="max-w-xs">
+                          <p>{title}</p>
+                        </TooltipContent>
+                      </Tooltip>
                     )
                   })}
                 </SidebarMenu>

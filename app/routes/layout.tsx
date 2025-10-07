@@ -22,6 +22,7 @@ import {
 import { SidebarApp as SidebarLeft } from "~/components/sidebar-app-left";
 import { SidebarApp as SidebarRight } from "~/components/sidebar-app-right";
 import { useRef, useState } from "react";
+import { TooltipProvider } from "../components/ui/tooltip";
 
 
 export const loader = async ({ request, params }: Route.LoaderArgs) => {
@@ -56,7 +57,6 @@ const Layout = ({ loaderData }: Route.ComponentProps) => {
     email: loaderData.user.email,
     avatar: (loaderData.user.image as string | undefined) ?? "",
   }
-  console.log(loaderData);
   const selectionRef = useRef<string>("");
   const [showHighlight, setShowHighlight] = useState(false);
   const [includeSelection, setIncludeSelection] = useState<boolean>(() => !!selectionRef?.current?.trim());
@@ -64,6 +64,7 @@ const Layout = ({ loaderData }: Route.ComponentProps) => {
   return (
     <>
       {/* documents chats */}
+
       <LeftSidebarProvider>
         <SidebarLeft side="left" data={loaderData.documents} user={uiUser} />
         <RightSidebarProvider>
@@ -89,9 +90,10 @@ const Layout = ({ loaderData }: Route.ComponentProps) => {
           </SidebarInset>
           <SidebarRight side="right" data={loaderData.chats} user={uiUser} selectionRef={selectionRef} includeSelection={includeSelection} setIncludeSelection={setIncludeSelection} />
           {/* <SidebarInset className="flex flex-col h-screen overflow-y-auto">
-          </SidebarInset> */}
+            </SidebarInset> */}
         </RightSidebarProvider>
       </LeftSidebarProvider>
+
     </>
   )
 }

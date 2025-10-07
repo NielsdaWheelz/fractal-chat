@@ -204,6 +204,30 @@ export default function Document() {
   const [selectionText, setSelectionText] = useState("");
 
   const docRef = useRef<HTMLDivElement>(null);
+  function onPrepareSubmit() {
+    // parse what you stored in selectionRef (from your selection code)
+    let parsed: any = null;
+    try {
+      parsed = JSON.parse(selectionRef.current);
+    } catch { }
+
+    if (!parsed) return false;
+
+    // build the payload your action expects
+    const payload = {
+      documentId: id,
+      start: parsed.start,
+      end: parsed.end,
+      quote: parsed.quote,
+      prefix: parsed.prefix,
+      suffix: parsed.suffix,
+      body: "Empty Note Body",
+    };
+
+    setAnnotationJson(JSON.stringify(payload));
+    return true;
+  }
+
   const handleSelectionStart = () => console.log("Selection started");
   const handleSelectionEnd = () => {
     const sel = window.getSelection?.();

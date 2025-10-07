@@ -22,7 +22,7 @@ export const chatTable = pgTable("chat", {
 
 export const documentTable = pgTable("document", {
   id: text("id").primaryKey(),
-  url: text("url").notNull(),
+  url: text("url"),
   title: text("title").notNull(),
   content: text("content").notNull(),
   textContent: text("textContent"),
@@ -129,7 +129,7 @@ export const annotation = pgTable("annotation", {
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
-  docId: text("doc_id").notNull().references(() => documentTable.id, { onDelete: "cascade" }),
+  documentId: text("document_id").notNull().references(() => documentTable.id, { onDelete: "cascade" }),
   body: text("body"),
   highlight: text("highlights"),
   // visibility: visibilityEnum("visibility").default("private").notNull(),
@@ -149,7 +149,7 @@ export const annotation = pgTable("annotation", {
 export const comment = pgTable("comment", {
   id: text("id").primaryKey(),
   body: text("body"),
-  userID: text("user_id")
+  userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   annotationId: text("annotation_id")
