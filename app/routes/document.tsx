@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, memo } from "react";
 import {
   Form,
   redirect,
@@ -9,10 +9,7 @@ import {
 import { requireUser } from "~/utils/auth.server";
 import { getAnnotations, getDocument } from "../index.server";
 
-import {
-  HighlightPopover,
-  useHighlightPopover,
-} from "@omsimos/react-highlight-popover";
+
 import {
   Tooltip,
   TooltipContent,
@@ -22,6 +19,111 @@ import {
 import { Button } from "~/components/ui/button";
 import { MessageCirclePlus, MessageSquareReply } from "lucide-react";
 import DocumentContents from "~/components/document/DocumentContents";
+
+
+type PopoverProps = {
+  docId: string;
+  selectionText: string;
+  annotationText: string;
+  setAnnotationText: (v: string) => void;
+  selectionRef: React.MutableRefObject<string>;
+  // optional: position; if you want to move with selection
+  x?: number; y?: number;
+};
+
+// memo prevents unnecessary re-renders; most important is that the component
+// TYPE is stable by being top-level. Memo is a nice-to-have.
+export const CustomPopover = memo(function CustomPopover({
+  docId,
+  selectionText,
+  annotationText,
+  setAnnotationText,
+  selectionRef,
+  x = 0,
+  y = 0,
+}: PopoverProps) {
+  const hiddenRef = useRef<HTMLInputElement>(null);
+  const noteRef = useRef<HTMLInputElement>(null);
+
+  const onSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
+    let parsed: any = null;
+    try { parsed = JSON.parse(selectionRef.current); } catch {}
+    if (!parsed) { e.preventDefault(); return; }
+
+    const payload = {
+      documentId: docId,
+      start: parsed.start,
+      end: parsed.end,
+      quote: parsed.quote,
+      prefix: parsed.prefix,
+      suffix: parsed.suffix,
+      body: noteRef.current?.value ?? "",
+    };
+
+    if (hiddenRef.current) hiddenRef.current.value = JSON.stringify(payload);
+  };
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        left: x,
+        top: y,
+        background: "white",
+        border: "1px solid #ccc",
+        padding: "6px 8px",
+        borderRadius: 8,
+        boxShadow: "0 6px 18px rgba(0,0,0,0.15)",
+        zIndex: 1000,
+        pointerEvents: "auto",
+      }}
+      // Don’t let mouse down collapse selection; but DO allow focus.
+      onMouseDown={(e) => e.stopPropagation()}
+    >
+      <p className="max-w-[380px] truncate">{selectionText}</p>
+
+      {/* Example: “new chat” button kept here if you want */}
+      <Form method="post" action={`/workspace/document/${docId}/chat-create`}>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button size="icon" variant="ghost" type="submit">
+                <MessageCirclePlus className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>New Chat</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </Form>
+
+      <Form method="post" action={`/workspace/document/${docId}/save-annotation`} onSubmit={onSubmit}>
+        <input ref={hiddenRef} type="hidden" name="annotation" />
+        <input
+          ref={noteRef}
+          type="text"
+          name="note"
+          placeholder="Type text..."
+          value={annotationText}
+          onChange={(e) => setAnnotationText(e.currentTarget.value)}
+          // Quality-of-life:
+          autoFocus
+          onMouseDown={(e) => e.stopPropagation()} // don’t bubble to selection logic
+        />
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button size="icon" variant="ghost" type="submit">
+                <MessageSquareReply className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>add annotation</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </Form>
+    </div>
+  );
+});
+
 
 type LoaderData = {
   document: { id: string; content: string };
@@ -68,50 +170,35 @@ export default function Document() {
     return { __html: document.content };
   };
   const [annotationJson, setAnnotationJson] = useState("");
+  const [annotationText, setannotationText] = useState("");
+  const [selectionText, setSelectionText] = useState("");
 
-  function onPrepareSubmit() {
-    // parse what you stored in selectionRef (from your selection code)
-    let parsed: any = null;
-    try {
-      parsed = JSON.parse(selectionRef.current);
-    } catch {}
-
-    if (!parsed) return false;
-
-    // build the payload your action expects
-    const payload = {
-      documentId: id,
-      start: parsed.start,
-      end: parsed.end,
-      quote: parsed.quote,
-      prefix: parsed.prefix,
-      suffix: parsed.suffix,
-      body: "Empty Note Body",
-    };
-
-    setAnnotationJson(JSON.stringify(payload));
-    return true;
-  }
-
+  const docRef = useRef<HTMLDivElement>(null);
   const handleSelectionStart = () => console.log("Selection started");
   const handleSelectionEnd = () => {
-  const sel = window.getSelection?.();
-  if (!sel || sel.rangeCount === 0) return;
-  const range = sel.getRangeAt(0);
-  const containerEl = window.document.getElementById("doc-container");
-  if (!containerEl) return;
+    const sel = window.getSelection?.();
+    if (!sel || sel.rangeCount === 0) return;
+    const range = sel.getRangeAt(0);
+    const containerEl = window.document.getElementById("doc-container");
+    if (!containerEl) return;
 
-  const { start, end } = rangeToOffsets(containerEl, range);
-  if (start < 0 || end <= start) return;
+    const { start, end } = rangeToOffsets(containerEl, range);
+    if (start < 0 || end <= start) return;
 
-  const textOnly = containerEl.textContent ?? "";
-  const quote = sliceSafe(textOnly, start, end);
-  const prefix = sliceSafe(textOnly, start - 30, start);
-  const suffix = sliceSafe(textOnly, end, end + 30);
-  selectionRef.current = JSON.stringify({ start, end, quote, prefix, suffix });
+    const textOnly = containerEl.textContent ?? "";
+    const quote = sliceSafe(textOnly, start, end);
+    const prefix = sliceSafe(textOnly, start - 30, start);
+    const suffix = sliceSafe(textOnly, end, end + 30);
+    selectionRef.current = JSON.stringify({ start, end, quote, prefix, suffix });
+     const rect = range.getBoundingClientRect();
+  setSelectionText(quote);
+  setPopup({
+    text: quote,
+    x: rect.left + rect.width / 2,
+    y: rect.top - 30,
+  });
 
-};
-
+  };
   const handlePopoverShow = () => console.log("Popover shown");
   const handlePopoverHide = () => console.log("Popover hidden");
 
@@ -153,126 +240,31 @@ export default function Document() {
     return s.slice(a, b);
   }
 
-  function CustomPopover({
-    docId,
-    selectionRef,
-  }: {
-    docId: string;
-    selectionRef: React.MutableRefObject<string>;
-  }) {
-    const [annotationJson, setAnnotationJson] = useState("");
-    const { currentSelection, setShowPopover } = useHighlightPopover();
-
-    let truncSel = ""
-    if (currentSelection.length > 30) {
-      // If the string is longer than maxLength, truncate it and add "..."
-      truncSel = currentSelection.slice(0, 25) + '...' + currentSelection.slice(currentSelection.length - 25, currentSelection.length);
-    } else {
-      // If the string is not longer than maxLength, return it as is
-      truncSel = currentSelection;
-    }
-    const prepare = () => {
-      let parsed: any = null;
-      try {
-        parsed = JSON.parse(selectionRef.current);
-      } catch {}
-      if (!parsed) return false;
-
-      setAnnotationJson(
-        JSON.stringify({
-          documentId: docId,
-          start: parsed.start,
-          end: parsed.end,
-          quote: parsed.quote,
-          prefix: parsed.prefix,
-          suffix: parsed.suffix,
-          body: "Empty Note Body",
-        })
-      );
-      return true;
-    };
-
-
-    return (
-      <div className="bg-white border rounded-md p-2 select-none text-xs flex flex-row items-center">
-        <p className="w-50">{currentSelection}</p>
-        <div className="flex flex-col">
-          <Form method="post" action={`/workspace/document/${useParams().id}/chat-create`}>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button size="icon" variant="ghost" type="submit">
-                    <MessageCirclePlus className="h-2 w-2" />
-                    <span className="sr-only">New Chat</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>New Chat</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </Form>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button size="icon" variant="ghost" onClick={() => {
-                  setShowHighlight(true)
-                  setIncludeSelection(true)
-                }}>
-                  <MessageSquareReply className="h-2 w-2" />
-                  <span className="sr-only">add to existing chat</span>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>add to existing chat</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          <Form
-        method="post"
-        action={`save-annotation`}
-      >
-        <input type="hidden" name="annotation" value={annotationJson} />
-       
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                size="icon"
-                variant="ghost"
-                type="submit"
-                onClick={(e) => {
-                  if (!prepare()) e.preventDefault(); 
-                }}
-              >
-                <MessageSquareReply className="h-2 w-2" />
-                <span className="sr-only">add annotation</span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>add annotation</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      </Form>
-        </div>
-      </div>
-    );
-  }
-
+    const [popup, setPopup] = useState<{ text: string; x: number; y: number } | null>(null);
+    
   return (
     <>
-      <HighlightPopover
-        renderPopover={() => <CustomPopover docId={id!} selectionRef={selectionRef} />}
-        offset={{ x: 0, y: -10 }}
-        minSelectionLength={5}
-        onSelectionStart={handleSelectionStart}
-        onSelectionEnd={handleSelectionEnd}
-        onPopoverShow={handlePopoverShow}
-        onPopoverHide={handlePopoverHide}
+      {popup && (
+        <div data-annotation-popover>
+          <CustomPopover
+            docId={id!}
+            selectionText={selectionText}
+            annotationText={annotationText}
+            setAnnotationText={setannotationText}
+            selectionRef={selectionRef}
+            x={popup.x}
+            y={popup.y}
+          />
+        </div>
+      )}
+
+      <div
+        id="doc-container"
+        onMouseUp={handleSelectionEnd}
+        style={{ userSelect: "text" }}
       >
         <DocumentContents documentHTML={docContent()} annotations={annotations} />
-      </HighlightPopover>
+      </div>
     </>
   );
 }
