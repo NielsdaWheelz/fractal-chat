@@ -1,6 +1,6 @@
 import { pgTable, text, timestamp, boolean, vector, integer, pgEnum, primaryKey } from "drizzle-orm/pg-core";
 
-export const visibilityEnum = pgEnum("visibility", ["private", "link", "group", "public"]);
+// export const visibilityEnum = pgEnum("visibility", ["private", "link", "group", "public"]);
 export const resourceEnum = pgEnum("resource", ["document", "annotation", "comment", "chat"]);
 export const principalEnum = pgEnum("principal", ["user", "group", "public", "share_link"]);
 
