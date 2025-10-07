@@ -9,7 +9,6 @@ import {
 import { requireUser } from "~/utils/auth.server";
 import { getAnnotations, getDocument } from "../index.server";
 
-
 import {
   Tooltip,
   TooltipContent,
@@ -21,7 +20,6 @@ import { MessageCirclePlus, MessageSquareReply } from "lucide-react";
 import DocumentContents from "~/components/document/DocumentContents";
 import { Tweet } from "./tweet";
 
-
 type PopoverProps = {
   docId: string;
   docTitle: string;
@@ -30,12 +28,56 @@ type PopoverProps = {
   setAnnotationText: (v: string) => void;
   selectionRef: React.MutableRefObject<string>;
   // optional: position; if you want to move with selection
-  x?: number; y?: number;
+  x?: number;
+  y?: number;
   onRequestClose: () => void;
 };
 
 // memo prevents unnecessary re-renders; most important is that the component
 // TYPE is stable by being top-level. Memo is a nice-to-have.
+
+// A simple read-only popover for viewing a saved note
+function NotePopover({
+  x,
+  y,
+  quote,
+  note,
+  onClose,
+}: {
+  x: number;
+  y: number;
+  quote: string;
+  note: string;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    const close = (e: PointerEvent) => onClose();
+    document.addEventListener("pointerdown", close, true);
+    return () => document.removeEventListener("pointerdown", close, true);
+  }, [onClose]);
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        left: x,
+        top: y,
+        background: "white",
+        border: "1px solid #e5e7eb",
+        padding: "12px 14px",
+        borderRadius: 12,
+        boxShadow: "0 8px 32px rgba(0,0,0,.18)",
+        zIndex: 10,
+        maxWidth: 420,
+      }}
+      role="dialog"
+      aria-label="Annotation"
+    >
+      <p className="text-sm">{note || "(no note saved)"}</p>
+    </div>
+  );
+}
+
 export const CustomPopover = memo(function CustomPopover({
   docId,
   docTitle,
@@ -62,12 +104,18 @@ export const CustomPopover = memo(function CustomPopover({
     };
     // capture = true so we see the event even if inner handlers stopPropagation
     document.addEventListener("pointerdown", handlePointerDown, true);
-    return () => document.removeEventListener("pointerdown", handlePointerDown, true);
+    return () =>
+      document.removeEventListener("pointerdown", handlePointerDown, true);
   }, [onRequestClose]);
   const onSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
     let parsed: any = null;
-    try { parsed = JSON.parse(selectionRef.current); } catch { }
-    if (!parsed) { e.preventDefault(); return; }
+    try {
+      parsed = JSON.parse(selectionRef.current);
+    } catch {}
+    if (!parsed) {
+      e.preventDefault();
+      return;
+    }
 
     const payload = {
       documentId: docId,
@@ -100,9 +148,15 @@ export const CustomPopover = memo(function CustomPopover({
         pointerEvents: "auto",
       }}
     >
-      <p className="mb-3 text-sm text-gray-700 font-medium break-words">{selectionText}</p>
+      <p className="mb-3 text-sm text-gray-700 font-medium break-words">
+        {selectionText}
+      </p>
       <div className="flex flex-row gap-3 items-center">
-        <Form method="post" action={`/workspace/document/${docId}/save-annotation`} onSubmit={onSubmit}>
+        <Form
+          method="post"
+          action={`/workspace/document/${docId}/save-annotation`}
+          onSubmit={onSubmit}
+        >
           <input ref={hiddenRef} type="hidden" name="annotation" />
           <input
             ref={noteRef}
@@ -117,7 +171,12 @@ export const CustomPopover = memo(function CustomPopover({
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button size="icon" variant="ghost" className="ml-1" type="submit">
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="ml-1"
+                  type="submit"
+                >
                   <MessageSquareReply className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
@@ -128,11 +187,14 @@ export const CustomPopover = memo(function CustomPopover({
         <Form method="post" action={`/workspace/document/${docId}/chat-create`}>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button size="icon" variant="ghost" type="submit">
-                <MessageCirclePlus className="h-4 w-4" />
+              <Button size="icon" variant="ghost" onClick={() => {}}>
+                <MessageSquareReply className="h-2 w-2" />
+                <span className="sr-only">add to existing chat</span>
               </Button>
             </TooltipTrigger>
-            <TooltipContent>New Chat</TooltipContent>
+            <TooltipContent>
+              <p>add to existing chat</p>
+            </TooltipContent>
           </Tooltip>
         </Form>
         <Tooltip>
@@ -162,7 +224,6 @@ export const CustomPopover = memo(function CustomPopover({
     </div>
   );
 });
-
 
 type LoaderData = {
   document: { id: string; content: string, title: string };
@@ -199,6 +260,12 @@ export async function loader({
 export default function Document() {
   const { id } = useParams(); // ✅ read once
 
+  const [notePopup, setNotePopup] = useState<null | {
+    x: number;
+    y: number;
+    note: string;
+    quote: string;
+  }>(null);
   const { selectionRef, setShowHighlight, setIncludeSelection } =
     useOutletContext<{
       selectionRef: React.MutableRefObject<string>;
@@ -218,7 +285,7 @@ export default function Document() {
     let parsed: any = null;
     try {
       parsed = JSON.parse(selectionRef.current);
-    } catch { }
+    } catch {}
 
     if (!parsed) return false;
 
@@ -232,7 +299,6 @@ export default function Document() {
       suffix: parsed.suffix,
       body: "Empty Note Body",
     };
-
 
     setAnnotationJson(JSON.stringify(payload));
     return true;
@@ -253,7 +319,13 @@ export default function Document() {
     const quote = sliceSafe(textOnly, start, end);
     const prefix = sliceSafe(textOnly, start - 30, start);
     const suffix = sliceSafe(textOnly, end, end + 30);
-    selectionRef.current = JSON.stringify({ start, end, quote, prefix, suffix });
+    selectionRef.current = JSON.stringify({
+      start,
+      end,
+      quote,
+      prefix,
+      suffix,
+    });
     const rect = range.getBoundingClientRect();
     setSelectionText(quote);
     setPopup({
@@ -261,7 +333,6 @@ export default function Document() {
       x: rect.left,
       y: rect.top + 40,
     });
-
   };
   const handlePopoverShow = () => console.log("Popover shown");
   const handlePopoverHide = () => console.log("Popover hidden");
@@ -304,10 +375,41 @@ export default function Document() {
     return s.slice(a, b);
   }
 
-  const [popup, setPopup] = useState<{ text: string; x: number; y: number } | null>(null);
+  const [popup, setPopup] = useState<{
+    text: string;
+    x: number;
+    y: number;
+  } | null>(null);
+  function handleDocClick(e: React.MouseEvent<HTMLDivElement>) {
+    const target = e.target as HTMLElement;
+    const mark = target.closest(".anno-mark") as HTMLElement | null;
+    if (!mark) return;
 
+    // prevent selection handler from running
+    e.stopPropagation();
+
+    const note = mark.getAttribute("data-note") ?? "";
+    const quote = mark.textContent ?? "";
+    const rect = mark.getBoundingClientRect();
+
+    setNotePopup({
+      note,
+      quote,
+      x: rect.left,
+      y: rect.bottom + 8,
+    });
+  }
   return (
     <>
+      {notePopup && (
+        <NotePopover
+          x={notePopup.x}
+          y={notePopup.y}
+          note={notePopup.note}
+          quote={notePopup.quote}
+          onClose={() => setNotePopup(null)}
+        />
+      )}
       {popup && (
         <div data-annotation-popover>
           <CustomPopover
@@ -327,9 +429,13 @@ export default function Document() {
       <div
         id="doc-container"
         onMouseUp={handleSelectionEnd}
+        onClick={handleDocClick} // 👈 add this
         style={{ userSelect: "text" }}
       >
-        <DocumentContents documentHTML={docContent()} annotations={annotations} />
+        <DocumentContents
+          documentHTML={docContent()}
+          annotations={annotations}
+        />
       </div>
     </>
   );
