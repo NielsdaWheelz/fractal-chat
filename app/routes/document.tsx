@@ -108,7 +108,6 @@ export const CustomPopover = memo(function CustomPopover({
           placeholder="Type text..."
           value={annotationText}
           onChange={(e) => setAnnotationText(e.currentTarget.value)}
-          // Quality-of-life:
           autoFocus
           onMouseDown={(e) => e.stopPropagation()} // don’t bubble to selection logic
         />
@@ -223,6 +222,7 @@ export default function Document() {
       suffix: parsed.suffix,
       body: "Empty Note Body",
     };
+
 
     setAnnotationJson(JSON.stringify(payload));
     return true;

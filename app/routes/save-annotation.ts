@@ -6,7 +6,6 @@ import { saveAnnotations} from "../index.server";
 
 export async function action({ request, params }: ActionFunctionArgs) {
   const userId = await requireUser(request);
-     console.log("everything");
 
   const id = params.id; // document id from route
   if (!id) throw redirect("/");
@@ -15,9 +14,13 @@ export async function action({ request, params }: ActionFunctionArgs) {
   const contentType = request.headers.get("content-type") ?? "";
   let payload: any;
 
+
+
   if (contentType.includes("application/json")) {
     payload = await request.json();
+
   } else {
+
     const form = await request.formData();
     const raw = form.get("annotation");
     if (typeof raw !== "string") {
@@ -26,9 +29,12 @@ export async function action({ request, params }: ActionFunctionArgs) {
     try {
       payload = JSON.parse(raw);
     } catch {
+          console.log("adfg");
+
       return new Response("Invalid JSON in 'annotation'", { status: 400 });
     }
   }
+
 
   // --- Validate required fields
   const { start, end, quote, prefix, suffix, body, createChat } = payload ?? {};
@@ -40,7 +46,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
   await saveAnnotations({
     id: crypto.randomUUID(),
     userId,
-    documentId: params.id,
+    documentId: id,
     start,
     end,
     highlights: quote ?? "",

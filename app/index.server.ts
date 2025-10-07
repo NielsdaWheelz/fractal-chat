@@ -500,9 +500,9 @@ const annotationObjectToRow = (annotation: {
   userId: string;
   documentId: string;
   body: string;
-  start: string; 
+  quote: string;
+  start: string;
   end: string;
-  highlight: string;
   createdAt: Date;
   updatedAt: Date;
 }) => {
@@ -513,6 +513,9 @@ const annotationObjectToRow = (annotation: {
     start: annotation.start,
     end: annotation.end,
     body: annotation.body,
+    start: annotation.start,
+    end: annotation.end,
+    quote: annotation.quote,
     createdAt: annotation.createdAt,
     updatedAt: annotation.updatedAt
   }
@@ -527,6 +530,8 @@ const annotationRowToObject = (row: typeof annotation.$inferSelect) => {
     end: row.end,
     body: row.body,
     quote: row.quote,
+    start: row.start,
+    end: row.end,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   }
