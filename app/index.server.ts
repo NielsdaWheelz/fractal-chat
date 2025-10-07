@@ -242,7 +242,7 @@ export const getDocument = async (id: string) => {
   // }))
   // const results = { ...document[0], annotations: annotationsWithComments }
   // return results
-  return document
+  return documentRowToObject(document[0])
 }
 
 export const getChats = async (userId: string, documentId: string) => {

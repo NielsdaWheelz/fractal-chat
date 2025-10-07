@@ -57,6 +57,20 @@
       "when": 1759790542312,
       "tag": "0007_minor_firebird",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1759844666332,
+      "tag": "0009_brave_rachel_grey",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1759844949805,
+      "tag": "0010_tan_sue_storm",
+      "breakpoints": true
     }
   ]
 }

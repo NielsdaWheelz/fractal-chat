@@ -144,7 +144,6 @@ export const annotation = pgTable("annotation", {
   quote: text("quote"),
   prefix: text("prefix"),
   suffix: text("suffix"),
-  body: text("body"),
 })
 
 export const comment = pgTable("comment", {

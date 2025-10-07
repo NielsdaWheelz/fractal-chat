@@ -31,13 +31,22 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
   const userId = await getUser(request)
   const docId = params?.id
   const chats = userId && docId ? (await getChats(userId, docId)) : []
-  const documents = userId ? (await getDocuments(userId)) : []
-  let document
-  let authors
-  if (params?.id) {
-    document = await getDocument(params.id, userId)
-    authors = getDocumentAuthors(document.id)
+  const documents = await getDocuments()
+
+  const waitForDocument = async () => {
+    if (params?.id) {
+      return await getDocument(params.id)
+    }
   }
+  const waitForDocAuthors = async () => {
+    if (params?.id) {
+      return await getDocumentAuthors(params.id)
+    }
+  }
+
+  const document = await waitForDocument();
+  const authors = await waitForDocAuthors();
+
   return { user, chats, documents, document, authors }
 }
 
@@ -47,6 +56,7 @@ const Layout = ({ loaderData }: Route.ComponentProps) => {
     email: loaderData.user.email,
     avatar: (loaderData.user.image as string | undefined) ?? "",
   }
+  console.log(loaderData);
   const selectionRef = useRef<string>("");
   const [showHighlight, setShowHighlight] = useState(false);
   const [includeSelection, setIncludeSelection] = useState<boolean>(() => !!selectionRef?.current?.trim());

@@ -1,0 +1,9 @@
+DROP TABLE "account" CASCADE;--> statement-breakpoint
+DROP TABLE "annotation" CASCADE;--> statement-breakpoint
+DROP TABLE "author" CASCADE;--> statement-breakpoint
+DROP TABLE "comment" CASCADE;--> statement-breakpoint
+DROP TABLE "document_authors" CASCADE;--> statement-breakpoint
+DROP TABLE "document_chunks" CASCADE;--> statement-breakpoint
+DROP TABLE "session" CASCADE;--> statement-breakpoint
+DROP TABLE "user" CASCADE;--> statement-breakpoint
+DROP TABLE "verification" CASCADE;--> statement-breakpoint
