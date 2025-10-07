@@ -16,10 +16,12 @@ const tableMap = {
 async function main() {
   db
 }
+
 // createGroup(userId, name)
 export const saveGroup = async (group) => {
   const dbGroup = documentObjectToRow(group)
-  return await db.insert(groupTable).values(dbGroup).onConflictDoUpdate({ target: groupTable.id, set: dbGroup })
+  const groupArray = await db.insert(groupTable).values(dbGroup).onConflictDoUpdate({ target: groupTable.id, set: dbGroup })
+  return groupRowToObject(groupArray[0])
 }
 
 // getGroup(groupId)
@@ -28,11 +30,11 @@ export const getGroup = async (groupId) => {
   if (!groups) return null
   const users = await db.select().from(groupMemberTable).leftJoin(user, eq(groupMemberTable.userId, user.id)).where(eq(groupMemberTable.userId, groupId))
   const documents = await db.select().from(groupDocumentTable).leftJoin(documentTable, eq(groupDocumentTable.documentId, documentTable.id)).where(eq(groupDocumentTable.groupId, groupId))
-  const results = { ...groups, users, documents }
-  if (results.length === 0) {
+  const result = { ...groups, users, documents }
+  if (result.length === 0) {
     return null
   } else {
-    return results
+    return result
   }
 }
 
@@ -43,7 +45,8 @@ export const getGroups = async (userId) => {
 
 // updateGroup(groupId, data)
 export const updateGroup = async (group) => {
-  return await db.insert(groupTable).values(group).onConflictDoUpdate({ target: groupTable.id, set: group })
+  const groupRow = groupObjectToRow(group)
+  return await db.insert(groupTable).values(groupRow).onConflictDoUpdate({ target: groupTable.id, set: groupRow })
 }
 
 // deleteGroup(groupId)
@@ -92,7 +95,7 @@ export const deletePermission = async (resourceType, resourceId, principalType, 
 }
 
 // getPermissionsForResource(resourceType, resourceId)
-// → All principals that can access a resource.
+// all principals that can access a resource.
 export const getPermissionsforResource = async (resourceType, resourceId) => {
   return await db
     .select()
@@ -112,7 +115,7 @@ export const getPermissionsforResource = async (resourceType, resourceId) => {
 }
 
 // getPermissionsForPrincipal(principalType, principalId)
-// All resources a user/group/link can access.
+// all resources a user/group/link can access.
 export const getPermissionsForPrincipal = async (principalType, principalId) => {
   return await db
     .select()
@@ -236,12 +239,14 @@ export const makePrivate = async (userId: string, resourceType: string, resource
     ))
 }
 
-export const getComment = async (commentId) => {
-  return await db.select().from(comment).where(eq(comment.id, commentId))
+export const getComment = async (commentId: string) => {
+  const commentRow = await db.select().from(comment).where(eq(comment.id, commentId))
+  return commentRowToObject(commentRow[0])
 }
 
-export const getAnnotation = async (annotationId) => {
-  return await db.select().from(annotation).where(eq(annotation.id, annotationId))
+export const getAnnotation = async (annotationId: string) => {
+  const annotationRow = await db.select().from(annotation).where(eq(annotation.id, annotationId))
+  return annotationRowToObject(annotationRow[0])
 }
 
 export const saveAnnotations = async (annotationToSave: any) => {
@@ -269,7 +274,7 @@ export const getDocument = async (id: string) => {
   // }))
   // const results = { ...document[0], annotations: annotationsWithComments }
   // return results
-  return document
+  return documentRowToObject(document[0])
 }
 
 export const getChats = async (userId: string, documentId: string) => {
@@ -337,7 +342,6 @@ export async function semanticSearch(userId: string, queryEmbedding: number[], t
   return results;
 }
 
-
 export const getChat = async (id: string, userId: string, documentId: string) => {
   const results = await db.select().from(chatTable).where(and(eq(chatTable.id, id), eq(chatTable.userId, userId), eq(chatTable.documentId, documentId)))
   if (results.length == 0) {
@@ -352,6 +356,8 @@ export const saveChat = async (chat: {
   userId: string;
   documentId: string;
   messages: any[];
+  createdAt: Date;
+  updatedAt: Date
 }) => {
   const dbChat = chatObjectToRow(chat)
   return await db.insert(chatTable).values(dbChat).onConflictDoUpdate({ target: chatTable.id, set: dbChat })
@@ -375,15 +381,15 @@ export const getAuthors = async (userId: string, searchTerm?: string) => {
   return results.map(r => ({ id: r.id, name: r.name }));
 }
 
-export const getAuthor = async (id: string, userId: string) => {
+export const getAuthor = async (id: string) => {
   const results = await db.select().from(authorTable).where(and(eq(authorTable.id, id), eq(authorTable.userId, userId)));
   if (results.length === 0) return null;
-  return { id: results[0].id, name: results[0].name };
+  return authorRowToObject(results[0]);
 }
 
 export const createAuthor = async (userId: string, name: string) => {
   const id = crypto.randomUUID();
-  const result = await db.insert(authorTable).values({ id, userId, name }).returning();
+  const result = await db.insert(authorTable).values({ id: id, userId: userId, name: name }).returning();
   return { id: result[0].id, name: result[0].name };
 }
 
