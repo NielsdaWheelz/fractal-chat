@@ -26,19 +26,26 @@ import type { ComponentProps } from "react";
 import { Form, useFetcher, useParams } from "react-router";
 import ChatBlock from "~/chat/chat-block";
 import AvatarGroupBottomDemo from "./groupavatar";
+import ChatList from "./ChatList";
 
 type UIMessagePart = { type: string; text?: string }
 type UIMessage = { role: string; parts: UIMessagePart[] }
 type ChatListItem = { id: string; messages?: UIMessage[] }
 type UserInfo = { name: string; email: string; avatar: string }
-type SidebarAppProps = { data: any[]; user: UserInfo; side: "left" | "right"; selectionRef?: MutableRefObject<string> } & ComponentProps<typeof Sidebar>
+type SidebarAppProps = { data; user: UserInfo; side: "left" | "right"; selectionRef?: MutableRefObject<string> } & ComponentProps<typeof Sidebar>
 
 export function SidebarApp({ side, data, user, selectionRef, includeSelection, setIncludeSelection, ...props }: SidebarAppProps) {
+  const [mode, setMode] = useState("chats")
   const { setOpen } = useSidebar()
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null)
-  const [chats, setChats] = useState<ChatListItem[]>(data as ChatListItem[])
+  const [chats, setChats] = useState<ChatListItem[]>(data.chats as ChatListItem[])
+  const [annotations, setAnnotations] = useState(data.annotations)
+  const [selectedAnnotationId, setSelectedAnnotationId] = useState<string | null>(null)
   const fetcher = useFetcher<any>()
   const params = useParams()
+
+  const activeItems = mode === "chats" ? chats : annotations
+  const selectedItemId = mode === "chats" ? selectedChatId : selectedAnnotationId
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     const form = event.currentTarget as HTMLFormElement
@@ -50,7 +57,7 @@ export function SidebarApp({ side, data, user, selectionRef, includeSelection, s
     }
   }
   useEffect(() => {
-    setChats(data as ChatListItem[])
+    setChats(data.chats as ChatListItem[])
   }, [data])
 
   useEffect(() => {
@@ -147,30 +154,7 @@ export function SidebarApp({ side, data, user, selectionRef, includeSelection, s
       <SidebarContent>
         <div className="flex flex-col gap-4">
           {!selectedChat && (
-            <SidebarGroup>
-              <SidebarGroupLabel>Recent</SidebarGroupLabel>
-              <SidebarMenu>
-                {chats.map((chat: ChatListItem) => {
-                  let title = "New chat"
-                  try {
-                    const messages = convertMessages(chat.messages)
-                    const firstUserMessage = (messages ?? []).find((m: UIMessage) => m.role === "user")
-                    const firstLine = firstUserMessage?.parts?.find((p: UIMessagePart) => p.type === "text")?.text?.split("\n")[0]
-                    if (firstLine && firstLine.trim().length > 0) {
-                      title = firstLine.trim()
-                    }
-                  } catch { }
-                  return (
-                    <SidebarMenuItem key={chat.id}>
-                      <SidebarMenuButton className="w-full justify-start" onClick={() => setSelectedChatId(chat.id)}>
-                        <MessageCircle className="mr-2 h-4 w-4" />
-                        <span className="text-xs">{title}</span>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  )
-                })}
-              </SidebarMenu>
-            </SidebarGroup>
+            <ChatList chats={chats} setSelectedChatId={setSelectedChatId} />
           )}
           {selectedChat && (
             <div className="h-full">

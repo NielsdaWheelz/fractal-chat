@@ -25,6 +25,7 @@ import { SidebarApp as SidebarLeft } from "~/components/sidebar-app-left";
 import { SidebarApp as SidebarRight } from "~/components/sidebar-app-right";
 import { useRef, useState } from "react";
 import { TooltipProvider } from "../components/ui/tooltip";
+import { getAnnotations } from "~/index.server";
 
 
 export const loader = async ({ request, params }: Route.LoaderArgs) => {
@@ -48,11 +49,18 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
     }
   }
 
+  const waitForAnnotations = async () => {
+    if (params?.id) {
+      return await getAnnotations(userId, params.id)
+    }
+  }
+
   const document = await waitForDocument();
   console.log(document)
   const authors = await waitForDocAuthors();
+  const annotations = await waitForAnnotations();
 
-  return { user, chats, documents, document, authors }
+  return { user, chats, documents, document, authors, annotations }
 }
 
 const Layout = ({ loaderData }: Route.ComponentProps) => {
@@ -92,7 +100,7 @@ const Layout = ({ loaderData }: Route.ComponentProps) => {
             </header>
             <Outlet context={{ selectionRef, setShowHighlight, setIncludeSelection }} />
           </SidebarInset>
-          <SidebarRight side="right" data={loaderData.chats} user={uiUser} selectionRef={selectionRef} includeSelection={includeSelection} setIncludeSelection={setIncludeSelection} />
+          <SidebarRight side="right" data={loaderData} user={uiUser} selectionRef={selectionRef} includeSelection={includeSelection} setIncludeSelection={setIncludeSelection} />
           {/* <SidebarInset className="flex flex-col h-screen overflow-y-auto">
             </SidebarInset> */}
         </RightSidebarProvider>
