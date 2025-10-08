@@ -17,7 +17,7 @@ import {
   TooltipTrigger,
 } from "~/components/ui/tooltip";
 import { Button } from "~/components/ui/button";
-import { MessageCirclePlus, MessageSquareReply, Trash2 } from "lucide-react";
+import { CornerDownLeft, MessageCirclePlus, MessageSquareReply, Trash2 } from "lucide-react";
 import DocumentContents from "~/components/document/DocumentContents";
 import { Tweet } from "./tweet";
 
@@ -250,10 +250,10 @@ export default function Document() {
                     type="submit"
 
                   >
-                    <MessageSquareReply className="h-4 w-4" />
+                    <CornerDownLeft className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>add annotation</TooltipContent>
+                <TooltipContent>Add annotation</TooltipContent>
               </Tooltip>
             </TooltipProvider>
           </Form>
@@ -262,37 +262,27 @@ export default function Document() {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button size="icon" variant="ghost" onClick={() => { }}>
-                    <MessageSquareReply className="h-2 w-2" />
-                    <span className="sr-only">add to existing chat</span>
+                    <MessageCirclePlus className="h-2 w-2" />
+                    <span className="sr-only">Create new chat</span>
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>add to existing chat</p>
+                  <p>Create new chat</p>
                 </TooltipContent>
               </Tooltip>
             </Form>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button size="icon" variant="ghost" onClick={() => { }}>
-                  <MessageCirclePlus className="h-2 w-2" />
-                  <span className="sr-only">add to existing chat</span>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>create new chat</p>
-              </TooltipContent>
-            </Tooltip>
+        
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button size="icon" variant="ghost" onClick={() => {
                   setIncludeSelection(true);
                 }}>
                   <MessageSquareReply className="h-2 w-2" />
-                  <span className="sr-only">add to existing chat</span>
+                  <span className="sr-only">Add to existing chat</span>
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>add to existing chat</p>
+                <p>Add to existing chat</p>
               </TooltipContent>
             </Tooltip>
             <Tooltip>
@@ -303,7 +293,7 @@ export default function Document() {
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Tweet Annotation</p>
+                <p>Tweet annotation</p>
               </TooltipContent>
             </Tooltip>
           </div>
