@@ -27,6 +27,7 @@ import { Form, useFetcher, useParams } from "react-router";
 import ChatBlock from "~/chat/chat-block";
 import AvatarGroupBottomDemo from "./groupavatar";
 import ChatList from "./ChatList";
+import AnnotationList from "./AnnotationList";
 
 type UIMessagePart = { type: string; text?: string }
 type UIMessage = { role: string; parts: UIMessagePart[] }
@@ -35,7 +36,7 @@ type UserInfo = { name: string; email: string; avatar: string }
 type SidebarAppProps = { data; user: UserInfo; side: "left" | "right"; selectionRef?: MutableRefObject<string> } & ComponentProps<typeof Sidebar>
 
 export function SidebarApp({ side, data, user, selectionRef, includeSelection, setIncludeSelection, ...props }: SidebarAppProps) {
-  const [mode, setMode] = useState("chats")
+  const [mode, setMode] = useState("annotation")
   const { setOpen } = useSidebar()
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null)
   const [chats, setChats] = useState<ChatListItem[]>(data.chats as ChatListItem[])
@@ -85,6 +86,7 @@ export function SidebarApp({ side, data, user, selectionRef, includeSelection, s
   }, [selectedChatId])
 
   const selectedChat = useMemo(() => chats.find(c => c.id === selectedChatId) || null, [chats, selectedChatId])
+  const selectedAnnotation = useMemo(() => chats.find(c => c.id === selectedAnnotationId) || null, [chats, selectedAnnotationId])
 
   const convertMessages = (messages) => {
     if (Array.isArray(messages)) return messages as UIMessage[]
@@ -153,13 +155,17 @@ export function SidebarApp({ side, data, user, selectionRef, includeSelection, s
       </SidebarHeader>
       <SidebarContent>
         <div className="flex flex-col gap-4">
-          {!selectedChat && (
+          {!selectedChat && mode === "chat" && (
             <ChatList chats={chats} setSelectedChatId={setSelectedChatId} />
           )}
-          {selectedChat && (
+          {selectedChat && mode === "chat" && (
             <div className="h-full">
               <ChatBlock chatId={selectedChat.id} initialMessages={selectedChatMessages} docId={useParams().id as string} selectionRef={selectionRef} includeSelection={includeSelection} setIncludeSelection={setIncludeSelection} />
             </div>
+          )}
+          {mode === "annotation" && (
+            <AnnotationList annotations={annotations} setSelectedAnnotationId={setSelectedAnnotationId} />
+
           )}
         </div>
       </SidebarContent>
