@@ -25,7 +25,7 @@ export const createPermission = async (
     throw new BadRequestError(`Invalid resource type: ${resourceType}`)
   }
 
-  const validPrincipalTypes: PrincipalType[] = ["user", "group", "public"]
+  const validPrincipalTypes: PrincipalType[] = ["user", "group"]
   if (!validPrincipalTypes.includes(principalType)) {
     throw new BadRequestError(`Invalid principal type: ${principalType}`)
   }
