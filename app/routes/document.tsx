@@ -108,58 +108,6 @@ function NotePopover({
 }
 
 
-export const CustomPopover = memo(function CustomPopover({
-  docId,
-  docTitle,
-  selectionText,
-  annotationText,
-  setAnnotationText,
-  selectionRef,
-  onRequestClose,
-  x = 0,
-  y = 0,
-}: PopoverProps) {
-  const rootRef = useRef<HTMLDivElement>(null);
-  const hiddenRef = useRef<HTMLInputElement>(null);
-  const noteRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    const handlePointerDown = (e: PointerEvent) => {
-      const el = rootRef.current;
-      if (!el) return;
-      // If click is outside the popover, close it
-      if (!el.contains(e.target as Node)) {
-        onRequestClose();
-      }
-    };
-    // capture = true so we see the event even if inner handlers stopPropagation
-    document.addEventListener("pointerdown", handlePointerDown, true);
-    return () =>
-      document.removeEventListener("pointerdown", handlePointerDown, true);
-  }, [onRequestClose]);
-  const onSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
-    let parsed: any = null;
-    try {
-      parsed = JSON.parse(selectionRef.current);
-    } catch {}
-    if (!parsed) {
-      e.preventDefault();
-      return;
-    }
-
-    const payload = {
-      documentId: docId,
-      start: parsed.start,
-      end: parsed.end,
-      quote: parsed.quote,
-      prefix: parsed.prefix,
-      suffix: parsed.suffix,
-      body: noteRef.current?.value ?? "",
-    };
-
-    if (hiddenRef.current) hiddenRef.current.value = JSON.stringify(payload);
-  };
-
 
 type LoaderData = {
   document: { id: string; content: string, title: string };
