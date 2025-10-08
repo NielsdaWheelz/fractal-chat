@@ -3,8 +3,6 @@ import { requireUser } from "~/server/auth.server";
 import {
   createPermission,
   deletePermission,
-  getPermissionsforResource,
-  getPermissionsForPrincipal,
   makePrivate,
 } from "~/server/permissions.server";
 import { computeAccessLevel } from "~/server/permissions.server.helper";
