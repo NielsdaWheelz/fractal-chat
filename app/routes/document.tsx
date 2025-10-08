@@ -17,7 +17,7 @@ import {
   TooltipTrigger,
 } from "~/components/ui/tooltip";
 import { Button } from "~/components/ui/button";
-import { MessageCirclePlus, MessageSquareReply } from "lucide-react";
+import { MessageCirclePlus, MessageSquareReply, Trash2 } from "lucide-react";
 import DocumentContents from "~/components/document/DocumentContents";
 import { Tweet } from "./tweet";
 
@@ -37,47 +37,76 @@ type PopoverProps = {
 // memo prevents unnecessary re-renders; most important is that the component
 // TYPE is stable by being top-level. Memo is a nice-to-have.
 
-// A simple read-only popover for viewing a saved note
 function NotePopover({
+  docId,
+  id,
   x,
   y,
   quote,
   note,
   onClose,
 }: {
+  docId: string;
+  id: string;
   x: number;
   y: number;
   quote: string;
   note: string;
   onClose: () => void;
 }) {
+  const popRef = useRef<HTMLDivElement | null>(null);
+
   useEffect(() => {
-    const close = (e: PointerEvent) => onClose();
+    const close = (e: PointerEvent) => {
+      const el = popRef.current;
+      if (!el) return;
+
+      // Prefer composedPath to handle portals/shadow DOM correctly
+      const path = (e.composedPath?.() ?? []) as EventTarget[];
+      if (path.includes(el) || (e.target && el.contains(e.target as Node))) {
+        // Click started inside the popover → do not close
+        return;
+      }
+      onClose();
+    };
+
+    // Keep capture=true so outside clicks still win, but we now guard inside clicks
     document.addEventListener("pointerdown", close, true);
     return () => document.removeEventListener("pointerdown", close, true);
   }, [onClose]);
 
   return (
     <div
-      style={{
-        position: "fixed",
-        left: x,
-        top: y,
-        background: "white",
-        border: "1px solid #e5e7eb",
-        padding: "12px 14px",
-        borderRadius: 12,
-        boxShadow: "0 8px 32px rgba(0,0,0,.18)",
-        zIndex: 10,
-        maxWidth: 420,
-      }}
+      ref={popRef}
+      className="fixed bg-white border border-gray-200 p-3 rounded-xl shadow-lg z-10 max-w-[420px] flex flex-row items-center gap-1"
+      style={{ left: x, top: y }}
       role="dialog"
       aria-label="Annotation"
     >
       <p className="text-sm">{note || "(no note saved)"}</p>
+
+      <Form method="post" action={`/workspace/delete-annotation/${docId}/${id}`}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              size="icon"
+              variant="ghost"
+              type="submit"
+              // Optional: also stop propagation at capture just to be extra safe
+              onPointerDownCapture={(e) => e.stopPropagation()}
+            >
+              <Trash2 />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>delete annotation</p>
+          </TooltipContent>
+        </Tooltip>
+      </Form>
     </div>
   );
 }
+
 
 export const CustomPopover = memo(function CustomPopover({
   docId,
@@ -264,6 +293,7 @@ export default function Document() {
 
   const [notePopup, setNotePopup] = useState<null | {
     x: number;
+    id: string;
     y: number;
     note: string;
     quote: string;
@@ -391,10 +421,12 @@ export default function Document() {
     e.stopPropagation();
 
     const note = mark.getAttribute("data-note") ?? "";
+    const id = mark.getAttribute("data-id") ?? "";
     const quote = mark.textContent ?? "";
     const rect = mark.getBoundingClientRect();
 
     setNotePopup({
+      id,
       note,
       quote,
       x: rect.left,
@@ -405,6 +437,8 @@ export default function Document() {
     <>
       {notePopup && (
         <NotePopover
+          docId={id}
+          id={notePopup.id}
           x={notePopup.x}
           y={notePopup.y}
           note={notePopup.note}

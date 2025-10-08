@@ -52,6 +52,12 @@ type Pages = {
   "/workspace": {
     params: {};
   };
+  "/workspace/delete-annotation/:docId/:id": {
+    params: {
+      "docId": string;
+      "id": string;
+    };
+  };
   "/workspace/document-search": {
     params: {};
   };
@@ -84,7 +90,7 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/signin" | "/signup" | "/api/auth/*" | "/api/permissions/*" | "/api/groups/*" | "/api/chat/*" | "/api/document/*" | "/api/upload/*" | "/workspace" | "/workspace/document-search" | "/workspace/document/:id" | "/workspace/document/:id/chat/:chatId" | "/workspace/document/:id/chat-create" | "/workspace/document/:id/save-annotation" | "/workspace/document-create";
+    page: "/" | "/signin" | "/signup" | "/api/auth/*" | "/api/permissions/*" | "/api/groups/*" | "/api/chat/*" | "/api/document/*" | "/api/upload/*" | "/workspace" | "/workspace/delete-annotation/:docId/:id" | "/workspace/document-search" | "/workspace/document/:id" | "/workspace/document/:id/chat/:chatId" | "/workspace/document/:id/chat-create" | "/workspace/document/:id/save-annotation" | "/workspace/document-create";
   };
   "routes/home.tsx": {
     id: "routes/home";
@@ -124,7 +130,11 @@ type RouteFiles = {
   };
   "routes/layout.tsx": {
     id: "routes/layout";
-    page: "/workspace" | "/workspace/document-search" | "/workspace/document/:id" | "/workspace/document/:id/chat/:chatId" | "/workspace/document/:id/chat-create" | "/workspace/document/:id/save-annotation" | "/workspace/document-create";
+    page: "/workspace" | "/workspace/delete-annotation/:docId/:id" | "/workspace/document-search" | "/workspace/document/:id" | "/workspace/document/:id/chat/:chatId" | "/workspace/document/:id/chat-create" | "/workspace/document/:id/save-annotation" | "/workspace/document-create";
+  };
+  "routes/delete-annotation.ts": {
+    id: "routes/delete-annotation";
+    page: "/workspace/delete-annotation/:docId/:id";
   };
   "routes/document-search.tsx": {
     id: "routes/document-search";
