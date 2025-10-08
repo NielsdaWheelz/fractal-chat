@@ -25,6 +25,7 @@ import { ArrowLeft, MessageCircle, MessageCirclePlus } from "lucide-react";
 import type { ComponentProps } from "react";
 import { Form, useFetcher, useParams } from "react-router";
 import ChatBlock from "~/chat/chat-block";
+import AvatarGroupBottomDemo from "./groupavatar";
 
 type UIMessagePart = { type: string; text?: string }
 type UIMessage = { role: string; parts: UIMessagePart[] }
