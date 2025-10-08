@@ -126,7 +126,7 @@ const CustomPopover = memo(function CustomPopover({
 }: PopoverProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const hiddenRef = useRef<HTMLInputElement>(null);
-  const noteRef = useRef<HTMLInputElement>(null);
+  const noteRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     const handlePointerDown = (e: PointerEvent) => {
@@ -146,7 +146,7 @@ const CustomPopover = memo(function CustomPopover({
     let parsed: any = null;
     try {
       parsed = JSON.parse(selectionRef.current);
-    } catch {}
+    } catch { }
     if (!parsed) {
       e.preventDefault();
       return;
@@ -186,22 +186,28 @@ const CustomPopover = memo(function CustomPopover({
       <p className="mb-3 text-sm text-gray-700 font-medium break-words">
         {selectionText}
       </p>
-      <div className="flex flex-row gap-3 items-center">
+      <div className="flex flex-col gap-3 items-center">
         <Form
+          className="flex w-full items-end"
           method="post"
           action={`/workspace/document/${docId}/save-annotation`}
           onSubmit={onSubmit}
         >
           <input ref={hiddenRef} type="hidden" name="annotation" />
-          <input
+          <textarea
             ref={noteRef}
-            type="text"
             name="note"
             placeholder="Type text..."
             value={annotationText}
-            onChange={(e) => setAnnotationText(e.currentTarget.value)}
-            autoFocus
-            onMouseDown={(e) => e.stopPropagation()} // don’t bubble to selection logic
+            onChange={(e) => {
+              setAnnotationText(e.currentTarget.value);
+              // auto-resize logic
+              e.currentTarget.style.height = "auto";
+              e.currentTarget.style.height = `${Math.min(e.currentTarget.scrollHeight, 3 * 24)}px`; // 3 lines max (assuming 24px line-height)
+            }}
+            rows={1}
+            className="w-full resize-none overflow-y-auto bg-transparent border p-1 rounded-sm focus:ring-0 focus:outline-none leading-6"
+            onMouseDown={(e) => e.stopPropagation()}
           />
           <TooltipProvider>
             <Tooltip>
@@ -220,7 +226,20 @@ const CustomPopover = memo(function CustomPopover({
             </Tooltip>
           </TooltipProvider>
         </Form>
-        <Form method="post" action={`/workspace/document/${docId}/chat-create`}>
+        <div className="flex flex-row">
+          <Form method="post" action={`/workspace/document/${docId}/chat-create`}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button size="icon" variant="ghost" onClick={() => { }}>
+                  <MessageSquareReply className="h-2 w-2" />
+                  <span className="sr-only">add to existing chat</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>add to existing chat</p>
+              </TooltipContent>
+            </Tooltip>
+          </Form>
           <Tooltip>
             <TooltipTrigger asChild>
               <Button size="icon" variant="ghost" onClick={() => {}}>
@@ -290,7 +309,7 @@ const CustomPopover = memo(function CustomPopover({
     let parsed: any = null;
     try {
       parsed = JSON.parse(selectionRef.current);
-    } catch {}
+    } catch { }
 
     if (!parsed) return false;
 
