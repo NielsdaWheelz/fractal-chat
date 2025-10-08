@@ -3,6 +3,7 @@ import { getUserGroupIds, requirePermission } from "./permissions.server.helper"
 import { annotation, groupDocumentTable, groupMemberTable } from "~/db/schema";
 import { eq, inArray } from "drizzle-orm";
 import { NotFoundError } from "./errors.server";
+import type { Annotation, AnnotationCreate, AnnotationRow } from "~/types/types";
 
 export const getAnnotation = async (userId: string, annotationId: string) => {
   await requirePermission(userId, "annotation", annotationId, "read");
@@ -19,21 +20,7 @@ export const getAnnotation = async (userId: string, annotationId: string) => {
   return annotationRowToObject(annotationRow[0]);
 }
 
-export const saveAnnotations = async (annotationToSave: {
-  id: string;
-  userId: string;
-  documentId: string;
-  body: string;
-  highlight: string;
-  createdAt: Date;
-  updatedAt: Date;
-  start: number;
-  end: number;
-  quote?: string;
-  prefix?: string;
-  suffix?: string;
-  visibility?: "private" | "public";
-}) => {
+export const saveAnnotations = async (annotationToSave: AnnotationCreate) => {
   const dbAnnotation = annotationObjectToRow(annotationToSave)
   return await db.insert(annotation).values(dbAnnotation).onConflictDoUpdate({ target: annotation.id, set: dbAnnotation })
 }
@@ -95,21 +82,7 @@ export const getAnnotations = async (userId: string, documentId: string) => {
 }
 
 
-const annotationObjectToRow = (annotation: {
-  id: string;
-  userId: string;
-  documentId: string;
-  body: string;
-  highlight: string;
-  createdAt: Date;
-  updatedAt: Date;
-  start: number;
-  end: number;
-  quote?: string;
-  prefix?: string;
-  suffix?: string;
-  visibility?: "private" | "public";
-}) => {
+const annotationObjectToRow = (annotation: AnnotationCreate) => {
   return {
     id: annotation.id,
     userId: annotation.userId,
@@ -127,13 +100,19 @@ const annotationObjectToRow = (annotation: {
   }
 }
 
-const annotationRowToObject = (row: typeof annotation.$inferSelect) => {
+const annotationRowToObject = (row: AnnotationRow): Annotation => {
   return {
     id: row.id,
     userId: row.userId,
     documentId: row.documentId,
     body: row.body,
     highlight: row.highlight,
+    start: row.start,
+    end: row.end,
+    quote: row.quote,
+    prefix: row.prefix,
+    suffix: row.suffix,
+    visibility: row.visibility,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt
   }

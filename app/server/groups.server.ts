@@ -3,14 +3,9 @@ import { documentTable, groupDocumentTable, groupMemberTable, groupTable, permis
 import { db } from "~/server/index.server";
 import { BadRequestError, ForbiddenError, NotFoundError } from "./errors.server";
 import { computeAccessLevel, requirePermission } from "./permissions.server.helper";
+import type { Group, GroupCreate, GroupWithDetails, GroupRow, GroupUpdate, GroupMember, DocumentBasic } from "~/types/types";
 
-export const saveGroup = async (group: {
-  id: string;
-  name: string;
-  userId: string;
-  createdAt: Date;
-  updatedAt: Date;
-}) => {
+export const saveGroup = async (group: GroupCreate): Promise<Group> => {
   const existingGroup = await db
     .select()
     .from(groupTable)
@@ -35,7 +30,7 @@ export const saveGroup = async (group: {
   return groupRowToObject(result[0]);
 }
 
-export const getGroup = async (userId: string, groupId: string) => {
+export const getGroup = async (userId: string, groupId: string): Promise<GroupWithDetails> => {
   await requirePermission(userId, "group", groupId, "read");
 
   const groupData = await db
@@ -49,7 +44,7 @@ export const getGroup = async (userId: string, groupId: string) => {
 
   const members = await db
     .select({
-      userId: user.id,
+      id: user.id,
       name: user.name,
       email: user.email,
       image: user.image,
@@ -72,12 +67,12 @@ export const getGroup = async (userId: string, groupId: string) => {
 
   return {
     ...groupRowToObject(groupData[0]),
-    members: members.filter((m) => m.userId !== null),
-    documents: documents.filter((d) => d.id !== null),
+    members: members.filter((m): m is GroupMember => m.id !== null),
+    documents: documents.filter((d): d is DocumentBasic => d.id !== null),
   };
 }
 
-export const getGroups = async (userId: string) => {
+export const getGroups = async (userId: string): Promise<Group[]> => {
   const ownedGroups = await db
     .select()
     .from(groupTable)
@@ -106,8 +101,8 @@ export const getGroups = async (userId: string) => {
 export const updateGroup = async (
   userId: string,
   groupId: string,
-  updates: { name?: string }
-) => {
+  updates: GroupUpdate
+): Promise<Group> => {
   await requirePermission(userId, "group", groupId, "write");
 
   const result = await db
@@ -126,7 +121,7 @@ export const updateGroup = async (
   return groupRowToObject(result[0]);
 }
 
-export const deleteGroup = async (userId: string, groupId: string) => {
+export const deleteGroup = async (userId: string, groupId: string): Promise<boolean> => {
   await requirePermission(userId, "group", groupId, "write");
 
   // delete relevant perms
@@ -216,7 +211,7 @@ export const removeGroupMember = async (
   return true;
 }
 
-export const getGroupMembers = async (userId: string, groupId: string) => {
+export const getGroupMembers = async (userId: string, groupId: string): Promise<GroupMember[]> => {
   await requirePermission(userId, "group", groupId, "read");
 
   // owner
@@ -230,7 +225,7 @@ export const getGroupMembers = async (userId: string, groupId: string) => {
   // owner details
   const ownerDetails = await db
     .select({
-      userId: user.id,
+      id: user.id,
       name: user.name,
       email: user.email,
       image: user.image,
@@ -240,7 +235,7 @@ export const getGroupMembers = async (userId: string, groupId: string) => {
 
   const members = await db
     .select({
-      userId: user.id,
+      id: user.id,
       name: user.name,
       email: user.email,
       image: user.image,
@@ -250,9 +245,15 @@ export const getGroupMembers = async (userId: string, groupId: string) => {
     .leftJoin(user, eq(user.id, groupMemberTable.userId))
     .where(eq(groupMemberTable.groupId, groupId));
 
-  const result = [
+  const result: GroupMember[] = [
     ...ownerDetails.map((o) => ({ ...o, isOwner: true })),
-    ...members.filter((m) => m.userId !== null),
+    ...members.filter((m): m is GroupMember & typeof m => m.id !== null).map(m => ({
+      id: m.id!,
+      name: m.name!,
+      email: m.email!,
+      image: m.image,
+      isOwner: m.isOwner
+    })),
   ];
 
   return result;
@@ -348,7 +349,7 @@ export const removeDocumentFromGroup = async (
   return { success: true };
 }
 
-export const listGroupDocuments = async (userId: string, groupId: string) => {
+export const listGroupDocuments = async (userId: string, groupId: string): Promise<DocumentBasic[]> => {
   await requirePermission(userId, "group", groupId, "read");
 
   const documents = await db
@@ -356,19 +357,17 @@ export const listGroupDocuments = async (userId: string, groupId: string) => {
       id: documentTable.id,
       title: documentTable.title,
       url: documentTable.url,
-      textContent: documentTable.textContent,
       publishedTime: documentTable.publishedTime,
       createdAt: documentTable.createdAt,
-      updatedAt: documentTable.updatedAt,
     })
     .from(groupDocumentTable)
     .leftJoin(documentTable, eq(documentTable.id, groupDocumentTable.documentId))
     .where(eq(groupDocumentTable.groupId, groupId));
 
-  return documents.filter((d) => d.id !== null);
+  return documents.filter((d): d is DocumentBasic => d.id !== null);
 }
 
-const groupRowToObject = (row: typeof groupTable.$inferSelect) => {
+const groupRowToObject = (row: GroupRow): Group => {
   return {
     id: row.id,
     name: row.name,
@@ -378,13 +377,7 @@ const groupRowToObject = (row: typeof groupTable.$inferSelect) => {
   }
 }
 
-const groupObjectToRow = (group: {
-  id: string;
-  name: string;
-  userId: string;
-  createdAt: Date;
-  updatedAt: Date;
-}) => {
+const groupObjectToRow = (group: GroupCreate) => {
   return {
     id: group.id,
     name: group.name,

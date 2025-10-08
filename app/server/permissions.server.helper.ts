@@ -10,8 +10,7 @@ import {
   chatTable,
 } from "~/db/schema"
 import { ForbiddenError, NotFoundError } from "./errors.server"
-
-type PermissionLevel = "admin" | "write" | "read" | "none"
+import type { PermissionLevel, ResourceType, Visibility } from "~/types/types"
 
 const resourceTableMap = {
   chat: chatTable,
@@ -20,8 +19,6 @@ const resourceTableMap = {
   document: documentTable,
   group: groupTable,
 } as const
-
-type ResourceType = keyof typeof resourceTableMap
 
 export async function getUserGroupIds(userId: string): Promise<string[]> {
   const ownedGroups = await db
@@ -141,7 +138,7 @@ export async function isGroupMember(
 async function getResourceVisibility(
   resourceType: ResourceType,
   resourceId: string
-): Promise<"private" | "public" | null> {
+): Promise<Visibility | null> {
   if (resourceType === "chat" || resourceType === "group" || resourceType === "document") {
     return null
   }

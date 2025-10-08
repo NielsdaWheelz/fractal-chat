@@ -3,8 +3,9 @@ import { requirePermission } from "./permissions.server.helper";
 import { comment } from "~/db/schema";
 import { eq } from "drizzle-orm";
 import { NotFoundError } from "./errors.server";
+import type { Comment, CommentCreate, CommentRow } from "~/types/types";
 
-export const getComment = async (userId: string, commentId: string) => {
+export const getComment = async (userId: string, commentId: string): Promise<Comment> => {
   await requirePermission(userId, "comment", commentId, "read");
 
   const commentRow = await db
@@ -20,14 +21,7 @@ export const getComment = async (userId: string, commentId: string) => {
 }
 
 
-const commentObjectToRow = (commentData: {
-  id: string;
-  body: string;
-  userId: string;
-  annotationId: string;
-  createdAt: Date;
-  updatedAt: Date;
-}) => {
+const commentObjectToRow = (commentData: CommentCreate) => {
   return {
     id: commentData.id,
     body: commentData.body,
@@ -38,12 +32,13 @@ const commentObjectToRow = (commentData: {
   }
 }
 
-const commentRowToObject = (row: typeof comment.$inferSelect) => {
+const commentRowToObject = (row: CommentRow): Comment => {
   return {
     id: row.id,
     body: row.body,
     userId: row.userId,
     annotationId: row.annotationId,
+    visibility: row.visibility,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt
   }

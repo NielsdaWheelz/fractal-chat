@@ -1,8 +1,9 @@
 import { db } from "~/server/index.server"
 import { BadRequestError, ForbiddenError, NotFoundError } from "./errors.server"
-import { computeAccessLevel, isResourceCreator, requirePermission, requireResourceExists } from "./permissions.server.helper"
+import { computeAccessLevel, isResourceCreator, requirePermission } from "./permissions.server.helper"
 import { and, eq, ne, or } from "drizzle-orm"
 import { annotation, chatTable, comment, documentTable, groupTable, permissionTable, user } from "~/db/schema"
+import type { Permission, PermissionCreate, PermissionRow, ResourceType, PrincipalType, PermissionLevel } from "~/types/types"
 
 const tableMap = {
   chat: chatTable,
@@ -13,25 +14,25 @@ const tableMap = {
 
 export const createPermission = async (
   userId: string,
-  resourceType: string,
+  resourceType: ResourceType,
   resourceId: string,
-  principalType: string,
+  principalType: PrincipalType,
   principalId: string,
   permissionLevel: "read" | "write" | "admin" = "read"
-) => {
-  const validResourceTypes = ["document", "annotation", "comment", "chat", "group"]
+): Promise<PermissionRow> => {
+  const validResourceTypes: ResourceType[] = ["document", "annotation", "comment", "chat", "group"]
   if (!validResourceTypes.includes(resourceType)) {
     throw new BadRequestError(`Invalid resource type: ${resourceType}`)
   }
 
-  const validPrincipalTypes = ["user", "group", "public", "share_link"]
+  const validPrincipalTypes: PrincipalType[] = ["user", "group", "public"]
   if (!validPrincipalTypes.includes(principalType)) {
     throw new BadRequestError(`Invalid principal type: ${principalType}`)
   }
 
   await requirePermission(
     userId,
-    resourceType as "document" | "annotation" | "comment" | "chat" | "group",
+    resourceType,
     resourceId,
     "write"
   )
@@ -66,19 +67,19 @@ export const createPermission = async (
 
 export const deletePermission = async (
   userId: string,
-  resourceType: string,
+  resourceType: ResourceType,
   resourceId: string,
-  principalType: string,
+  principalType: PrincipalType,
   principalId: string
-) => {
-  const validResourceTypes = ["document", "annotation", "comment", "chat", "group"]
+): Promise<{ success: true }> => {
+  const validResourceTypes: ResourceType[] = ["document", "annotation", "comment", "chat", "group"]
   if (!validResourceTypes.includes(resourceType)) {
     throw new BadRequestError(`Invalid resource type: ${resourceType}`)
   }
 
   await requirePermission(
     userId,
-    resourceType as "document" | "annotation" | "comment" | "chat" | "group",
+    resourceType,
     resourceId,
     "write"
   )
@@ -112,15 +113,15 @@ export const getPermissionsforResource = async (resourceType: string, resourceId
     .select()
     .from(permissionTable)
     .leftJoin(user, and(
-      eq(permissionTable.principalType, "user"),
+      eq(permissionTable.principalType, "user" as any),
       eq(user.id, permissionTable.principalId)
     ))
     .leftJoin(groupTable, and(
-      eq(permissionTable.principalType, "group"),
+      eq(permissionTable.principalType, "group" as any),
       eq(groupTable.id, permissionTable.principalId)
     ))
     .where(and(
-      eq(permissionTable.resourceType, resourceType),
+      eq(permissionTable.resourceType, resourceType as any),
       eq(permissionTable.resourceId, resourceId)
     ))
 }
@@ -132,32 +133,32 @@ export const getPermissionsForPrincipal = async (principalType: string, principa
     .select()
     .from(permissionTable)
     .leftJoin(chatTable, and(
-      eq(permissionTable.resourceType, "chat"),
+      eq(permissionTable.resourceType, "chat" as any),
       eq(permissionTable.resourceId, chatTable.id)
     ))
     .leftJoin(documentTable, and(
-      eq(permissionTable.resourceType, "document"),
+      eq(permissionTable.resourceType, "document" as any),
       eq(permissionTable.resourceId, documentTable.id)
     ))
     .leftJoin(annotation, and(
-      eq(permissionTable.resourceType, "annotation"),
+      eq(permissionTable.resourceType, "annotation" as any),
       eq(permissionTable.resourceId, annotation.id)
     ))
     .leftJoin(comment, and(
-      eq(permissionTable.resourceType, "comment"),
+      eq(permissionTable.resourceType, "comment" as any),
       eq(permissionTable.resourceId, comment.id)
     ))
     .where(and(
-      eq(permissionTable.principalType, principalType),
+      eq(permissionTable.principalType, principalType as any),
       eq(permissionTable.principalId, principalId)
     ))
 }
 
 export const makePrivate = async (
   userId: string,
-  resourceType: string,
+  resourceType: ResourceType,
   resourceId: string
-) => {
+): Promise<{ success: true }> => {
   const resourceTable = tableMap[resourceType as keyof typeof tableMap]
   if (!resourceTable) {
     throw new BadRequestError(`Invalid resource type: ${resourceType}`)
@@ -173,7 +174,7 @@ export const makePrivate = async (
   } else {
     const isCreator = await isResourceCreator(
       userId,
-      resourceType as "annotation" | "comment" | "chat" | "group",
+      resourceType,
       resourceId
     )
 
@@ -220,30 +221,25 @@ export const makePrivate = async (
   return { success: true }
 }
 
-const permissionObjectToRow = (permission: {
-  resourceType: string
-  resourceId: string
-  principalType: string
-  principalId: string
-  createdAt: Date
-  updatedAt: Date
-}) => {
+const permissionObjectToRow = (permission: Permission) => {
   return {
     resourceType: permission.resourceType,
     resourceId: permission.resourceId,
     principalType: permission.principalType,
     principalId: permission.principalId,
+    permissionLevel: permission.permissionLevel,
     createdAt: permission.createdAt,
     updatedAt: permission.updatedAt
   }
 }
 
-const permissionRowToObject = (row: typeof permissionTable.$inferSelect) => {
+const permissionRowToObject = (row: PermissionRow): Permission => {
   return {
-    resourceType: row.resourceType,
+    resourceType: row.resourceType as ResourceType,
     resourceId: row.resourceId,
-    principalType: row.principalType,
+    principalType: row.principalType as PrincipalType,
     principalId: row.principalId,
+    permissionLevel: row.permissionLevel as PermissionLevel,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt
   }

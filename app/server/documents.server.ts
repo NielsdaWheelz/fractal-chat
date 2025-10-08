@@ -2,14 +2,15 @@ import { annotation, comment, documentChunksTable, documentTable, permissionTabl
 import { db } from "~/server/index.server"
 import { getGroups } from "./groups.server"
 import { and, eq, inArray, or } from "drizzle-orm"
+import type { Document, DocumentCreate, DocumentChunk, DocumentRow } from "~/types/types"
 
-export const getAllDocuments = async () => {
+export const getAllDocuments = async (): Promise<DocumentRow[]> => {
   const results = await db.select().from(documentTable)
   return results
 }
 
 export const getDocuments = async (userId: string, documentIds?: string[]) => {
-  const documents = documentIds?.length === 0 ?
+  const documents = documentIds && documentIds.length > 0 ?
     await db
       .select()
       .from(documentTable)
@@ -53,36 +54,36 @@ export const getDocuments = async (userId: string, documentIds?: string[]) => {
   }
 
   // resource ids
-  const allAnnotationIds = []
-  const allCommentIds = []
+  const allAnnotationIds: string[] = []
+  const allCommentIds: string[] = []
 
   for (const doc of docMap.values()) {
     for (const [annoId, anno] of doc.annotations) {
       allAnnotationIds.push(annoId)
-      allCommentIds.push(...anno.comments.map((c) => c.id))
+      allCommentIds.push(...anno.comments.map((c: any) => c.id))
     }
   }
 
   const allResourceIds = [
-    ...documentIds.map(id => ({ type: 'document', id })),
-    ...allAnnotationIds.map(id => ({ type: 'annotation', id })),
-    ...allCommentIds.map(id => ({ type: 'comment', id }))
+    ...(documentIds || []).map(id => ({ type: 'document' as const, id })),
+    ...allAnnotationIds.map(id => ({ type: 'annotation' as const, id })),
+    ...allCommentIds.map(id => ({ type: 'comment' as const, id }))
   ]
 
   // batch fetch perms
-  const permissions = await db
+  const permissions = allResourceIds.length > 0 ? await db
     .select()
     .from(permissionTable)
     .where(
       or(
         ...allResourceIds.map(r =>
           and(
-            eq(permissionTable.resourceType, r.type),
+            eq(permissionTable.resourceType, r.type as any),
             eq(permissionTable.resourceId, r.id)
           )
         )
       )
-    )
+    ) : []
 
   // map of perms so we can lookup resources
   const permMap = new Map()
@@ -155,7 +156,7 @@ export const getDocuments = async (userId: string, documentIds?: string[]) => {
     for (const [annoId, anno] of doc.annotations) {
       if (!hasAccess('annotation', annoId, doc.id)) continue
 
-      const filteredComments = anno.comments.filter((c) =>
+      const filteredComments = anno.comments.filter((c: any) =>
         hasAccess('comment', c.id, doc.id, annoId)
       )
 
@@ -180,28 +181,12 @@ export const getDocument = async (userId: string, documentId: string) => {
 }
 
 
-export const saveDocument = async (document: {
-  id: string
-  url: string
-  title: string
-  content: string
-  textContent: string | null
-  publishedTime: string | null
-  visibility?: "private" | "public"
-  createdAt: Date
-  updatedAt: Date
-}) => {
+export const saveDocument = async (document: DocumentCreate) => {
   const dbDocument = documentObjectToRow(document)
   return await db.insert(documentTable).values(dbDocument).onConflictDoUpdate({ target: documentTable.id, set: dbDocument })
 }
 
-export const saveDocumentChunks = async (chunks: Array<{
-  id: string
-  documentId: string
-  text: string
-  chunkIndex: number
-  embedding: number[]
-}>) => {
+export const saveDocumentChunks = async (chunks: DocumentChunk[]) => {
   if (chunks.length === 0) return
 
   const dbChunks = chunks.map(chunk => ({
@@ -216,7 +201,7 @@ export const saveDocumentChunks = async (chunks: Array<{
 }
 
 
-const documentRowToObject = (row: typeof documentTable.$inferSelect) => {
+const documentRowToObject = (row: DocumentRow): Document => {
   return {
     id: row.id,
     url: row.url,
@@ -229,17 +214,7 @@ const documentRowToObject = (row: typeof documentTable.$inferSelect) => {
   }
 }
 
-const documentObjectToRow = (doc: {
-  id: string
-  url: string
-  title: string
-  content: string
-  textContent: string | null
-  publishedTime: string | null
-  visibility?: "private" | "public"
-  createdAt: Date
-  updatedAt: Date
-}) => {
+const documentObjectToRow = (doc: DocumentCreate) => {
   return {
     id: doc.id,
     url: doc.url,

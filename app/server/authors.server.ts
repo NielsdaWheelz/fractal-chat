@@ -1,9 +1,10 @@
 import { and, eq, ilike } from "drizzle-orm"
 import { authorTable, documentAuthorsTable, documentTable } from "~/db/schema"
 import { db } from "~/server/index.server"
+import type { Author, AuthorBasic, AuthorRow } from "~/types/types"
 
 // Author-related functions
-export const getAuthors = async (searchTerm?: string) => {
+export const getAuthors = async (searchTerm?: string): Promise<AuthorBasic[]> => {
   const whereConditions = []
 
   if (searchTerm) {
@@ -20,19 +21,19 @@ export const getAuthors = async (searchTerm?: string) => {
   return results.map(r => ({ id: r.id, name: r.name }))
 }
 
-export const getAuthor = async (id: string) => {
+export const getAuthor = async (id: string): Promise<Author | null> => {
   const results = await db.select().from(authorTable).where(eq(authorTable.id, id))
   if (results.length === 0) return null
   return authorRowToObject(results[0])
 }
 
-export const createAuthor = async (name: string) => {
+export const createAuthor = async (name: string): Promise<AuthorBasic> => {
   const id = crypto.randomUUID()
   const result = await db.insert(authorTable).values({ id: id, name: name }).returning()
   return { id: result[0].id, name: result[0].name }
 }
 
-export const getAuthorDocuments = async (authorId: string) => {
+export const getAuthorDocuments = async (authorId: string): Promise<string[]> => {
   const results = await db
     .select({ documentId: documentAuthorsTable.documentId })
     .from(documentAuthorsTable)
@@ -42,12 +43,12 @@ export const getAuthorDocuments = async (authorId: string) => {
   return results.map(r => r.documentId)
 }
 
-export const linkDocumentToAuthor = async (documentId: string, authorId: string) => {
+export const linkDocumentToAuthor = async (documentId: string, authorId: string): Promise<void> => {
   const id = crypto.randomUUID()
   await db.insert(documentAuthorsTable).values({ id, documentId, authorId }).onConflictDoNothing()
 }
 
-export const getDocumentAuthors = async (documentId: string) => {
+export const getDocumentAuthors = async (documentId: string): Promise<AuthorBasic[]> => {
   const results = await db
     .select({ id: authorTable.id, name: authorTable.name })
     .from(documentAuthorsTable)
@@ -57,7 +58,7 @@ export const getDocumentAuthors = async (documentId: string) => {
   return results
 }
 
-const authorRowToObject = (row: typeof authorTable.$inferSelect) => {
+const authorRowToObject = (row: AuthorRow): Author => {
   return {
     id: row.id,
     name: row.name,
@@ -66,12 +67,7 @@ const authorRowToObject = (row: typeof authorTable.$inferSelect) => {
   }
 }
 
-const authorObjectToRow = (author: {
-  id: string
-  name: string
-  createdAt: Date
-  updatedAt: Date
-}) => {
+const authorObjectToRow = (author: Author) => {
   return {
     id: author.id,
     name: author.name,
