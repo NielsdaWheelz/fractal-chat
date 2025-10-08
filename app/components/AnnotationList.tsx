@@ -11,6 +11,8 @@ import {
   SidebarMenuItem,
   SidebarRail,
   useSidebar,
+  SidebarListButton,
+  SidebarListItem
 } from "~/components/ui/sidebar-right";
 
 
@@ -21,13 +23,13 @@ const AnnotationList = (props: {annotations, setSelectedAnnotationId}) => {
       <SidebarMenu>
         {props.annotations.map((annotation: AnnotationListItem) => {
           return (
-            <SidebarMenuItem key={annotation.id}>
-              <SidebarMenuButton className="w-full justify-start" onClick={() => props.setSelectedAnnotationId(annotation.id)}>
+            <SidebarListItem key={annotation.id}>
+              <SidebarListButton className="w-full justify-start" onClick={() => props.setSelectedAnnotationId(annotation.id)}>
                 <Highlighter className="mr-2 h-4 w-4" />
                 <span className="text-xs">{annotation.quote}</span>
                 <span className="text-xs">{annotation.body}</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+              </SidebarListButton>
+            </SidebarListItem>
           )
         })}
       </SidebarMenu>
