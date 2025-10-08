@@ -17,7 +17,7 @@ import {
   TooltipTrigger,
 } from "~/components/ui/tooltip";
 import { Button } from "~/components/ui/button";
-import { MessageCirclePlus, MessageSquareReply } from "lucide-react";
+import { MessageCirclePlus, MessageSquareReply, Trash2} from "lucide-react";
 import DocumentContents from "~/components/document/DocumentContents";
 import { Tweet } from "./tweet";
 
@@ -59,27 +59,61 @@ function NotePopover({
 
   return (
     <div
-      style={{
-        position: "fixed",
-        left: x,
-        top: y,
-        background: "white",
-        border: "1px solid #e5e7eb",
-        padding: "12px 14px",
-        borderRadius: 12,
-        boxShadow: "0 8px 32px rgba(0,0,0,.18)",
-        zIndex: 10,
-        maxWidth: 420,
-      }}
+      className="fixed bg-white border border-gray-200 p-2 gap-1 rounded-xl shadow-lg z-10 max-w-[420px] flex flex-row items-center"
+      style={{ left: x, top: y }}
       role="dialog"
       aria-label="Annotation"
     >
-      <p className="text-sm">{note || "(no note saved)"}</p>
+      <p className="text-sm ml-2">{note || "(no note saved)"}</p>
+           <Button size="icon" variant="ghost" onClick={() => {}}>
+                <Trash2 className="h-2 w-2" />
+                <span className="sr-only">add to existing chat</span>
+              </Button>
+
     </div>
   );
 }
 
-export const CustomPopover = memo(function CustomPopover({
+
+
+type LoaderData = {
+  document: { id: string; content: string, title: string };
+  annotations: Array<{
+    id: string;
+    start: number;
+    end: number;
+    quote: string;
+    note: string;
+    prefix: string;
+    suffix: string;
+  }>;
+};
+
+export async function loader({
+  request,
+  params,
+}: {
+  request: Request;
+  params: { id?: string };
+}) {
+  const userId = await requireUser(request);
+  if (!params.id) {
+    throw redirect("/");
+  }
+  const document = await getDocument(params.id);
+  const annotations = await getAnnotations(userId, params.id);
+  if (!document) {
+    throw redirect("/");
+  }
+  return { document: document, annotations: annotations };
+}
+
+export default function Document() {
+  const { id } = useParams(); 
+
+
+
+const CustomPopover = memo(function CustomPopover({
   docId,
   docTitle,
   selectionText,
@@ -104,9 +138,9 @@ export const CustomPopover = memo(function CustomPopover({
       }
     };
     // capture = true so we see the event even if inner handlers stopPropagation
-    document.addEventListener("pointerdown", handlePointerDown, true);
+    window.document.addEventListener("pointerdown", handlePointerDown, true);
     return () =>
-      document.removeEventListener("pointerdown", handlePointerDown, true);
+      window.document.removeEventListener("pointerdown", handlePointerDown, true);
   }, [onRequestClose]);
   const onSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
     let parsed: any = null;
@@ -190,18 +224,19 @@ export const CustomPopover = memo(function CustomPopover({
           <Tooltip>
             <TooltipTrigger asChild>
               <Button size="icon" variant="ghost" onClick={() => {}}>
-                <MessageSquareReply className="h-2 w-2" />
+                <MessageCirclePlus className="h-2 w-2" />
                 <span className="sr-only">add to existing chat</span>
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>add to existing chat</p>
+              <p>create new chat</p>
             </TooltipContent>
           </Tooltip>
         </Form>
         <Tooltip>
           <TooltipTrigger asChild>
             <Button size="icon" variant="ghost" onClick={() => {
+                setIncludeSelection(true);
             }}>
               <MessageSquareReply className="h-2 w-2" />
               <span className="sr-only">add to existing chat</span>
@@ -227,40 +262,6 @@ export const CustomPopover = memo(function CustomPopover({
   );
 });
 
-type LoaderData = {
-  document: { id: string; content: string, title: string };
-  annotations: Array<{
-    id: string;
-    start: number;
-    end: number;
-    quote: string;
-    note: string;
-    prefix: string;
-    suffix: string;
-  }>;
-};
-
-export async function loader({
-  request,
-  params,
-}: {
-  request: Request;
-  params: { id?: string };
-}) {
-  const userId = await requireUser(request);
-  if (!params.id) {
-    throw redirect("/");
-  }
-  const document = await getDocument(params.id);
-  const annotations = await getAnnotations(userId, params.id);
-  if (!document) {
-    throw redirect("/");
-  }
-  return { document: document, annotations: annotations };
-}
-
-export default function Document() {
-  const { id } = useParams(); // ✅ read once
 
   const [notePopup, setNotePopup] = useState<null | {
     x: number;
@@ -269,10 +270,12 @@ export default function Document() {
     quote: string;
   }>(null);
   const { selectionRef, setShowHighlight, setIncludeSelection } =
-    useOutletContext<{
-      selectionRef: React.MutableRefObject<string>;
-      setShowHighlight: React.Dispatch<React.SetStateAction<boolean>>;
-    }>();
+  useOutletContext<{
+    selectionRef: React.MutableRefObject<string>;
+    setShowHighlight: React.Dispatch<React.SetStateAction<boolean>>;
+    setIncludeSelection: React.Dispatch<React.SetStateAction<boolean>>;
+  }>();
+
   const { document, annotations } = useLoaderData() as LoaderData;
   const docContent = () => {
     return { __html: document.content };
