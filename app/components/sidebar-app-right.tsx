@@ -64,7 +64,7 @@ export function SidebarApp({ side, data, user, selectionRef, includeSelection, s
       return
     }
   }
-  
+
   useEffect(() => {
     setChats(data.chats as ChatListItem[])
     setAnnotations(data.annotations as AnnotationListItem[])
@@ -111,7 +111,7 @@ export function SidebarApp({ side, data, user, selectionRef, includeSelection, s
   }
 
   const headerTitle = useMemo(() => {
-    if (!selectedChat) return "chats"
+    if (!selectedChat) return "Chats"
     let title = "New Chat"
     try {
       const messages = convertMessages(selectedChat.messages)
@@ -136,6 +136,10 @@ export function SidebarApp({ side, data, user, selectionRef, includeSelection, s
       <SidebarHeader>
         <Tabs defaultValue="tab-1" className="items-center">
           <div className="flex w-full items-center justify-between">
+            <Button size="icon" variant="ghost" onClick={() => setSelectedChatId(null)}>
+              <ArrowLeft className="h-5 w-5" />
+              <span className="sr-only">Back</span>
+            </Button>
             <TabsList>
               <TooltipProvider delayDuration={0}>
                 <Tooltip>
@@ -194,17 +198,11 @@ export function SidebarApp({ side, data, user, selectionRef, includeSelection, s
           </div>
           <TabsContent value="tab-1">
             <div className="flex items-center gap-2">
-              <span className="text-md font-semibold">annotations</span>
+              <span className="text-md font-semibold">Annotations</span>
             </div>
           </TabsContent>
           <TabsContent value="tab-2">
             <div className="flex items-center gap-2">
-              {selectedChat && (
-                <Button size="icon" variant="ghost" onClick={() => setSelectedChatId(null)}>
-                  <ArrowLeft className="h-5 w-5" />
-                  <span className="sr-only">Back</span>
-                </Button>
-              )}
               <span className="text-md font-semibold">{headerTitle}</span>
             </div>
           </TabsContent>

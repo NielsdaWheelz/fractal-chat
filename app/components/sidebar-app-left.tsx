@@ -19,10 +19,15 @@ import {
   TooltipTrigger,
 } from "~/components/ui/tooltip";
 import { NavUser } from "~/components/nav-user";
-import { FilePlus2, BookOpenText, FileText, Search, SearchX } from "lucide-react";
+import { FilePlus2, BookOpenText, FileText, Search, SearchX, ArrowLeft, Users, Library, UserPlus } from "lucide-react";
 import { useEffect, useState, type ComponentProps } from "react";
 import { Form, NavLink, useFetcher } from "react-router";
 import UploadForm from "./upload-form";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+import { TooltipProvider } from "@radix-ui/react-tooltip";
+import DocumentList from "./document/DocumentList";
+import SearchResultList from "./SearchResultList";
+import GroupList from "./group/GroupList";
 
 type UIMessagePart = { type: string; text?: string }
 type UIMessage = { role: string; parts: UIMessagePart[] }
@@ -31,6 +36,9 @@ type UserInfo = { name: string; email: string; avatar: string }
 type SidebarAppProps = { data: any[]; user: UserInfo; side: "left" | "right" } & ComponentProps<typeof Sidebar>
 
 export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
+  const [mode, setMode] = useState("group")
+  const [groupId, setGroupId] = useState(null)
+  const [documentId, setDocumentId] = useState(null)
   const [url, setUrl] = useState("")
   const [searchResults, setSearchResults] = useState([])
   const [query, setQuery] = useState("")
@@ -38,10 +46,16 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
   const fetcher = useFetcher();
 
   useEffect(() => {
+    if (data?.document) setDocumentId(document.id)
+  }), [data]
+
+  useEffect(() => {
     if (fetcher.data && fetcher.data.length > 0) {
       setSearchResults(fetcher.data);
+      setMode("search")
     } else if (fetcher.state === 'idle' && fetcher.data?.length === 0) {
       setSearchResults([]);
+      setMode("group")
     }
   }, [fetcher.data, fetcher.state]);
 
@@ -73,6 +87,10 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
     if (input) input.value = value.trim()
   }
 
+  const openNewGroupModal = () => {
+
+  }
+
   return (
     <Sidebar className="border-r-0" {...props} side="left">
       <SidebarHeader>
@@ -85,26 +103,94 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
             />
           </div>
         </div>
+        <Tabs defaultValue="tab-1" className="items-center">
+          <div className="flex w-full items-center justify-between">
+            <Button size="icon" variant="ghost" onClick={() => {
+              setGroupId(null)
+              setDocumentId(null)
+            }}>
+              <ArrowLeft className="h-5 w-5" />
+              <span className="sr-only">Back</span>
+            </Button>
+            <TabsList>
+              <TooltipProvider delayDuration={0}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span>
+                      <TabsTrigger value="tab-1" className="py-3" onClick={() => {
+                        setMode("group")
+                        setGroupId(null)
+                        setDocumentId(null)
+                      }}>
+                        <Users size={16} aria-hidden="true" />
+                      </TabsTrigger>
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent className="px-2 py-1 text-xs">
+                    Groups
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <TooltipProvider delayDuration={0}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span>
+                      <TabsTrigger value="tab-2" className="group py-3" onClick={() => {
+                        setMode("document")
+                        setGroupId(null)
+                        setDocumentId(null)
+                      }}>
+                        <span className="relative">
+                          <Library size={16} aria-hidden="true" />
+                        </span>
+                      </TabsTrigger>
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent className="px-2 py-1 text-xs">
+                    Documents
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </TabsList>
+            <Button size="icon" variant="ghost" onClick={openNewGroupModal}>
+              <UserPlus className="h-5 w-5" />
+              <span className="sr-only">Back</span>
+            </Button>
+
+          </div>
+          <TabsContent value="tab-1">
+            <div className="flex items-center gap-2">
+              <span className="text-md font-semibold">Groups</span>
+            </div>
+          </TabsContent>
+          <TabsContent value="tab-2">
+            <div className="flex items-center gap-2">
+              <span className="text-md font-semibold">Documents</span>
+            </div>
+          </TabsContent>
+        </Tabs>
       </SidebarHeader>
       <SidebarContent>
         <fetcher.Form method="get" action="/workspace/document-search" onSubmit={handleSearchSubmit}>
           <input className="text-xs py-2 pl-4 pr-2" type="text" name="query" placeholder="search" value={query} onChange={(e) => { setQuery(e.target.value) }} />
-          {searchResults.length > 0 ? <>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button size="icon" variant="ghost" onClick={() => {
-                  setSearchResults([])
-                  setQuery("")
-                }}>
-                  <SearchX className="h-5 w-5" />
-                  <span className="sr-only">clear search</span>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Clear Search</p>
-              </TooltipContent>
-            </Tooltip>
-          </>
+          {searchResults.length > 0 ?
+            <>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button size="icon" variant="ghost" onClick={() => {
+                    setSearchResults([])
+                    setMode("group")
+                    setQuery("")
+                  }}>
+                    <SearchX className="h-5 w-5" />
+                    <span className="sr-only">clear search</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Clear Search</p>
+                </TooltipContent>
+              </Tooltip>
+            </>
             :
             <>
               <Tooltip>
@@ -138,65 +224,28 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
         <UploadForm />
         <div className="flex flex-col gap-4">
           <SidebarGroup>
-            {/* Recent Chats */}
-            {searchResults.length > 0 ? <>
-              <SidebarGroupLabel>Search Results</SidebarGroupLabel>
-              <SidebarMenu>
-                {searchResults.map((match) => {
-                  const resultText = match.chunkText.slice(0, 25)
-                  const title = (match.documentTitle && match.documentTitle.trim().length > 0)
-                    ? match.documentTitle
-                    : (match.documentUrl || match.documentId)
-                  return (
-                    <NavLink key={match.documentId} to={"/workspace/document/" + match.documentId}>
-                      <SidebarMenuItem key={match.documentId}>
-
-                        <SidebarMenuButton className="w-full justify-start text-xs flex flex-row">
-                          <FileText className="mr-2 h-4 w-4" />
-                          <div className="flex flex-col">
-                            <span className="text-[10px]">{resultText}</span>
-                            <div className="flex flex-row">
-                              <span className="text-[7px]">{title} - </span><span className="text-[7px]">{match.documentAuthor}</span>
-                            </div>
-                          </div>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    </NavLink>
-                  )
-                })}
-              </SidebarMenu>
-            </>
-              : <>
-                <SidebarGroupLabel>Recent</SidebarGroupLabel>
+            {searchResults.length > 0 ?
+              <>
+                <SidebarGroupLabel>Search Results</SidebarGroupLabel>
                 <SidebarMenu>
-                  {data.map((document: { id: string, title?: string | null, url?: string }) => {
-                    const title = (document.title && document.title.trim().length > 0)
-                      ? document.title
-                      : (document.url || document.id)
-                    return (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <NavLink key={document.id} to={"/workspace/document/" + document.id}>
-                            <SidebarMenuItem key={document.id}>
-                              <SidebarMenuButton className="w-full text-xs flex items-start gap-2 h-auto px-2 py-2">
-                                <FileText className="mr-2 h-4 w-4 shrink-0 mt-[2px]" />
-                                <div className="w-0 flex-1 overflow-hidden">
-                                  <span className="line-clamp-2 leading-snug break-words text-left overflow-hidden text-ellipsis whitespace-normal">
-                                    {title}
-                                  </span>
-                                </div>
-                              </SidebarMenuButton>
-                            </SidebarMenuItem>
-                          </NavLink>
-                        </TooltipTrigger>
-                        <TooltipContent side="right" align="center" className="max-w-xs">
-                          <p>{title}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    )
-                  })}
+                  <SearchResultList results={searchResults} />
                 </SidebarMenu>
               </>
+              :
+              mode === "document" ?
+                <>
+                  <SidebarGroupLabel>Recent</SidebarGroupLabel>
+                  <SidebarMenu>
+                    <DocumentList documents={data.documents} />
+                  </SidebarMenu>
+                </>
+                : mode === "document" &&
+                <>
+                  <SidebarGroupLabel>Recent</SidebarGroupLabel>
+                  <SidebarMenu>
+                    <GroupList groups={data.groups} />
+                  </SidebarMenu>
+                </>
             }
           </SidebarGroup>
         </div>
