@@ -33,7 +33,7 @@ const AnnotationList = (props: {annotations, setSelectedAnnotationId}) => {
     <SidebarGroup>
       <SidebarGroupLabel>Recent</SidebarGroupLabel>
       <SidebarMenu>
-        {props.annotations.map((annotation: AnnotationListItem) => {
+        {props.annotations?.map((annotation: AnnotationListItem) => {
           return (
             <SidebarListItem key={annotation.id}>
               <SidebarListButton className="w-full justify-start" onClick={() => {
