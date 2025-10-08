@@ -177,9 +177,7 @@ export const CustomPopover = memo(function CustomPopover({
                   variant="ghost"
                   className="ml-1"
                   type="submit"
-                  onClick={() => {
-                    setAnnotationText("");
-                  }}
+
                 >
                   <MessageSquareReply className="h-4 w-4" />
                 </Button>
