@@ -1,6 +1,6 @@
 {
-  "id": "9a490b23-95b4-4e0b-b5e9-2e1784b5b6f0",
-  "prevId": "af4ee089-375e-4bb6-8242-74f1a6ab3e6a",
+  "id": "67273dbf-bdd2-4c43-b367-5c98ac1b8132",
+  "prevId": "9a490b23-95b4-4e0b-b5e9-2e1784b5b6f0",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -135,6 +135,13 @@
         "body": {
           "name": "body",
           "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "visibility": {
+          "name": "visibility",
+          "type": "visibility",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": false
         },
@@ -368,6 +375,13 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "visibility": {
+          "name": "visibility",
+          "type": "visibility",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
         },
         "created_at": {
           "name": "created_at",
@@ -848,6 +862,14 @@
           "primaryKey": false,
           "notNull": true
         },
+        "permissionLevel": {
+          "name": "permissionLevel",
+          "type": "permission_level",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'read'"
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp",
@@ -1090,14 +1112,21 @@
     }
   },
   "enums": {
+    "public.permission_level": {
+      "name": "permission_level",
+      "schema": "public",
+      "values": [
+        "read",
+        "write",
+        "admin"
+      ]
+    },
     "public.principal": {
       "name": "principal",
       "schema": "public",
       "values": [
         "user",
-        "group",
-        "public",
-        "share_link"
+        "group"
       ]
     },
     "public.resource": {
@@ -1107,7 +1136,16 @@
         "document",
         "annotation",
         "comment",
-        "chat"
+        "chat",
+        "group"
+      ]
+    },
+    "public.visibility": {
+      "name": "visibility",
+      "schema": "public",
+      "values": [
+        "private",
+        "public"
       ]
     }
   },

@@ -217,6 +217,8 @@ export async function computeAccessLevel(
   const table = resourceTableMap[resourceType]
   if (!table) return "none"
 
+  if (resourceType === "document") return "read" 
+
   const resource = await db
     .select()
     .from(table)
