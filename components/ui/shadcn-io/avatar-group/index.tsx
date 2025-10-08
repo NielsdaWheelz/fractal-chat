@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { motion, type Transition } from 'motion/react';
+import { motion, type Transition } from 'framer-motion';
 import { Children, type ReactNode } from 'react';
 
 import { cn } from '~/lib/utils';
