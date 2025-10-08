@@ -127,7 +127,7 @@ export default function ChatBlock({ chatId, initialMessages, docId, selectionRef
       <div className="px-2 py-4 max-w-2xl mx-auto w-full">
         {includeSelection && selectedText && (
           <div className="mb-2 text-xs border rounded-md p-2 bg-muted/40 flex items-start gap-2">
-            <div className="flex-1 whitespace-pre-wrap break-words">{truncatedSelection}</div>
+            <div className="flex-1 whitespace-pre-wrap break-words">{selectedText}</div>
             <button className="p-1" onClick={() => setIncludeSelection?.(false)} aria-label="Remove selection">✕</button>
           </div>
         )}
