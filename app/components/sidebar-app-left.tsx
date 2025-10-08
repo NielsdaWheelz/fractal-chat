@@ -78,10 +78,18 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
       <SidebarHeader>
         <div className="flex items-center justify-between p-2">
           <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-              <BookOpenText className="h-5 w-5 text-primary-foreground" />
+            <div className="w-40 aspect-[3/1]">
+              <img
+                src="/logo-transparent-bg.png"
+                alt="App logo"
+                className="h-full w-full object-contain"
+              />
             </div>
-            <span className="text-lg font-semibold">SideNote</span>
+
+            {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+              <BookOpenText className="h-5 w-5 text-primary-foreground" />
+            </div> */}
+            {/* <span className="text-lg font-semibold">SideNote</span> */}
           </div>
         </div>
       </SidebarHeader>
