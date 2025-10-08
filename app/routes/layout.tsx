@@ -38,7 +38,8 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
 
   const waitForDocument = async () => {
     if (params?.id) {
-      return await getDocument(userId, params.id)
+      const document = await getDocument(userId, params.id)
+      return document
     }
   }
   const waitForDocAuthors = async () => {
@@ -48,6 +49,7 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
   }
 
   const document = await waitForDocument();
+  console.log(document)
   const authors = await waitForDocAuthors();
 
   return { user, chats, documents, document, authors }
