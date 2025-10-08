@@ -1,6 +1,7 @@
-import { requireUser } from "~/utils/auth.server";
+import { requireUser } from "~/server/auth.server";
 import type { Route } from "../+types/root";
-import { getAuthors, searchDocumentsForMention } from "~/index.server";
+import { getAuthors } from "~/server/authors.server";
+import { searchDocumentsForMention } from "~/server/search.server";
 
 // search authors and documents for @ meÍntions
 // get /api/mentions

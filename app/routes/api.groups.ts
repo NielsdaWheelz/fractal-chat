@@ -1,7 +1,7 @@
 import { requireUser } from "~/server/auth.server";
 import type { Route } from "../+types/root";
 
-// search authors and documents for @ meÍntions
+// search authors and documents for @ mentions
 // get /api/mentions
 export async function loader({ request }: Route.LoaderArgs) {
   const userId = await requireUser(request);

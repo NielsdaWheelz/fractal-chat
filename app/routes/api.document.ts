@@ -1,6 +1,6 @@
-import { requireUser } from "~/utils/auth.server";
+import { requireUser } from "~/server/auth.server";
 import type { Route } from "../+types/root";
-import { embedAndSearch } from "~/utils/document.server";
+import { embedAndSearch } from "~/server/document.server";
 
 export async function action({ request }: Route.ActionArgs) {
   const userId = await requireUser(request)

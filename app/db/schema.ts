@@ -1,8 +1,9 @@
 import { pgTable, text, timestamp, boolean, vector, integer, pgEnum, primaryKey } from "drizzle-orm/pg-core";
 
-// export const visibilityEnum = pgEnum("visibility", ["private", "link", "group", "public"]);
-export const resourceEnum = pgEnum("resource", ["document", "annotation", "comment", "chat"]);
-export const principalEnum = pgEnum("principal", ["user", "group", "public", "share_link"]);
+export const visibilityEnum = pgEnum("visibility", ["private", "public"]);
+export const resourceEnum = pgEnum("resource", ["document", "annotation", "comment", "chat", "group"]);
+export const principalEnum = pgEnum("principal", ["user", "group", "public"]);
+export const permissionLevelEnum = pgEnum("permission_level", ["read", "write", "admin"]);
 
 export const chatTable = pgTable("chat", {
   id: text("id").primaryKey(),
@@ -27,7 +28,7 @@ export const documentTable = pgTable("document", {
   content: text("content").notNull(),
   textContent: text("textContent"),
   publishedTime: text("published_time"),
-  // visibility: visibilityEnum("visibility").default("private").notNull(),
+  // visibility: visibilityEnum("visibility"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()
@@ -132,7 +133,7 @@ export const annotation = pgTable("annotation", {
   documentId: text("document_id").notNull().references(() => documentTable.id, { onDelete: "cascade" }),
   body: text("body"),
   highlight: text("highlights"),
-  // visibility: visibilityEnum("visibility").default("private").notNull(),
+  visibility: visibilityEnum("visibility"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()
@@ -155,7 +156,7 @@ export const comment = pgTable("comment", {
   annotationId: text("annotation_id")
     .notNull()
     .references(() => annotation.id, { onDelete: "cascade" }),
-  // visibility: visibilityEnum("visibility").default("private").notNull(),
+  visibility: visibilityEnum("visibility"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()
@@ -168,6 +169,7 @@ export const permissionTable = pgTable("permission", {
   resourceId: text("resource_id").notNull(),
   principalType: principalEnum().notNull(),
   principalId: text("principal_id").notNull(),
+  permissionLevel: permissionLevelEnum().notNull().default("read"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()

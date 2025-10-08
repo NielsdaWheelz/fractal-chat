@@ -4,8 +4,8 @@ import { join } from "path";
 import { writeFile, unlink } from "fs/promises";
 import { EPub } from 'epub2'
 import { tmpdir } from "os";
-import { saveDocument } from "~/index.server";
-import { requireUser } from "~/utils/auth.server";
+import { saveDocument } from "~/server/documents.server";
+import { requireUser } from "~/server/auth.server";
 
 
 export async function action({ request }: ActionFunctionArgs) {

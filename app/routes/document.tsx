@@ -6,8 +6,9 @@ import {
   useOutletContext,
   useParams,
 } from "react-router";
-import { requireUser } from "~/utils/auth.server";
-import { getAnnotations, getDocument } from "../index.server";
+import { requireUser } from "~/server/auth.server";
+import { getAnnotations } from "~/server/annotations.server";
+import { getDocument } from "~/server/documents.server";
 
 
 import {

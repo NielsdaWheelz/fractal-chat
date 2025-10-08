@@ -1,5 +1,5 @@
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "@remix-run/node"
-import { auth } from "~/utils/auth.server"
+import { auth } from "~/server/auth.server"
 
 export async function loader({ request }: LoaderFunctionArgs) {
   return auth.handler(request)

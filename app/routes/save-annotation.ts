@@ -1,8 +1,8 @@
 // app/routes/workspace.document.$id.save-annotation.ts
 import type { ActionFunctionArgs } from "react-router";
 import { redirect } from "react-router";
-import { requireUser } from "~/utils/auth.server";
-import { saveAnnotations} from "../index.server";
+import { requireUser } from "~/server/auth.server";
+import { saveAnnotations } from "~/server/annotations.server";
 
 export async function action({ request, params }: ActionFunctionArgs) {
   const userId = await requireUser(request);
@@ -40,7 +40,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
   await saveAnnotations({
     id: crypto.randomUUID(),
     userId,
-    docId: id,
+    documentId: id,
     start,
     end,
     quote: quote ?? "",

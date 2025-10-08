@@ -1,6 +1,6 @@
 import type { LoaderFunctionArgs } from "react-router";
-import { requireUser } from "~/utils/auth.server";
-import { embedAndSearch } from "~/utils/document.server";
+import { requireUser } from "~/server/auth.server";
+import { embedAndSearch } from "~/server/document.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const userId = await requireUser(request)

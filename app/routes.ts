@@ -5,6 +5,8 @@ export default [
   route("signin", "routes/sign-in.tsx"),
   route("signup", "routes/sign-up.tsx"),
   route("api/auth/*", "routes/api.auth.ts"),
+  route("api/permissions/*", "routes/api.permissions.ts"),
+  route("api/groups/*", "routes/api.groups.ts"),
   route("api/chat/*", "routes/api.chat.ts"),
   route("api/document/*", "routes/api.document.ts"),
   route("api/upload/*", "routes/api.upload.ts"),

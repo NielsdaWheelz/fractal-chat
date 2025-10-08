@@ -1,7 +1,7 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { APIError } from "better-auth/api";
-import { db } from "../index.server";
+import { db } from "./index.server";
 import * as schema from "../db/schema";
 import { redirect } from "react-router";
 

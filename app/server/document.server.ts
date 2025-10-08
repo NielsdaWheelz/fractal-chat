@@ -1,7 +1,7 @@
 import { embedMany } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter"
-import { semanticSearch } from "../index.server"
+import { semanticSearch } from './search.server';
 
 export const chunkText = async (rawText: string) => {
   const splitter = new RecursiveCharacterTextSplitter({

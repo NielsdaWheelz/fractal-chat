@@ -1,7 +1,9 @@
 import type { Route } from "./+types/layout";
 import { Outlet, redirect } from "react-router";
-import { getSession, getUser } from "~/utils/auth.server";
-import { getChats, getDocument, getDocumentAuthors, getDocuments } from "../index.server";
+import { getSession, getUser } from "~/server/auth.server";
+import { getDocument, getDocuments } from "~/server/documents.server";
+import { getChats } from "~/server/chats.server";
+import { getDocumentAuthors } from "~/server/authors.server";
 import { Button } from "~/components/ui/button";
 import {
   Breadcrumb,
@@ -32,11 +34,11 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
   const userId = await getUser(request)
   const docId = params?.id
   const chats = userId && docId ? (await getChats(userId, docId)) : []
-  const documents = await getDocuments()
+  const documents = await getDocuments(userId)
 
   const waitForDocument = async () => {
     if (params?.id) {
-      return await getDocument(params.id)
+      return await getDocument(userId, params.id)
     }
   }
   const waitForDocAuthors = async () => {

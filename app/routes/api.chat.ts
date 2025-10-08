@@ -2,11 +2,12 @@ import { openai } from "@ai-sdk/openai"
 import { streamText, convertToModelMessages, tool, stepCountIs, createIdGenerator } from "ai"
 import { z } from "zod"
 import type { UIMessage } from "ai"
-import { requireUser } from "~/utils/auth.server"
-import { saveChat, getAuthorDocuments } from "../index.server"
+import { requireUser } from "~/server/auth.server"
+import { saveChat } from "~/server/chats.server"
+import { getAuthorDocuments } from "~/server/authors.server"
 import type { Route } from "../+types/root"
 import sysprompt from "../assets/sysprompt.txt"
-import { embedAndSearch } from "~/utils/document.server"
+import { embedAndSearch } from "~/server/document.server"
 
 export const maxDuration = 30
 
