@@ -26,6 +26,7 @@ import { SidebarApp as SidebarRight } from "~/components/sidebar-app-right";
 import { useRef, useState } from "react";
 import { TooltipProvider } from "../components/ui/tooltip";
 import { getAnnotations } from "~/index.server";
+import { getGroups } from "~/server/groups.server";
 
 
 export const loader = async ({ request, params }: Route.LoaderArgs) => {
@@ -36,6 +37,7 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
   const docId = params?.id
   const chats = userId && docId ? (await getChats(userId, docId)) : []
   const documents = await getDocuments(userId)
+  const groups = await getGroups(userId)
 
   const waitForDocument = async () => {
     if (params?.id) {
@@ -60,7 +62,7 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
   const authors = await waitForDocAuthors();
   const annotations = await waitForAnnotations();
 
-  return { user, chats, documents, document, authors, annotations }
+  return { user, chats, groups, documents, document, authors, annotations }
 }
 
 const Layout = ({ loaderData }: Route.ComponentProps) => {
@@ -78,7 +80,7 @@ const Layout = ({ loaderData }: Route.ComponentProps) => {
       {/* documents chats */}
 
       <LeftSidebarProvider>
-        <SidebarLeft side="left" data={loaderData.documents} user={uiUser} />
+        <SidebarLeft side="left" data={loaderData} user={uiUser} />
         <RightSidebarProvider>
           <SidebarInset className="flex flex-col h-screen overflow-y-auto">
             <header className="sticky top-0 flex h-14 shrink-0 items-center gap-2 z-50 backdrop-blur-sm rounded-md">
