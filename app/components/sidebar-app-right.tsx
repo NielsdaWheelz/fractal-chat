@@ -19,26 +19,41 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
+  TooltipProvider
 } from "~/components/ui/tooltip";
 import { NavUser } from "~/components/nav-user";
-import { ArrowLeft, MessageCircle, MessageCirclePlus } from "lucide-react";
+import { ArrowLeft, MessageCircle, MessageCirclePlus, BoxIcon, HouseIcon, PanelsTopLeftIcon, Highlighter } from "lucide-react"
 import type { ComponentProps } from "react";
 import { Form, useFetcher, useParams } from "react-router";
 import ChatBlock from "~/chat/chat-block";
 import AvatarGroupBottomDemo from "./groupavatar";
+import ChatList from "./ChatList";
+import AnnotationList from "./AnnotationList";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "~/components/ui/tabs"
 
 type UIMessagePart = { type: string; text?: string }
 type UIMessage = { role: string; parts: UIMessagePart[] }
 type ChatListItem = { id: string; messages?: UIMessage[] }
 type UserInfo = { name: string; email: string; avatar: string }
-type SidebarAppProps = { data: any[]; user: UserInfo; side: "left" | "right"; selectionRef?: MutableRefObject<string> } & ComponentProps<typeof Sidebar>
+type SidebarAppProps = { data; user: UserInfo; side: "left" | "right"; selectionRef?: MutableRefObject<string> } & ComponentProps<typeof Sidebar>
 
 export function SidebarApp({ side, data, user, selectionRef, includeSelection, setIncludeSelection, ...props }: SidebarAppProps) {
+  const [mode, setMode] = useState("annotation")
   const { setOpen } = useSidebar()
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null)
-  const [chats, setChats] = useState<ChatListItem[]>(data as ChatListItem[])
+  const [chats, setChats] = useState<ChatListItem[]>(data.chats as ChatListItem[])
+  const [annotations, setAnnotations] = useState(data.annotations)
+  const [selectedAnnotationId, setSelectedAnnotationId] = useState<string | null>(null)
   const fetcher = useFetcher<any>()
   const params = useParams()
+
+  const activeItems = mode === "chats" ? chats : annotations
+  const selectedItemId = mode === "chats" ? selectedChatId : selectedAnnotationId
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     const form = event.currentTarget as HTMLFormElement
@@ -49,8 +64,10 @@ export function SidebarApp({ side, data, user, selectionRef, includeSelection, s
       return
     }
   }
+  
   useEffect(() => {
-    setChats(data as ChatListItem[])
+    setChats(data.chats as ChatListItem[])
+    setAnnotations(data.annotations as AnnotationListItem[])
   }, [data])
 
   useEffect(() => {
@@ -78,6 +95,7 @@ export function SidebarApp({ side, data, user, selectionRef, includeSelection, s
   }, [selectedChatId])
 
   const selectedChat = useMemo(() => chats.find(c => c.id === selectedChatId) || null, [chats, selectedChatId])
+  const selectedAnnotation = useMemo(() => chats.find(c => c.id === selectedAnnotationId) || null, [chats, selectedAnnotationId])
 
   const convertMessages = (messages) => {
     if (Array.isArray(messages)) return messages as UIMessage[]
@@ -116,66 +134,95 @@ export function SidebarApp({ side, data, user, selectionRef, includeSelection, s
   return (
     <Sidebar className="border-r-0" {...props} side="right">
       <SidebarHeader>
-        <div className="flex items-center justify-between p-2">
-          <div className="flex items-center gap-2">
-            {selectedChat && (
-              <Button size="icon" variant="ghost" onClick={() => setSelectedChatId(null)}>
-                <ArrowLeft className="h-5 w-5" />
-                <span className="sr-only">Back</span>
-              </Button>
-            )}
-            <span className="text-md font-semibold">{headerTitle}</span>
+        <Tabs defaultValue="tab-1" className="items-center">
+          <div className="flex w-full items-center justify-between">
+            <TabsList>
+              <TooltipProvider delayDuration={0}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span>
+                      <TabsTrigger value="tab-1" className="py-3" onClick={() => {
+                        setMode("annotation")
+                        setSelectedChatId(null)
+                        setSelectedAnnotationId(null)
+                      }}>
+                        <Highlighter size={16} aria-hidden="true" />
+                      </TabsTrigger>
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent className="px-2 py-1 text-xs">
+                    Annotations
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <TooltipProvider delayDuration={0}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span>
+                      <TabsTrigger value="tab-2" className="group py-3" onClick={() => {
+                        setMode("chat")
+                        setSelectedChatId(null)
+                        setSelectedAnnotationId(null)
+                      }}>
+                        <span className="relative">
+                          <MessageCircle size={16} aria-hidden="true" />
+                        </span>
+                      </TabsTrigger>
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent className="px-2 py-1 text-xs">
+                    Chats
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </TabsList>
+            {/* New Chat Button */}
+            {/* <fetcher.Form method="post" action="chat-create"> */}
+            <Form method="post" action={`/workspace/document/${useParams().id}/chat-create`}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button size="icon" variant="ghost" type="submit">
+                    <MessageCirclePlus className="h-5 w-5" />
+                    <span className="sr-only">New Chat</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>New Chat</p>
+                </TooltipContent>
+              </Tooltip>
+            </Form>
           </div>
-          {/* New Chat Button */}
-          {/* <fetcher.Form method="post" action="chat-create"> */}
-          <Form method="post" action={`/workspace/document/${useParams().id}/chat-create`}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button size="icon" variant="ghost" type="submit">
-                  <MessageCirclePlus className="h-5 w-5" />
-                  <span className="sr-only">New Chat</span>
+          <TabsContent value="tab-1">
+            <div className="flex items-center gap-2">
+              <span className="text-md font-semibold">annotations</span>
+            </div>
+          </TabsContent>
+          <TabsContent value="tab-2">
+            <div className="flex items-center gap-2">
+              {selectedChat && (
+                <Button size="icon" variant="ghost" onClick={() => setSelectedChatId(null)}>
+                  <ArrowLeft className="h-5 w-5" />
+                  <span className="sr-only">Back</span>
                 </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>New Chat</p>
-              </TooltipContent>
-            </Tooltip>
-          </Form>
-          {/* </fetcher.Form> */}
-        </div>
+              )}
+              <span className="text-md font-semibold">{headerTitle}</span>
+            </div>
+          </TabsContent>
+        </Tabs>
       </SidebarHeader>
       <SidebarContent>
         <div className="flex flex-col gap-4">
-          {!selectedChat && (
-            <SidebarGroup>
-              <SidebarGroupLabel>Recent</SidebarGroupLabel>
-              <SidebarMenu>
-                {chats.map((chat: ChatListItem) => {
-                  let title = "New chat"
-                  try {
-                    const messages = convertMessages(chat.messages)
-                    const firstUserMessage = (messages ?? []).find((m: UIMessage) => m.role === "user")
-                    const firstLine = firstUserMessage?.parts?.find((p: UIMessagePart) => p.type === "text")?.text?.split("\n")[0]
-                    if (firstLine && firstLine.trim().length > 0) {
-                      title = firstLine.trim()
-                    }
-                  } catch { }
-                  return (
-                    <SidebarMenuItem key={chat.id}>
-                      <SidebarMenuButton className="w-full justify-start" onClick={() => setSelectedChatId(chat.id)}>
-                        <MessageCircle className="mr-2 h-4 w-4" />
-                        <span className="text-xs">{title}</span>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  )
-                })}
-              </SidebarMenu>
-            </SidebarGroup>
+          {!selectedChat && mode === "chat" && (
+            <ChatList chats={chats} setSelectedChatId={setSelectedChatId} />
           )}
-          {selectedChat && (
+          {selectedChat && mode === "chat" && (
             <div className="h-full">
               <ChatBlock chatId={selectedChat.id} initialMessages={selectedChatMessages} docId={useParams().id as string} selectionRef={selectionRef} includeSelection={includeSelection} setIncludeSelection={setIncludeSelection} />
             </div>
+          )}
+          {mode === "annotation" && (
+            <AnnotationList annotations={annotations} setSelectedAnnotationId={setSelectedAnnotationId} />
+
           )}
         </div>
       </SidebarContent>
