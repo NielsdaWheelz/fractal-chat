@@ -64,6 +64,7 @@ export function SidebarApp({ side, data, user, selectionRef, includeSelection, s
       return
     }
   }
+  
   useEffect(() => {
     setChats(data.chats as ChatListItem[])
     setAnnotations(data.annotations as AnnotationListItem[])
