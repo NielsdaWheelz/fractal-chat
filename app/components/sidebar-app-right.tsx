@@ -139,7 +139,11 @@ export function SidebarApp({ side, data, user, selectionRef, includeSelection, s
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <span>
-                      <TabsTrigger value="tab-1" className="py-3">
+                      <TabsTrigger value="tab-1" className="py-3" onClick={() => {
+                        setMode("chat")
+                        setSelectedChatId(null)
+                        setSelectedAnnotationId(null)
+                      }}>
                         <MessageCircle size={16} aria-hidden="true" />
                       </TabsTrigger>
                     </span>
@@ -153,7 +157,11 @@ export function SidebarApp({ side, data, user, selectionRef, includeSelection, s
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <span>
-                      <TabsTrigger value="tab-2" className="group py-3">
+                      <TabsTrigger value="tab-2" className="group py-3" onClick={() => {
+                        setMode("annotation")
+                        setSelectedChatId(null)
+                        setSelectedAnnotationId(null)
+                      }}>
                         <span className="relative">
                           <Highlighter size={16} aria-hidden="true" />
                         </span>
@@ -183,28 +191,22 @@ export function SidebarApp({ side, data, user, selectionRef, includeSelection, s
             </Form>
           </div>
           <TabsContent value="tab-1">
-            <p className="text-muted-foreground p-4 text-center text-xs">
-              Content for Tab 1
-            </p>
+            <div className="flex items-center gap-2">
+              {selectedChat && (
+                <Button size="icon" variant="ghost" onClick={() => setSelectedChatId(null)}>
+                  <ArrowLeft className="h-5 w-5" />
+                  <span className="sr-only">Back</span>
+                </Button>
+              )}
+              <span className="text-md font-semibold">{headerTitle}</span>
+            </div>
           </TabsContent>
           <TabsContent value="tab-2">
-            <p className="text-muted-foreground p-4 text-center text-xs">
-              Content for Tab 2
-            </p>
+            <div className="flex items-center gap-2">
+              <span className="text-md font-semibold">annotations</span>
+            </div>
           </TabsContent>
         </Tabs>
-        <div className="flex items-center justify-between p-2">
-          <div className="flex items-center gap-2">
-            {selectedChat && (
-              <Button size="icon" variant="ghost" onClick={() => setSelectedChatId(null)}>
-                <ArrowLeft className="h-5 w-5" />
-                <span className="sr-only">Back</span>
-              </Button>
-            )}
-            <span className="text-md font-semibold">{headerTitle}</span>
-          </div>
-          {/* </fetcher.Form> */}
-        </div>
       </SidebarHeader>
       <SidebarContent>
         <div className="flex flex-col gap-4">
