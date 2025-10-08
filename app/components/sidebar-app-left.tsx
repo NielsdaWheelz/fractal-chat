@@ -147,7 +147,7 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
                     </span>
                   </TooltipTrigger>
                   <TooltipContent className="px-2 py-1 text-xs">
-                    Documents
+                    Reads
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -165,7 +165,7 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
           </TabsContent>
           <TabsContent value="tab-2">
             <div className="flex items-center gap-2">
-              <span className="text-md font-semibold">Documents</span>
+              <span className="text-md font-semibold">Reads</span>
             </div>
           </TabsContent>
         </Tabs>
