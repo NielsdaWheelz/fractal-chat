@@ -43,7 +43,7 @@ type UserInfo = { name: string; email: string; avatar: string }
 type SidebarAppProps = { data; user: UserInfo; side: "left" | "right"; selectionRef?: MutableRefObject<string> } & ComponentProps<typeof Sidebar>
 
 export function SidebarApp({ side, data, user, selectionRef, includeSelection, setIncludeSelection, ...props }: SidebarAppProps) {
-  const [mode, setMode] = useState("chat")
+  const [mode, setMode] = useState("annotation")
   const { setOpen } = useSidebar()
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null)
   const [chats, setChats] = useState<ChatListItem[]>(data.chats as ChatListItem[])
@@ -140,16 +140,16 @@ export function SidebarApp({ side, data, user, selectionRef, includeSelection, s
                   <TooltipTrigger asChild>
                     <span>
                       <TabsTrigger value="tab-1" className="py-3" onClick={() => {
-                        setMode("chat")
+                        setMode("annotation")
                         setSelectedChatId(null)
                         setSelectedAnnotationId(null)
                       }}>
-                        <MessageCircle size={16} aria-hidden="true" />
+                        <Highlighter size={16} aria-hidden="true" />
                       </TabsTrigger>
                     </span>
                   </TooltipTrigger>
                   <TooltipContent className="px-2 py-1 text-xs">
-                    Chats
+                    Annotations
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -158,18 +158,18 @@ export function SidebarApp({ side, data, user, selectionRef, includeSelection, s
                   <TooltipTrigger asChild>
                     <span>
                       <TabsTrigger value="tab-2" className="group py-3" onClick={() => {
-                        setMode("annotation")
+                        setMode("chat")
                         setSelectedChatId(null)
                         setSelectedAnnotationId(null)
                       }}>
                         <span className="relative">
-                          <Highlighter size={16} aria-hidden="true" />
+                          <MessageCircle size={16} aria-hidden="true" />
                         </span>
                       </TabsTrigger>
                     </span>
                   </TooltipTrigger>
                   <TooltipContent className="px-2 py-1 text-xs">
-                    Annotations
+                    Chats
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -192,6 +192,11 @@ export function SidebarApp({ side, data, user, selectionRef, includeSelection, s
           </div>
           <TabsContent value="tab-1">
             <div className="flex items-center gap-2">
+              <span className="text-md font-semibold">annotations</span>
+            </div>
+          </TabsContent>
+          <TabsContent value="tab-2">
+            <div className="flex items-center gap-2">
               {selectedChat && (
                 <Button size="icon" variant="ghost" onClick={() => setSelectedChatId(null)}>
                   <ArrowLeft className="h-5 w-5" />
@@ -199,11 +204,6 @@ export function SidebarApp({ side, data, user, selectionRef, includeSelection, s
                 </Button>
               )}
               <span className="text-md font-semibold">{headerTitle}</span>
-            </div>
-          </TabsContent>
-          <TabsContent value="tab-2">
-            <div className="flex items-center gap-2">
-              <span className="text-md font-semibold">annotations</span>
             </div>
           </TabsContent>
         </Tabs>
