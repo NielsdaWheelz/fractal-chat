@@ -2,7 +2,7 @@ import { pgTable, text, timestamp, boolean, vector, integer, pgEnum, primaryKey 
 
 export const visibilityEnum = pgEnum("visibility", ["private", "public"]);
 export const resourceEnum = pgEnum("resource", ["document", "annotation", "comment", "chat", "group"]);
-export const principalEnum = pgEnum("principal", ["user", "group", "public"]);
+export const principalEnum = pgEnum("principal", ["user", "group"]);
 export const permissionLevelEnum = pgEnum("permission_level", ["read", "write", "admin"]);
 
 export const chatTable = pgTable("chat", {
@@ -132,7 +132,6 @@ export const annotation = pgTable("annotation", {
     .references(() => user.id, { onDelete: "cascade" }),
   documentId: text("document_id").notNull().references(() => documentTable.id, { onDelete: "cascade" }),
   body: text("body"),
-  highlight: text("highlights"),
   visibility: visibilityEnum("visibility"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")

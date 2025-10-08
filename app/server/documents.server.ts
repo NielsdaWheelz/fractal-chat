@@ -97,9 +97,7 @@ export const getDocuments = async (userId: string, documentIds?: string[]) => {
     // perm applies to user?
     const applies =
       (perm.principalType === 'user' && perm.principalId === userId) ||
-      (perm.principalType === 'group' && userGroupIds.includes(perm.principalId)) ||
-      perm.principalType === 'public'
-
+      (perm.principalType === 'group' && userGroupIds.includes(perm.principalId))
     if (applies) {
       permMap.get(key).push(perm)
     }

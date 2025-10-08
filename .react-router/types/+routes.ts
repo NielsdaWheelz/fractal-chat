@@ -24,6 +24,16 @@ type Pages = {
       "*": string;
     };
   };
+  "/api/permissions/*": {
+    params: {
+      "*": string;
+    };
+  };
+  "/api/groups/*": {
+    params: {
+      "*": string;
+    };
+  };
   "/api/chat/*": {
     params: {
       "*": string;
@@ -74,7 +84,7 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/signin" | "/signup" | "/api/auth/*" | "/api/chat/*" | "/api/document/*" | "/api/upload/*" | "/workspace" | "/workspace/document-search" | "/workspace/document/:id" | "/workspace/document/:id/chat/:chatId" | "/workspace/document/:id/chat-create" | "/workspace/document/:id/save-annotation" | "/workspace/document-create";
+    page: "/" | "/signin" | "/signup" | "/api/auth/*" | "/api/permissions/*" | "/api/groups/*" | "/api/chat/*" | "/api/document/*" | "/api/upload/*" | "/workspace" | "/workspace/document-search" | "/workspace/document/:id" | "/workspace/document/:id/chat/:chatId" | "/workspace/document/:id/chat-create" | "/workspace/document/:id/save-annotation" | "/workspace/document-create";
   };
   "routes/home.tsx": {
     id: "routes/home";
@@ -91,6 +101,14 @@ type RouteFiles = {
   "routes/api.auth.ts": {
     id: "routes/api.auth";
     page: "/api/auth/*";
+  };
+  "routes/api.permissions.ts": {
+    id: "routes/api.permissions";
+    page: "/api/permissions/*";
+  };
+  "routes/api.groups.ts": {
+    id: "routes/api.groups";
+    page: "/api/groups/*";
   };
   "routes/api.chat.ts": {
     id: "routes/api.chat";

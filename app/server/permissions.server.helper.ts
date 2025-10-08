@@ -63,9 +63,7 @@ export async function getDirectPermission(
           and(
             eq(permissionTable.principalType, "group"),
             inArray(permissionTable.principalId, userGroupIds)
-          ),
-          // public permission
-          eq(permissionTable.principalType, "public")
+          )
         )
       )
     )

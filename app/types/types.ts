@@ -32,7 +32,6 @@ export const RESOURCE_TYPE = {
 export const PRINCIPAL_TYPE = {
   USER: "user",
   GROUP: "group",
-  PUBLIC: "public",
 } as const;
 
 export type Visibility = typeof VISIBILITY[keyof typeof VISIBILITY];
@@ -115,7 +114,6 @@ export interface Annotation {
   userId: string;
   documentId: string;
   body: string | null;
-  highlight: string | null;
   start: number;
   end: number;
   quote: string | null;
@@ -131,7 +129,6 @@ export interface AnnotationCreate {
   userId: string;
   documentId: string;
   body: string;
-  highlight: string;
   start: number;
   end: number;
   quote?: string;
