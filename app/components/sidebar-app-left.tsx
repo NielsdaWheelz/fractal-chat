@@ -78,18 +78,11 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
       <SidebarHeader>
         <div className="flex items-center justify-between p-2">
           <div className="flex items-center gap-3">
-            {/* <div className="w-50 aspect-[3/1]"> */}
             <img
               src="/logo-transparent-bg.png"
               alt="App logo"
               className="h-full w-full object-contain"
             />
-            {/* </div> */}
-
-            {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-              <BookOpenText className="h-5 w-5 text-primary-foreground" />
-            </div> */}
-            {/* <span className="text-lg font-semibold">SideNote</span> */}
           </div>
         </div>
       </SidebarHeader>
@@ -183,11 +176,15 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
                     return (
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <NavLink className="truncate" key={document.id} to={"/workspace/document/" + document.id}>
+                          <NavLink key={document.id} to={"/workspace/document/" + document.id}>
                             <SidebarMenuItem key={document.id}>
-                              <SidebarMenuButton className="w-full justify-start text-xs">
-                                <FileText className="mr-2 h-4 w-4" />
-                                {title}
+                              <SidebarMenuButton className="w-full text-xs flex items-start gap-2 h-auto px-2 py-2">
+                                <FileText className="mr-2 h-4 w-4 shrink-0 mt-[2px]" />
+                                <div className="w-0 flex-1 overflow-hidden">
+                                  <span className="line-clamp-2 leading-snug break-words text-left overflow-hidden text-ellipsis whitespace-normal">
+                                    {title}
+                                  </span>
+                                </div>
                               </SidebarMenuButton>
                             </SidebarMenuItem>
                           </NavLink>

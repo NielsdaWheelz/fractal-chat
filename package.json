@@ -27,6 +27,7 @@
     "@react-router/serve": "^7.9.2",
     "@remix-run/node": "^2.17.1",
     "@supabase/supabase-js": "^2.58.0",
+    "@tailwindcss/line-clamp": "^0.4.4",
     "ai": "^5.0.59",
     "better-auth": "^1.3.23",
     "class-variance-authority": "^0.7.1",

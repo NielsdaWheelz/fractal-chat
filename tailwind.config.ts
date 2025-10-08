@@ -4,6 +4,6 @@ module.exports = {
         "./node_modules/flowbite-react/**/*.{js,ts,jsx,tsx}"
     ],
     plugins: [
-        require('flowbite/plugin')
+        require('flowbite/plugin'), require('tailwindcss/line-clamp')
     ],
 };
