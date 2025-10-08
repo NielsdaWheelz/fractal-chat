@@ -202,7 +202,7 @@ export const checkPermission = async (userId, resourceType, resourceId) => {
 
   if (resourceType === "annotation") {
     const annotation = await getAnnotation(resourceId)
-    const parent = await getDocument(annotation.docId)
+    const parent = await getDocument(userId, annotation.documentId)
     parents.push({ resourceType: "document", resourceId: document.id })
   }
 
@@ -214,7 +214,7 @@ export const checkPermission = async (userId, resourceType, resourceId) => {
   return "none"
 }
 
-// makePrivate(useraId, resourceType, resourceId)
+// makePrivate(userId, resourceType, resourceId)
 export const makePrivate = async (userId: string, resourceType: string, resourceId: string) => {
   const resourceTable = tableMap[resourceType as keyof typeof tableMap]
   if (!resourceTable) throw new Error(`Invalid resource type: ${resourceType}`)
@@ -255,7 +255,14 @@ export const saveAnnotations = async (annotationToSave: any) => {
 }
 
 export const getAnnotations = async (userID: string, doc_id: string) => {
-  const result = await db.select().from(annotation).where(and(eq(annotation.userId, userID), eq(annotation.documentId, doc_id)));
+  const result = await db
+    .select()
+    .from(annotation)
+    .where(
+      and(
+        eq(annotation.userId, userID),
+        eq(annotation.documentId, doc_id)
+      ));
   return result
 }
 
@@ -264,17 +271,175 @@ export const getDocuments = async () => {
   return results
 }
 
-export const getDocument = async (id: string) => {
-  const document = await db.select().from(documentTable).where(eq(documentTable.id, id))
-  if (!document) return null
-  // const annotations = await db.select().from(annotation).where(eq(annotation.docId, id))
-  // const comments = await db.select().from(comment).leftJoin(annotation, eq(comment.annotationId, annotation.id)).where(inArray(comment.annotationId, annotations.map(annotation => annotation.id)))
-  // const annotationsWithComments = annotations.map(annotation => ({
-  //   ...annotation, comments: comments.filter(comment => comment.annotationId === annotation.id)
-  // }))
-  // const results = { ...document[0], annotations: annotationsWithComments }
-  // return results
-  return documentRowToObject(document[0])
+export const getDocumentsWithPermissions = async (userId: string, documentIds: string[]) => {
+  if (documentIds.length === 0) return []
+
+  const userGroups = await getGroups(userId)
+  const userGroupIds = userGroups.map(g => g.id)
+
+  // fetch all documents with their nested relations
+  const documents = await db
+    .select()
+    .from(documentTable)
+    .where(inArray(documentTable.id, documentIds))
+    .leftJoin(annotation, eq(annotation.documentId, documentTable.id))
+    .leftJoin(comment, eq(comment.annotationId, annotation.id))
+
+  // Group results by document
+  const docMap = new Map()
+  for (const row of documents) {
+    const docId = row.document.id
+
+    if (!docMap.has(docId)) {
+      docMap.set(docId, {
+        ...row.document,
+        annotations: new Map()
+      })
+    }
+
+    if (row.annotation) {
+      const doc = docMap.get(docId)
+      const annoId = row.annotation.id
+      if (!doc.annotations.has(annoId)) {
+        doc.annotations.set(annoId, {
+          ...row.annotation,
+          comments: []
+        })
+      }
+
+      if (row.comment) {
+        doc.annotations.get(annoId).comments.push(row.comment)
+      }
+    }
+  }
+
+  // Collect all resource IDs for bulk permission lookup
+  const allAnnotationIds = []
+  const allCommentIds = []
+
+  for (const doc of docMap.values()) {
+    for (const [annoId, anno] of doc.annotations) {
+      allAnnotationIds.push(annoId)
+      allCommentIds.push(...anno.comments.map(c => c.id))
+    }
+  }
+
+  // Bulk fetch all permissions
+  const allResourceIds = [
+    ...documentIds.map(id => ({ type: 'document', id })),
+    ...allAnnotationIds.map(id => ({ type: 'annotation', id })),
+    ...allCommentIds.map(id => ({ type: 'comment', id }))
+  ]
+
+  const permissions = await db
+    .select()
+    .from(permissionTable)
+    .where(
+      or(
+        ...allResourceIds.map(r =>
+          and(
+            eq(permissionTable.resourceType, r.type),
+            eq(permissionTable.resourceId, r.id)
+          )
+        )
+      )
+    )
+
+  // Build permission lookup map
+  const permMap = new Map()
+
+  for (const perm of permissions) {
+    const key = `${perm.resourceType}:${perm.resourceId}`
+    if (!permMap.has(key)) {
+      permMap.set(key, [])
+    }
+
+    // Check if permission applies to this user
+    const applies =
+      (perm.principalType === 'user' && perm.principalId === userId) ||
+      (perm.principalType === 'group' && userGroupIds.includes(perm.principalId)) ||
+      perm.principalType === 'public' ||
+      perm.principalType === 'share_link'
+
+    if (applies) {
+      permMap.get(key).push(perm)
+    }
+  }
+
+  const ownedAnnotations = allAnnotationIds.length > 0 ? await db
+    .select()
+    .from(annotation)
+    .where(and(
+      inArray(annotation.id, allAnnotationIds),
+      eq(annotation.userId, userId)
+    )) : []
+
+  const ownedComments = allCommentIds.length > 0 ? await db
+    .select()
+    .from(comment)
+    .where(and(
+      inArray(comment.id, allCommentIds),
+      eq(comment.userId, userId)
+    )) : []
+
+  const ownedSet = new Set([
+    ...ownedAnnotations.map(a => `annotation:${a.id}`),
+    ...ownedComments.map(c => `comment:${c.id}`)
+  ])
+
+  const hasAccess = (resourceType: string, resourceId: string, documentId?: string, annotationId?: string) => {
+    // check ownership
+    if (ownedSet.has(`${resourceType}:${resourceId}`)) return true
+
+    // check direct permissions
+    const key = `${resourceType}:${resourceId}`
+    if (permMap.has(key) && permMap.get(key).length > 0) return true
+
+    // check parent permissions (inheritance)
+    if (resourceType === 'comment' && annotationId) {
+      if (hasAccess('annotation', annotationId, documentId)) return true
+    }
+
+    if (resourceType === 'annotation' && documentId) {
+      if (hasAccess('document', documentId)) return true
+    }
+
+    return false
+  }
+
+  // filter documents and their shit
+  const result = []
+
+  for (const doc of docMap.values()) {
+    if (!hasAccess('document', doc.id)) continue
+
+    const filteredAnnotations = []
+
+    for (const [annoId, anno] of doc.annotations) {
+      if (!hasAccess('annotation', annoId, doc.id)) continue
+
+      const filteredComments = anno.comments.filter(comment =>
+        hasAccess('comment', comment.id, doc.id, annoId)
+      )
+
+      filteredAnnotations.push({
+        ...anno,
+        comments: filteredComments
+      })
+    }
+
+    result.push({
+      ...doc,
+      annotations: filteredAnnotations
+    })
+  }
+
+  return result
+}
+
+export const getDocumentWithPermissions = async (userId: string, documentId: string) => {
+  const results = await getDocumentsWithPermissions(userId, [documentId])
+  return results[0] || null
 }
 
 export const getChats = async (userId: string, documentId: string) => {
