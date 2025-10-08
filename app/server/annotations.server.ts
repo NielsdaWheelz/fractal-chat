@@ -1,9 +1,9 @@
-import { db } from "~/server/index.server";
-import { getUserGroupIds, requirePermission } from "./permissions.server.helper";
-import { annotation, groupDocumentTable, groupMemberTable } from "~/db/schema";
 import { eq, inArray } from "drizzle-orm";
-import { NotFoundError } from "./errors.server";
+import { annotation, groupDocumentTable, groupMemberTable } from "~/db/schema";
+import { db } from "~/server/index.server";
 import type { Annotation, AnnotationCreate, AnnotationRow } from "~/types/types";
+import { NotFoundError } from "./errors.server";
+import { getUserGroupIds, requirePermission } from "./permissions.server.helper";
 
 export const getAnnotation = async (userId: string, annotationId: string) => {
   await requirePermission(userId, "annotation", annotationId, "read");
@@ -93,6 +93,7 @@ const annotationObjectToRow = (annotation: AnnotationCreate) => {
     documentId: annotation.documentId,
     body: annotation.body,
     start: annotation.start,
+    color: annotation.color,
     end: annotation.end,
     quote: annotation.quote,
     prefix: annotation.prefix,
@@ -110,6 +111,7 @@ const annotationRowToObject = (row: AnnotationRow): Annotation => {
     documentId: row.documentId,
     body: row.body,
     start: row.start,
+    color: row.color,
     end: row.end,
     quote: row.quote,
     prefix: row.prefix,

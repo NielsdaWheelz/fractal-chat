@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean, vector, integer, pgEnum, primaryKey } from "drizzle-orm/pg-core";
+import { boolean, integer, pgEnum, pgTable, primaryKey, text, timestamp, vector } from "drizzle-orm/pg-core";
 
 export const visibilityEnum = pgEnum("visibility", ["private", "public"]);
 export const resourceEnum = pgEnum("resource", ["document", "annotation", "comment", "chat", "group"]);
@@ -81,6 +81,7 @@ export const user = pgTable("user", {
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").default(false).notNull(),
+  color: text("color"),
   image: text("image"),
   friends: text("friends").array(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -130,6 +131,7 @@ export const annotation = pgTable("annotation", {
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
+  color: text("color"),
   documentId: text("document_id").notNull().references(() => documentTable.id, { onDelete: "cascade" }),
   body: text("body"),
   visibility: visibilityEnum("visibility"),

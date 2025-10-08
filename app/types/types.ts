@@ -1,12 +1,12 @@
-import type { 
-  annotation, 
-  authorTable, 
-  chatTable, 
-  comment, 
+import type {
+  annotation,
+  authorTable,
+  chatTable,
+  comment,
   documentTable,
   groupTable,
   permissionTable,
-  user 
+  user
 } from "~/db/schema";
 
 export const VISIBILITY = {
@@ -52,6 +52,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  color: string;
   emailVerified: boolean;
   image: string | null;
   friends: string[] | null;
@@ -115,6 +116,7 @@ export interface Annotation {
   documentId: string;
   body: string | null;
   start: number;
+  color: string | null;
   end: number;
   quote: string | null;
   prefix: string | null;
@@ -129,6 +131,7 @@ export interface AnnotationCreate {
   userId: string;
   documentId: string;
   body: string;
+  color: string;
   start: number;
   end: number;
   quote?: string;

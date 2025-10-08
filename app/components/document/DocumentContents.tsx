@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
-type Ann = { id?: string; start: number; end: number; note?: string };
+type Ann = { id?: string; start: number; end: number; note?: string, color: string };
 
 export default function DocumentContents({
   documentHTML,
@@ -9,6 +9,9 @@ export default function DocumentContents({
   documentHTML: { __html: string }; // you’re already passing this
   annotations: Ann[]; // pass from loader
 }) {
+
+
+  const colors = ["red", "purple", "blue", "green"];
   const annBySpan = new Map(
     (annotations ?? []).map((a) => [`${a.start}:${a.end}`, a])
   );
@@ -60,8 +63,14 @@ export default function DocumentContents({
         const mark = document.createElement("mark");
         const key = `${start}:${end}`;
         const meta = annBySpan.get(key);
+        console.log(meta);
         mark.textContent = middle;
-        mark.className = "anno-mark";
+        // Assign a color class based on the annotation index
+        if (meta?.color) {
+          mark.className = `anno-mark ${colors[Number(meta?.color)]}`;
+        } else {
+          mark.className = `anno-mark`;
+        }
 
         mark.setAttribute("data-start", String(start));
         mark.setAttribute("data-end", String(end));
