@@ -67,7 +67,9 @@ export default function DocumentContents({
         mark.setAttribute("data-end", String(end));
         if (meta?.id) mark.setAttribute("data-annid", meta.id);
         const noteVal = (meta as any)?.note ?? (meta as any)?.body ?? "";
+        const noteID = (meta as any)?.note ?? (meta as any)?.id ?? "";
         mark.setAttribute("data-note", noteVal);
+        mark.setAttribute("data-id", noteID);
         if ((meta as any)?.id)
           mark.setAttribute("data-annid", String((meta as any).id));
 

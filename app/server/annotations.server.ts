@@ -25,6 +25,10 @@ export const saveAnnotations = async (annotationToSave: AnnotationCreate) => {
   return await db.insert(annotation).values(dbAnnotation).onConflictDoUpdate({ target: annotation.id, set: dbAnnotation })
 }
 
+export const deleteAnnotations = async (id: string) => {
+  return await db.delete(annotation).where(eq(annotation.id, id));
+}
+
 // all annos for a doc
 export const getAnnotations = async (userId: string, documentId: string) => {
   await requirePermission(userId, "document", documentId, "read");

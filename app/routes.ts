@@ -10,16 +10,15 @@ export default [
   route("api/chat/*", "routes/api.chat.ts"),
   route("api/document/*", "routes/api.document.ts"),
   route("api/upload/*", "routes/api.upload.ts"),
+
   route("/workspace", "routes/layout.tsx", [
+    route("delete-annotation/:docId/:id", "routes/delete-annotation.ts"),
     route("document-search", "routes/document-search.tsx"),
     route("document/:id", "routes/document.tsx", [
       route("chat/:chatId", "routes/chat.tsx"),
       route("chat-create", "routes/chat-create.tsx"),
-      route("save-annotation", "routes/save-annotation.ts")
-
+      route("save-annotation", "routes/save-annotation.ts"),
     ]),
-
-
     route("document-create", "routes/document-create.tsx")
   ]),
 ] satisfies RouteConfig;

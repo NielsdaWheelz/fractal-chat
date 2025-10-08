@@ -37,43 +37,128 @@ type PopoverProps = {
 // memo prevents unnecessary re-renders; most important is that the component
 // TYPE is stable by being top-level. Memo is a nice-to-have.
 
-// A simple read-only popover for viewing a saved note
 function NotePopover({
+  docId,
+  id,
   x,
   y,
   quote,
   note,
   onClose,
 }: {
+  docId: string;
+  id: string;
   x: number;
   y: number;
   quote: string;
   note: string;
   onClose: () => void;
 }) {
+  const popRef = useRef<HTMLDivElement | null>(null);
+
   useEffect(() => {
-    const close = (e: PointerEvent) => onClose();
+    const close = (e: PointerEvent) => {
+      const el = popRef.current;
+      if (!el) return;
+
+      // Prefer composedPath to handle portals/shadow DOM correctly
+      const path = (e.composedPath?.() ?? []) as EventTarget[];
+      if (path.includes(el) || (e.target && el.contains(e.target as Node))) {
+        // Click started inside the popover → do not close
+        return;
+      }
+      onClose();
+    };
+
+    // Keep capture=true so outside clicks still win, but we now guard inside clicks
     document.addEventListener("pointerdown", close, true);
     return () => document.removeEventListener("pointerdown", close, true);
   }, [onClose]);
 
   return (
     <div
-      className="fixed bg-white border border-gray-200 p-2 gap-1 rounded-xl shadow-lg z-10 max-w-[420px] flex flex-row items-center"
+      ref={popRef}
+      className="fixed bg-white border border-gray-200 p-3 rounded-xl shadow-lg z-10 max-w-[420px] flex flex-row items-center gap-1"
       style={{ left: x, top: y }}
       role="dialog"
       aria-label="Annotation"
     >
-      <p className="text-sm ml-2">{note || "(no note saved)"}</p>
-      <Button size="icon" variant="ghost" onClick={() => { }}>
-        <Trash2 className="h-2 w-2" />
-        <span className="sr-only">add to existing chat</span>
-      </Button>
+      <p className="text-sm">{note || "(no note saved)"}</p>
 
+      <Form method="post" action={`/workspace/delete-annotation/${docId}/${id}`}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              size="icon"
+              variant="ghost"
+              type="submit"
+              // Optional: also stop propagation at capture just to be extra safe
+              onPointerDownCapture={(e) => e.stopPropagation()}
+            >
+              <Trash2 />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>delete annotation</p>
+          </TooltipContent>
+        </Tooltip>
+      </Form>
     </div>
   );
 }
 
+
+export const CustomPopover = memo(function CustomPopover({
+  docId,
+  docTitle,
+  selectionText,
+  annotationText,
+  setAnnotationText,
+  selectionRef,
+  onRequestClose,
+  x = 0,
+  y = 0,
+}: PopoverProps) {
+  const rootRef = useRef<HTMLDivElement>(null);
+  const hiddenRef = useRef<HTMLInputElement>(null);
+  const noteRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const handlePointerDown = (e: PointerEvent) => {
+      const el = rootRef.current;
+      if (!el) return;
+      // If click is outside the popover, close it
+      if (!el.contains(e.target as Node)) {
+        onRequestClose();
+      }
+    };
+    // capture = true so we see the event even if inner handlers stopPropagation
+    document.addEventListener("pointerdown", handlePointerDown, true);
+    return () =>
+      document.removeEventListener("pointerdown", handlePointerDown, true);
+  }, [onRequestClose]);
+  const onSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
+    let parsed: any = null;
+    try {
+      parsed = JSON.parse(selectionRef.current);
+    } catch {}
+    if (!parsed) {
+      e.preventDefault();
+      return;
+    }
+
+    const payload = {
+      documentId: docId,
+      start: parsed.start,
+      end: parsed.end,
+      quote: parsed.quote,
+      prefix: parsed.prefix,
+      suffix: parsed.suffix,
+      body: noteRef.current?.value ?? "",
+    };
+
+    if (hiddenRef.current) hiddenRef.current.value = JSON.stringify(payload);
+  };
 
 
 type LoaderData = {
@@ -282,6 +367,7 @@ export default function Document() {
 
   const [notePopup, setNotePopup] = useState<null | {
     x: number;
+    id: string;
     y: number;
     note: string;
     quote: string;
@@ -411,10 +497,12 @@ export default function Document() {
     e.stopPropagation();
 
     const note = mark.getAttribute("data-note") ?? "";
+    const id = mark.getAttribute("data-id") ?? "";
     const quote = mark.textContent ?? "";
     const rect = mark.getBoundingClientRect();
 
     setNotePopup({
+      id,
       note,
       quote,
       x: rect.left,
@@ -425,6 +513,8 @@ export default function Document() {
     <>
       {notePopup && (
         <NotePopover
+          docId={id}
+          id={notePopup.id}
           x={notePopup.x}
           y={notePopup.y}
           note={notePopup.note}
