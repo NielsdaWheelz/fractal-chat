@@ -64,7 +64,7 @@ export function SidebarApp({ side, data, user, selectionRef, includeSelection, s
       return
     }
   }
-  
+
   useEffect(() => {
     setChats(data.chats as ChatListItem[])
     setAnnotations(data.annotations as AnnotationListItem[])
@@ -136,6 +136,10 @@ export function SidebarApp({ side, data, user, selectionRef, includeSelection, s
       <SidebarHeader>
         <Tabs defaultValue="tab-1" className="items-center">
           <div className="flex w-full items-center justify-between">
+              <Button  size="icon" variant="ghost" onClick={() => setSelectedChatId(null)}>
+                <ArrowLeft className="h-5 w-5" />
+                <span className="sr-only">Back</span>
+              </Button>
             <TabsList>
               <TooltipProvider delayDuration={0}>
                 <Tooltip>
@@ -199,12 +203,6 @@ export function SidebarApp({ side, data, user, selectionRef, includeSelection, s
           </TabsContent>
           <TabsContent value="tab-2">
             <div className="flex items-center gap-2">
-              {selectedChat && (
-                <Button size="icon" variant="ghost" onClick={() => setSelectedChatId(null)}>
-                  <ArrowLeft className="h-5 w-5" />
-                  <span className="sr-only">Back</span>
-                </Button>
-              )}
               <span className="text-md font-semibold">{headerTitle}</span>
             </div>
           </TabsContent>
