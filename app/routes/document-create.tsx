@@ -26,7 +26,19 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const rawText = article.textContent
 
-  const chunkedDocs = await chunkText(rawText)
+  // function insertBeforeChar(str: string, target: string, insert: string): string {
+  //   return str
+  //     .split("")
+  //     .map(c => (c === target ? insert + c : c))
+  //     .join("");
+  // }
+
+  // const result = insertBeforeChar(rawText, "<p>", "\n");
+  const styledText = rawText.replace("<p>", "<br> <p>")
+  console.log(rawText)
+  console.log(styledText)
+
+  const chunkedDocs = await chunkText(styledText)
 
   const chunkTexts = chunkedDocs.map(doc => doc.pageContent)
 
