@@ -9,35 +9,10 @@ import type {
   user
 } from "~/db/schema";
 
-export const VISIBILITY = {
-  PRIVATE: "private",
-  PUBLIC: "public",
-} as const;
-
-export const PERMISSION_LEVEL = {
-  NONE: "none",
-  READ: "read",
-  WRITE: "write",
-  ADMIN: "admin",
-} as const;
-
-export const RESOURCE_TYPE = {
-  DOCUMENT: "document",
-  ANNOTATION: "annotation",
-  COMMENT: "comment",
-  CHAT: "chat",
-  GROUP: "group",
-} as const;
-
-export const PRINCIPAL_TYPE = {
-  USER: "user",
-  GROUP: "group",
-} as const;
-
-export type Visibility = typeof VISIBILITY[keyof typeof VISIBILITY];
-export type PermissionLevel = typeof PERMISSION_LEVEL[keyof typeof PERMISSION_LEVEL];
-export type ResourceType = typeof RESOURCE_TYPE[keyof typeof RESOURCE_TYPE];
-export type PrincipalType = typeof PRINCIPAL_TYPE[keyof typeof PRINCIPAL_TYPE];
+export type Visibility = "private" | "public"
+export type PermissionLevel = "none" | "read" | "write" | "admin"
+export type ResourceType = "document" | "annotation" | "comment" | "chat" | "group"
+export type PrincipalType = "group" | "user"
 
 export type UserRow = typeof user.$inferSelect;
 export type DocumentRow = typeof documentTable.$inferSelect;
