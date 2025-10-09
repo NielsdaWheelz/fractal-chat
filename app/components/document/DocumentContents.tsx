@@ -11,7 +11,7 @@ export default function DocumentContents({
 }) {
 
 
-  const colors = ["red", "purple", "blue", "green"];
+  const colors = ["red", "purple", "blue", "green", "orange", "gray"];
   const annBySpan = new Map(
     (annotations ?? []).map((a) => [`${a.start}:${a.end}`, a])
   );
@@ -63,7 +63,6 @@ export default function DocumentContents({
         const mark = document.createElement("mark");
         const key = `${start}:${end}`;
         const meta = annBySpan.get(key);
-        console.log(meta);
         mark.textContent = middle;
         // Assign a color class based on the annotation index
         if (meta?.color) {
