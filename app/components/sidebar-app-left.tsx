@@ -44,6 +44,17 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
   const [query, setQuery] = useState("")
   const [isModalOpen, setIsModalOpen] = useState(false);
   const fetcher = useFetcher();
+  const [editingGroup, setEditingGroup] = useState(null);
+
+  const handleEditGroup = (group) => {
+    setEditingGroup(group);
+    setIsModalOpen(true);
+  }
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setEditingGroup(null);
+  }
 
   useEffect(() => {
     if (data?.document) setDocumentId(document.id)
@@ -145,14 +156,18 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
                 </TooltipContent>
               </Tooltip>
             </TabsList>
-            <Button size="icon" variant="ghost" onClick={() => { setIsModalOpen(true) }}>
+            <Button size="icon" variant="ghost" onClick={() => {
+              setEditingGroup(null);
+              setIsModalOpen(true);
+            }}>
               <UserPlus className="h-5 w-5" />
               <span className="sr-only">Create New Group</span>
             </Button>
             <GroupModal
               isOpen={isModalOpen}
               onClose={() => setIsModalOpen(false)}
-            />
+              editGroup={editingGroup}
+              />
           </div>
           <TabsContent value="tab-1">
             <div className="flex items-center gap-2">
@@ -240,7 +255,7 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
                   <SidebarGroupLabel>Recent</SidebarGroupLabel>
                   <SidebarMenu>
                     <Accordion type="single" collapsible className="w-full" defaultValue="3">
-                      <GroupList groups={data.groups} />
+                      <GroupList groups={data.groups} onEditGroup={handleEditGroup} />
                     </Accordion>
                   </SidebarMenu>
                 </>
