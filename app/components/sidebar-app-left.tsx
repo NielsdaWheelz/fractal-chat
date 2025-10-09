@@ -27,6 +27,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import UploadForm from "./upload-form";
 import GroupAvatarStack from "./groupavatar";
 import { GroupModal } from "./group/GroupModal";
+import { Accordion } from "./ui/accordion";
 
 type UIMessagePart = { type: string; text?: string }
 type UIMessage = { role: string; parts: UIMessagePart[] }
@@ -238,7 +239,9 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
                 <>
                   <SidebarGroupLabel>Recent</SidebarGroupLabel>
                   <SidebarMenu>
-                    <GroupList groups={data.groups} />
+                    <Accordion type="single" collapsible className="w-full" defaultValue="3">
+                      <GroupList groups={data.groups} />
+                    </Accordion>
                   </SidebarMenu>
                 </>
             }
