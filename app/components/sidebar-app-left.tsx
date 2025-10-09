@@ -25,6 +25,8 @@ import GroupList from "./group/GroupList";
 import SearchResultList from "./SearchResultList";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import UploadForm from "./upload-form";
+import GroupAvatarStack from "./groupavatar";
+import { GroupModal } from "./group/GroupModal";
 
 type UIMessagePart = { type: string; text?: string }
 type UIMessage = { role: string; parts: UIMessagePart[] }
@@ -39,7 +41,7 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
   const [url, setUrl] = useState("")
   const [searchResults, setSearchResults] = useState([])
   const [query, setQuery] = useState("")
-
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const fetcher = useFetcher();
 
   useEffect(() => {
@@ -83,10 +85,6 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
       return
     }
     if (input) input.value = value.trim()
-  }
-
-  const openNewGroupModal = () => {
-
   }
 
   return (
@@ -146,11 +144,14 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
                 </TooltipContent>
               </Tooltip>
             </TabsList>
-            <Button size="icon" variant="ghost" onClick={openNewGroupModal}>
+            <Button size="icon" variant="ghost" onClick={() => {setIsModalOpen(true)}}>
               <UserPlus className="h-5 w-5" />
-              <span className="sr-only">Back</span>
+              <span className="sr-only">Create New Group</span>
             </Button>
-
+            <GroupModal
+              isOpen={isModalOpen}
+              onClose={() => setIsModalOpen(false)}
+            />
           </div>
           <TabsContent value="tab-1">
             <div className="flex items-center gap-2">
@@ -233,7 +234,7 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
                     <DocumentList documents={data.documents} />
                   </SidebarMenu>
                 </>
-                : mode === "document" &&
+                : mode === "group" &&
                 <>
                   <SidebarGroupLabel>Recent</SidebarGroupLabel>
                   <SidebarMenu>
