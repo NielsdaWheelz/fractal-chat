@@ -23,13 +23,36 @@
 .red {
   background-color: #fdd8d8; /* light red */
 }
+
 .green {
-  background-color: #d8fdea; /* light purple */
+  background-color: #d8fdea; /* light green */
 }
 
 .blue {
-  background-color: #d8defd; /* light red */
+  background-color: #d8defd; /* light blue */
 }
+
+.orange {
+  background-color: #fdebd8; /* light orange */
+}
+
+.yellow {
+  background-color: #fff9d8; /* light yellow */
+}
+
+.teal {
+  background-color: #d8fdf6; /* light teal */
+}
+
+.pink {
+  background-color: #fdd8f6; /* light pink */
+}
+
+.brown {
+  background-color: #f5e9d8; /* light brown */
+}
+
+
 
 /* Hover color when you move your mouse over a highlight */
 .anno-mark:hover {

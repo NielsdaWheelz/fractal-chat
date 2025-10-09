@@ -11,7 +11,7 @@ export default function DocumentContents({
 }) {
 
 
-  const colors = ["red", "purple", "blue", "green"];
+  const colors = ["red", "purple", "blue", "green", "orange", "gray"];
   const annBySpan = new Map(
     (annotations ?? []).map((a) => [`${a.start}:${a.end}`, a])
   );
