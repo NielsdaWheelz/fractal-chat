@@ -201,6 +201,8 @@ export default function Document() {
       if (hiddenRef.current) hiddenRef.current.value = JSON.stringify(payload);
     };
 
+    const [tweetSidenote, setTweetSidenote] = useState("");
+
     return (
       <div
         ref={rootRef}
@@ -235,7 +237,7 @@ export default function Document() {
               name="note"
               placeholder="Type text..."
               onChange={(e) => {
-                // auto-resize logic
+                setTweetSidenote(e.target.value);
                 e.currentTarget.style.height = "auto";
                 e.currentTarget.style.height = `${Math.min(e.currentTarget.scrollHeight, 3 * 24)}px`; // 3 lines max (assuming 24px line-height)
               }}
@@ -292,7 +294,7 @@ export default function Document() {
               <TooltipTrigger asChild>
                 <Button size="icon" variant="ghost" onClick={() => {
                 }}>
-                  <Tweet title={docTitle} annotationText={annotationText} selectionText={selectionText}></Tweet>
+                  <Tweet title={docTitle} annotationText={tweetSidenote} selectionText={selectionText} docId={docId}></Tweet>
                 </Button>
               </TooltipTrigger>
               <TooltipContent>

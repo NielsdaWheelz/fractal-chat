@@ -8,11 +8,12 @@ type TweetProps = {
     url?: string
     hashtags?: string[]
     via?: string // your handle without @
+    docId: string
 }
 
-export function Tweet({ title, annotationText, selectionText, url, hashtags = [], via }: TweetProps) {
+export function Tweet({ title, annotationText, selectionText, url, hashtags = [], via, docId }: TweetProps) {
     const params = new URLSearchParams()
-    const text = `"${selectionText}"\n-${title}\n\n${annotationText}`
+    const text = `"${selectionText}"\n-${title}\n\nSidenote:\n${annotationText}\n\nhttps://localhost:5173/workspace/document/${docId}/`
 
     if (text) params.set("text", text)
     if (url) params.set("url", url)
