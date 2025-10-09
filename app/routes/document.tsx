@@ -458,13 +458,14 @@ export default function Document() {
       <div
         id="doc-container"
         onMouseUp={handleSelectionEnd}
-        onClick={handleDocClick} // 👈 add this
+        onMouseOver={handleDocClick} // 👈 changed from onClick to onMouseOver
+        onMouseLeave={() => setNotePopup(null)}
         style={{ userSelect: "text" }}
       >
         <DocumentContents
           documentHTML={docContent()}
           annotations={annotations}
-                  />
+        />
       </div>
     </>
   );
