@@ -1,25 +1,7 @@
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
-import { Form } from "react-router";
 
-interface User {
-  id: string;
-  name: string;
-  email: string;
-}
-
-interface Document {
-  id: string;
-  title: string;
-}
-
-interface CreateGroupModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSuccess?: () => void;
-}
-
-export function GroupModal({ isOpen, onClose, onSuccess }: CreateGroupModalProps) {
+export function GroupModal({ isOpen, onClose, onSuccess, editGroup }) {
   const [groupName, setGroupName] = useState("");
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
@@ -32,8 +14,19 @@ export function GroupModal({ isOpen, onClose, onSuccess }: CreateGroupModalProps
   useEffect(() => {
     if (isOpen) {
       fetchUsersAndDocuments();
+      // If editing, populate the form with existing data
+      if (editGroup) {
+        setGroupName(editGroup.name);
+        setSelectedMembers(editGroup.members);
+        setSelectedDocuments(editGroup.documents);
+      } else {
+        // Reset form for new group
+        setGroupName("");
+        setSelectedMembers([]);
+        setSelectedDocuments([]);
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, editGroup]);
 
   const fetchUsersAndDocuments = async () => {
     try {
@@ -61,52 +54,125 @@ export function GroupModal({ isOpen, onClose, onSuccess }: CreateGroupModalProps
     setLoading(true);
 
     try {
-      // Generate a unique ID for the group
-      const groupId = `group_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
-      // Create the group
-      const createRes = await fetch("/api/groups", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "create",
-          id: groupId,
-          name: groupName,
-        }),
-      });
-
-      if (!createRes.ok) {
-        const errorData = await createRes.json();
-        throw new Error(errorData.message || "Failed to create group");
-      }
-
-      const createData = await createRes.json();
-      const createdGroupId = createData.data.id;
-
-      // Add members
-      for (const memberId of selectedMembers) {
-        await fetch("/api/groups", {
+      if (editGroup) {
+        // Update existing group
+        const updateRes = await fetch("/api/groups", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            action: "addMember",
-            groupId: createdGroupId,
-            userId: memberId,
+            action: "update",
+            groupId: editGroup.id,
+            name: groupName,
           }),
         });
-      }
 
-      // Add documents
-      for (const documentId of selectedDocuments) {
-        await fetch("/api/groups", {
+        if (!updateRes.ok) {
+          const errorData = await updateRes.json();
+          throw new Error(errorData.message || "Failed to update group");
+        }
+
+        // Update members (remove old, add new)
+        const membersToRemove = editGroup.members.filter(m => !selectedMembers.includes(m));
+        const membersToAdd = selectedMembers.filter(m => !editGroup.members.includes(m));
+
+        for (const memberId of membersToRemove) {
+          await fetch("/api/groups", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              action: "removeMember",
+              groupId: editGroup.id,
+              userId: memberId,
+            }),
+          });
+        }
+
+        for (const memberId of membersToAdd) {
+          await fetch("/api/groups", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              action: "addMember",
+              groupId: editGroup.id,
+              userId: memberId,
+            }),
+          });
+        }
+
+        // Update documents (remove old, add new)
+        const documentsToRemove = editGroup.documents.filter(d => !selectedDocuments.includes(d));
+        const documentsToAdd = selectedDocuments.filter(d => !editGroup.documents.includes(d));
+
+        for (const documentId of documentsToRemove) {
+          await fetch("/api/groups", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              action: "removeDocument",
+              groupId: editGroup.id,
+              documentId: documentId,
+            }),
+          });
+        }
+
+        for (const documentId of documentsToAdd) {
+          await fetch("/api/groups", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              action: "addDocument",
+              groupId: editGroup.id,
+              documentId: documentId,
+            }),
+          });
+        }
+      } else {
+        // Create new group
+        const groupId = `group_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+        const createRes = await fetch("/api/groups", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            action: "addDocument",
-            groupId: createdGroupId,
-            documentId: documentId,
+            action: "create",
+            id: groupId,
+            name: groupName,
           }),
         });
+
+        if (!createRes.ok) {
+          const errorData = await createRes.json();
+          throw new Error(errorData.message || "Failed to create group");
+        }
+
+        const createData = await createRes.json();
+        const createdGroupId = createData.data.id;
+
+        // Add members
+        for (const memberId of selectedMembers) {
+          await fetch("/api/groups", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              action: "addMember",
+              groupId: createdGroupId,
+              userId: memberId,
+            }),
+          });
+        }
+
+        // Add documents
+        for (const documentId of selectedDocuments) {
+          await fetch("/api/groups", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              action: "addDocument",
+              groupId: createdGroupId,
+              documentId: documentId,
+            }),
+          });
+        }
       }
 
       // Reset form and close modal
@@ -145,7 +211,9 @@ export function GroupModal({ isOpen, onClose, onSuccess }: CreateGroupModalProps
       <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-2xl font-semibold text-gray-900">Create New Group</h2>
+          <h2 className="text-2xl font-semibold text-gray-900">
+            {editGroup ? "Edit Group" : "Create New Group"}
+          </h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -155,8 +223,8 @@ export function GroupModal({ isOpen, onClose, onSuccess }: CreateGroupModalProps
           </button>
         </div>
 
-        {/* Form */}
-        <Form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
+        {/* Form Content */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md">
               {error}
@@ -245,7 +313,7 @@ export function GroupModal({ isOpen, onClose, onSuccess }: CreateGroupModalProps
               </div>
             )}
           </div>
-        </Form>
+        </div>
 
         {/* Footer */}
         <div className="flex items-center justify-end gap-3 p-6 border-t bg-gray-50">
@@ -258,12 +326,12 @@ export function GroupModal({ isOpen, onClose, onSuccess }: CreateGroupModalProps
             Cancel
           </button>
           <button
-            type="submit"
+            type="button"
             onClick={handleSubmit}
             disabled={loading || !groupName.trim()}
             className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? "Creating..." : "Create Group"}
+            {loading ? (editGroup ? "Updating..." : "Creating...") : (editGroup ? "Update Group" : "Create Group")}
           </button>
         </div>
       </div>
