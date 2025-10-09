@@ -1,26 +1,24 @@
-import { memo, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Form,
   redirect,
   useLoaderData,
-  useOutletContext,
-  useParams,
+  useOutletContext
 } from "react-router";
 import { getAnnotations } from "~/server/annotations.server";
 import { requireUser } from "~/server/auth.server";
 import { getDocument } from "~/server/documents.server";
 
-import { CornerDownLeft, MessageCirclePlus, MessageSquareReply, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
+import { CustomPopover } from "~/components/document/CustomPopover";
 import DocumentContents from "~/components/document/DocumentContents";
 import { Button } from "~/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
+  TooltipTrigger
 } from "~/components/ui/tooltip";
-import { Tweet } from "./tweet";
-import { CustomPopover } from "~/components/document/CustomPopover";
+import { getColorFromID } from "~/index.server";
 import type { Annotation } from "~/types/types";
 
 
@@ -101,6 +99,7 @@ function NotePopover({
 
 type LoaderData = {
   document: { id: string; content: string, title: string };
+  color: string,
   annotations: Annotation[];
 };
 
@@ -117,10 +116,11 @@ export async function loader({
   }
   const document = await getDocument(params.id);
   const annotations = await getAnnotations(userId, params.id);
+  const color = await getColorFromID(userId);
   if (!document) {
     throw redirect("/");
   }
-  return { document: document, annotations: annotations };
+  return { document: document, annotations: annotations, color: color };
 }
 
 export default function Document() {
@@ -139,7 +139,7 @@ export default function Document() {
       setIncludeSelection: React.Dispatch<React.SetStateAction<boolean>>;
     }>();
 
-  const { document, annotations } = useLoaderData() as LoaderData;
+  const { document, annotations, color } = useLoaderData() as LoaderData;
   const id = document.id
   const docContent = () => {
     return { __html: document.content };
@@ -149,31 +149,7 @@ export default function Document() {
   const [selectionText, setSelectionText] = useState("");
 
   const docRef = useRef<HTMLDivElement>(null);
-  function onPrepareSubmit() {
-    // parse what you stored in selectionRef (from your selection code)
-    let parsed: any = null;
-    try {
-      parsed = JSON.parse(selectionRef.current);
-    } catch { }
 
-    if (!parsed) return false;
-
-    // build the payload your action expects
-    const payload = {
-      documentId: id,
-      start: parsed.start,
-      end: parsed.end,
-      quote: parsed.quote,
-      prefix: parsed.prefix,
-      suffix: parsed.suffix,
-      body: "Empty Note Body",
-    };
-
-    setAnnotationJson(JSON.stringify(payload));
-    return true;
-  }
-
-  const handleSelectionStart = () => console.log("Selection started");
   const handleSelectionEnd = () => {
     const sel = window.getSelection?.();
     if (!sel || sel.rangeCount === 0) return;
@@ -203,8 +179,6 @@ export default function Document() {
       y: rect.top + 40,
     });
   };
-  const handlePopoverShow = () => console.log("Popover shown");
-  const handlePopoverHide = () => console.log("Popover hidden");
 
   function getCharOffset(
     containerEl: HTMLElement,
@@ -287,6 +261,7 @@ export default function Document() {
         <div data-annotation-popover>
           <CustomPopover
             docId={id!}
+            color={color}
             docTitle={document.title}
             selectionText={selectionText}
             annotationText={annotationText}

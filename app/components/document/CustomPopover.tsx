@@ -1,13 +1,14 @@
-import { useEffect, useRef, useState } from "react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
-import { Button } from "../ui/button";
 import { CornerDownLeft, MessageCirclePlus, MessageSquareReply } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { Form } from "react-router";
 import { Tweet } from "~/routes/tweet";
+import { Button } from "../ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 
 type PopoverProps = {
     docId: string;
     docTitle: string;
+    color: string;
     selectionText: string;
     annotationText: string;
     setAnnotationText: (v: string) => void;
@@ -24,8 +25,7 @@ export function CustomPopover({
     docId,
     docTitle,
     selectionText,
-    annotationText,
-    setAnnotationText,
+    color,
     setIncludeSelection,
     selectionRef,
     onRequestClose,
@@ -64,6 +64,7 @@ export function CustomPopover({
             documentId: docId,
             start: parsed.start,
             end: parsed.end,
+            color: color,
             quote: parsed.quote,
             prefix: parsed.prefix,
             suffix: parsed.suffix,
