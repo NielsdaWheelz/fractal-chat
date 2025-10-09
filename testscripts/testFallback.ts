@@ -1,54 +1,3 @@
-'use client';
-import {
-    Avatar,
-    AvatarFallback,
-    AvatarImage,
-} from '../components/ui/avatar';
-import {
-    AvatarGroup,
-    AvatarGroupTooltip,
-} from '../../components/ui/shadcn-io/avatar-group';
-import type { User } from '~/types/types';
-
-// const members = [
-//     {
-//         src: 'https://pbs.twimg.com/profile_images/1909615404789506048/MTqvRsjo_400x400.jpg',
-//         fallback: 'SK',
-//         tooltip: 'Skyleen',
-//     },
-//     {
-//         src: 'https://pbs.twimg.com/profile_images/1593304942210478080/TUYae5z7_400x400.jpg',
-//         fallback: 'CN',
-//         tooltip: 'Shadcn',
-//     },
-//     {
-//         src: 'https://pbs.twimg.com/profile_images/1677042510839857154/Kq4tpySA_400x400.jpg',
-//         fallback: 'AW',
-//         tooltip: 'Adam Wathan',
-//     },
-//     {
-//         src: 'https://pbs.twimg.com/profile_images/1783856060249595904/8TfcCN0r_400x400.jpg',
-//         fallback: 'GR',
-//         tooltip: 'Guillermo Rauch',
-//     },
-//     {
-//         src: 'https://pbs.twimg.com/profile_images/1534700564810018816/anAuSfkp_400x400.jpg',
-//         fallback: 'JH',
-//         tooltip: 'Jhey',
-//     },
-// ];
-
-// user = {
-//     id: text("id").primaryKey(),
-//     name: text("name").notNull(),
-//     email: text(email).notNull().unique(),
-//     emailVerified: boolean("email_verified").default(false).notNull(),
-//     image: text("image"),
-//     friends: text("friends").array(),
-//     createdAt: timestamp("created_at").defaultNow().notNull(),
-//     updatedAt: timestamp("created_at").defaultNow().notNull()
-// }
-
 const users = [
     { id: 1, name: "Engelbert Joron", email: "ejoron0@howstuffworks.com", emailVerified: true, image: "https://robohash.org/oditvelnisi.png?size=50x50&set=set1", friends: null, createdAt: "3/22/2025", updatedAt: "5/20/2025" },
     { id: 2, name: "Erv Bantham", email: "ebantham1@etsy.com", emailVerified: false, image: "https://robohash.org/perferendiscumqueconsequatur.png?size=50x50&set=set1", friends: null, createdAt: "1/5/2025", updatedAt: "8/24/2025" },
@@ -74,27 +23,4 @@ const updatedUsers = users.map((user) => {
     const fallback = initials.toUpperCase()
     return { ...user, fallback }
 })
-console.log(users[0])
-
-export const AvatarGroupBottomDemo = ({ id, name }) => {
-    return (
-        <div className="bg-gradient-to-r from-indigo-100 dark:from-indigo-950 from-10% via-sky-100 dark:via-sky-950 via-30% to-emerald-100 dark:to-emerald-950 to-90% p-1.5 rounded-full">
-            <AvatarGroup
-                variant="css"
-                invertOverlap
-                tooltipProps={{ side: 'bottom', sideOffset: 12 }}
-            >
-                {members.map((member, index) => (
-                    <Avatar key={index}>
-                        <AvatarImage src={member.image} />
-                        <AvatarFallback>{member.fallback}</AvatarFallback>
-                        <AvatarGroupTooltip>
-                            <p>{member.tooltip}</p>
-                        </AvatarGroupTooltip>
-                    </Avatar>
-                ))}
-            </AvatarGroup>
-        </div>
-    );
-};
-export default AvatarGroupBottomDemo;
+console.log(updatedUsers[0])

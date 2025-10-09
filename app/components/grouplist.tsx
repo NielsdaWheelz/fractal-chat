@@ -1,6 +1,6 @@
 import AvatarGroupBottomDemo from "./groupavatar";
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "../components/ui/dialog";
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "../components/ui/form";
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "./ui/dialog";
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "./ui/form";
 import { Popover } from "./ui/popover";
 import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "./ui/command";
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
@@ -14,12 +14,7 @@ import { Button } from "./ui/button";
 import { Tooltip } from "./ui/tooltip";
 import { useSonner } from "sonner";
 import { Skeleton } from "./ui/skeleton";
-
-
-type Group = {
-    id: string
-    name: string
-}
+import type { Group } from "~/types/types";
 
 export default function groupsList({ groups }: { groups: Group[] }) {
     <div>
@@ -36,4 +31,5 @@ export default function groupsList({ groups }: { groups: Group[] }) {
         </ul>
     </div>
 }
+
 
