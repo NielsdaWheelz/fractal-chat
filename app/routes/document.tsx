@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, memo } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import {
   Form,
   redirect,
@@ -6,19 +6,19 @@ import {
   useOutletContext,
   useParams,
 } from "react-router";
-import { requireUser } from "~/server/auth.server";
 import { getAnnotations } from "~/server/annotations.server";
+import { requireUser } from "~/server/auth.server";
 import { getDocument } from "~/server/documents.server";
 
+import { CornerDownLeft, MessageCirclePlus, MessageSquareReply, Trash2 } from "lucide-react";
+import DocumentContents from "~/components/document/DocumentContents";
+import { Button } from "~/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "~/components/ui/tooltip";
-import { Button } from "~/components/ui/button";
-import { CornerDownLeft, MessageCirclePlus, MessageSquareReply, Trash2 } from "lucide-react";
-import DocumentContents from "~/components/document/DocumentContents";
 import { Tweet } from "./tweet";
 
 type PopoverProps = {

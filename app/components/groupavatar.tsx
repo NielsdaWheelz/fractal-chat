@@ -1,16 +1,13 @@
 'use client';
 import {
+    AvatarGroup,
+    AvatarGroupTooltip,
+} from '../../components/ui/shadcn-io/avatar-group';
+import {
     Avatar,
     AvatarFallback,
     AvatarImage,
 } from '../components/ui/avatar';
-import {
-    AvatarGroup,
-    AvatarGroupTooltip,
-} from '../../components/ui/shadcn-io/avatar-group';
-import { useEffect, useState } from "react"
-import type { User } from '~/types/types';
-import { users } from 'testscripts/dummydata';
 
 
 //pulling initials for fallback
