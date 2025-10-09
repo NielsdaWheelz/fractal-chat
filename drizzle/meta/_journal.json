@@ -85,6 +85,20 @@
       "when": 1759933056905,
       "tag": "0012_daily_sharon_carter",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1759964214517,
+      "tag": "0013_hot_rockslide",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1759964836713,
+      "tag": "0014_small_expediter",
+      "breakpoints": true
     }
   ]
 }

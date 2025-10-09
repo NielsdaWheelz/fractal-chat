@@ -1,7 +1,7 @@
-import { drizzle } from 'drizzle-orm/postgres-js'
-import postgres from 'postgres'
-import { and, eq, sql, desc, ilike, inArray, or, ne } from 'drizzle-orm';
-import { chatTable, documentChunksTable, groupTable, documentTable, authorTable, documentAuthorsTable, user, annotation, groupMemberTable, groupDocumentTable, comment, permissionTable } from '~/db/schema'
+import { and, desc, eq, ilike, inArray, ne, or, sql } from 'drizzle-orm';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
+import { annotation, authorTable, chatTable, comment, documentAuthorsTable, documentChunksTable, documentTable, groupDocumentTable, groupMemberTable, groupTable, permissionTable, user } from '~/db/schema';
 
 const client = postgres(process.env.DATABASE_URL!);
 export const db = drizzle(client);
@@ -552,6 +552,11 @@ export const getAuthor = async (id: string) => {
   return authorRowToObject(results[0]);
 }
 
+export const getColorFromID = async (id: string) => {
+  const result = await db.select({ color: user.color }).from(user).where(eq(user.id, id));
+  return result.length > 0 ? result[0].color : null;
+}
+
 export const createAuthor = async (userId: string, name: string) => {
   const id = crypto.randomUUID();
   const result = await db.insert(authorTable).values({ id: id, userId: userId, name: name }).returning();
@@ -666,6 +671,7 @@ const annotationObjectToRow = (annotation: {
   documentId: string;
   body: string;
   quote: string;
+  color: string;
   start: string;
   end: string;
   createdAt: Date;
@@ -676,6 +682,7 @@ const annotationObjectToRow = (annotation: {
     userId: annotation.userId,
     documentId: annotation.documentId,
     start: annotation.start,
+    color: annotation.color,
     end: annotation.end,
     body: annotation.body,
     quote: annotation.quote,
@@ -691,6 +698,7 @@ const annotationRowToObject = (row: typeof annotation.$inferSelect) => {
     documentId: row.documentId,
     start: row.start,
     end: row.end,
+    color: row.color,
     body: row.body,
     quote: row.quote,
     createdAt: row.createdAt,

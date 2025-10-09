@@ -1,8 +1,8 @@
 // app/routes/workspace.document.$id.save-annotation.ts
 import type { ActionFunctionArgs } from "react-router";
 import { redirect } from "react-router";
-import { requireUser } from "~/server/auth.server";
 import { saveAnnotations } from "~/server/annotations.server";
+import { requireUser } from "~/server/auth.server";
 
 export async function action({ request, params }: ActionFunctionArgs) {
   const userId = await requireUser(request);
@@ -37,7 +37,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
 
   // --- Validate required fields
-  const { start, end, quote, prefix, suffix, body, createChat } = payload ?? {};
+  const { start, end, quote, prefix, suffix, body, color } = payload ?? {};
   if (typeof start !== "number" || typeof end !== "number" || !(end > start)) {
     return new Response("Invalid selection span", { status: 400 });
   }
@@ -49,12 +49,12 @@ export async function action({ request, params }: ActionFunctionArgs) {
     documentId: id,
     start,
     end,
+    color: color,
     highlights: quote ?? "",
     prefix: prefix ?? "",
     suffix: suffix ?? "",
     body: body ?? "",
   });
 
-  // Default: go back to the document view
   return redirect(`/workspace/document/${id}`);
 }
