@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
-
-type Ann = { id?: string; start: number; end: number; note?: string, color: string };
+import type { Annotation } from "~/types/types";
 
 export default function DocumentContents({
   documentHTML,
   annotations,
 }: {
   documentHTML: { __html: string }; // you’re already passing this
-  annotations: Ann[]; // pass from loader
+  annotations: Annotation[]; // pass from loader
 }) {
 
 
