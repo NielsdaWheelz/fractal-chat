@@ -4,6 +4,7 @@ import { db } from "~/server/index.server";
 import { BadRequestError, ForbiddenError, NotFoundError } from "./errors.server";
 import { computeAccessLevel, requirePermission } from "./permissions.server.helper";
 import type { Group, GroupCreate, GroupWithDetails, GroupRow, GroupUpdate, GroupMember, DocumentBasic } from "~/types/types";
+import { userRowToGroupMember } from "./users.server";
 
 export const saveGroup = async (group: GroupCreate): Promise<Group> => {
   const existingGroup = await db
@@ -68,35 +69,143 @@ export const getGroup = async (userId: string, groupId: string): Promise<GroupWi
   return {
     ...groupRowToObject(groupData[0]),
     members: members.filter((m): m is GroupMember => m.id !== null),
-    documents: documents.filter((d): d is DocumentBasic => d.id !== null),
+    documents: documents
+      .filter((d): d is typeof d & { id: string } => d.id !== null)
+      .map(d => ({
+        id: d.id,
+        title: d.title!,
+        url: d.url,
+        publishedTime: d.publishedTime as any as Date,
+        createdAt: d.createdAt!,
+      })),
   };
 }
 
-export const getGroups = async (userId: string): Promise<Group[]> => {
-  const ownedGroups = await db
-    .select()
-    .from(groupTable)
-    .where(eq(groupTable.userId, userId));
-
+export const getGroups = async (userId: string): Promise<GroupWithDetails[]> => {
+  // Get all groups where user is owner OR member
   const memberGroupIds = await db
     .select({ groupId: groupMemberTable.groupId })
     .from(groupMemberTable)
     .where(eq(groupMemberTable.userId, userId));
 
-  const memberGroups = memberGroupIds.length > 0
-    ? await db
-      .select()
-      .from(groupTable)
-      .where(inArray(groupTable.id, memberGroupIds.map((g) => g.groupId)))
-    : [];
+  const groupIds = [
+    // Groups owned by user
+    ...(await db.select({ id: groupTable.id }).from(groupTable).where(eq(groupTable.userId, userId))).map(g => g.id),
+    // Groups where user is a member
+    ...memberGroupIds.map(g => g.groupId)
+  ];
 
-  const allGroups = [...ownedGroups, ...memberGroups];
-  const uniqueGroups = Array.from(
-    new Map(allGroups.map((g) => [g.id, g])).values()
-  );
+  // Remove duplicates
+  const uniqueGroupIds = [...new Set(groupIds)];
 
-  return uniqueGroups.map((g) => groupRowToObject(g));
-}
+  if (uniqueGroupIds.length === 0) {
+    return [];
+  }
+
+  // Get all groups data
+  const groups = await db
+    .select()
+    .from(groupTable)
+    .where(inArray(groupTable.id, uniqueGroupIds));
+
+  // Get all members for these groups (including owners as regular users first)
+  const members = await db
+    .select({
+      groupId: groupMemberTable.groupId,
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      image: user.image,
+    })
+    .from(groupMemberTable)
+    .leftJoin(user, eq(groupMemberTable.userId, user.id))
+    .where(inArray(groupMemberTable.groupId, uniqueGroupIds));
+
+  // Get all documents for these groups
+  const documents = await db
+    .select({
+      groupId: groupDocumentTable.groupId,
+      id: documentTable.id,
+      title: documentTable.title,
+      url: documentTable.url,
+      publishedTime: documentTable.publishedTime,
+      createdAt: documentTable.createdAt,
+    })
+    .from(groupDocumentTable)
+    .leftJoin(documentTable, eq(groupDocumentTable.documentId, documentTable.id))
+    .where(inArray(groupDocumentTable.groupId, uniqueGroupIds));
+
+  // Get owner details for all groups
+  const ownerIds = [...new Set(groups.map(g => g.userId))];
+  const owners = await db
+    .select()
+    .from(user)
+    .where(inArray(user.id, ownerIds));
+
+  const ownerMap = new Map(owners.map(o => [o.id, o]));
+
+  // Organize data by group
+  const membersByGroup = new Map<string, GroupMember[]>();
+  const documentsByGroup = new Map<string, DocumentBasic[]>();
+
+  // Process members
+  for (const member of members) {
+    if (member.id && member.groupId) {
+      if (!membersByGroup.has(member.groupId)) {
+        membersByGroup.set(member.groupId, []);
+      }
+      membersByGroup.get(member.groupId)!.push({
+        id: member.id,
+        name: member.name!,
+        email: member.email!,
+        image: member.image,
+        isOwner: false,
+      });
+    }
+  }
+
+  // Process documents
+  for (const doc of documents) {
+    if (doc.id && doc.groupId) {
+      if (!documentsByGroup.has(doc.groupId)) {
+        documentsByGroup.set(doc.groupId, []);
+      }
+      documentsByGroup.get(doc.groupId)!.push({
+        id: doc.id,
+        title: doc.title!,
+        url: doc.url,
+        publishedTime: doc.publishedTime as any,
+        createdAt: doc.createdAt!,
+      });
+    }
+  }
+
+  // Build final result
+  return groups.map(group => {
+    const groupMembers = membersByGroup.get(group.id) || [];
+    const owner = ownerMap.get(group.userId);
+
+    // Add owner to members list (at the beginning)
+    const allMembers: GroupMember[] = owner
+      ? [
+          {
+            id: owner.id,
+            name: owner.name!,
+            email: owner.email!,
+            image: owner.image,
+            isOwner: true,
+          },
+          ...groupMembers,
+        ]
+      : groupMembers;
+
+    return {
+      ...groupRowToObject(group),
+      members: allMembers,
+      documents: documentsByGroup.get(group.id) || [],
+    };
+  });
+};
 
 export const updateGroup = async (
   userId: string,
@@ -364,7 +473,15 @@ export const listGroupDocuments = async (userId: string, groupId: string): Promi
     .leftJoin(documentTable, eq(documentTable.id, groupDocumentTable.documentId))
     .where(eq(groupDocumentTable.groupId, groupId));
 
-  return documents.filter((d): d is DocumentBasic => d.id !== null);
+  return documents
+    .filter((d): d is typeof d & { id: string } => d.id !== null)
+    .map(d => ({
+      id: d.id,
+      title: d.title!,
+      url: d.url,
+      publishedTime: d.publishedTime as any as Date,
+      createdAt: d.createdAt!,
+    }));
 }
 
 const groupRowToObject = (row: GroupRow): Group => {

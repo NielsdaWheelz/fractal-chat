@@ -4,6 +4,7 @@ import { SidebarMenuButton, SidebarMenuItem } from "../ui/sidebar-left"
 import { FileText } from "lucide-react"
 
 const GroupList = (props: { groups }) => {
+  console.log("GROUP:", props.groups)
   return (
     <>
       {props?.groups?.map((group: { id: string, name?: string | null }) => {

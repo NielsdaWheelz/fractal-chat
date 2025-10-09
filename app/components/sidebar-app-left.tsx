@@ -236,7 +236,7 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
                     <DocumentList documents={data.documents} />
                   </SidebarMenu>
                 </>
-                : mode === "document" &&
+                : mode === "group" &&
                 <>
                   <SidebarGroupLabel>Recent</SidebarGroupLabel>
                   <SidebarMenu>
