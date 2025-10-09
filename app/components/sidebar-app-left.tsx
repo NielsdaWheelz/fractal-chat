@@ -129,7 +129,7 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
                 <TooltipTrigger asChild>
                   <span>
                     <TabsTrigger value="tab-2" className="group py-3" onClick={() => {
-                      setMode("groups")
+                      setMode("group")
                       setGroupId(null)
                       setDocumentId(null)
                     }}>
