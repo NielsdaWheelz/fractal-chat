@@ -4,6 +4,10 @@ import { SidebarMenuButton, SidebarMenuItem } from "../ui/sidebar-left"
 import { FileText, Pencil, Users } from "lucide-react"
 import { AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion"
 import DocumentList from "../document/DocumentList"
+import GroupAvatarStack from "../groupavatar"
+import type { Group } from "~/types/types"
+
+const GroupList = (props: { groups: Group }) => {
 import { Button } from "../ui/button"
 
 const GroupList = (props: { groups, onEditGroup }) => {
@@ -20,6 +24,9 @@ const GroupList = (props: { groups, onEditGroup }) => {
               <AccordionItem value={group.id} key={group.id} className="">
                 <AccordionTrigger className="">
                   <SidebarMenuButton className="w-full text-xs flex items-start gap-2 h-auto px-2 py-2">
+                    <div className="w-0 flex-1 overflow-hidden">
+                      <GroupAvatarStack users={group?.members} />
+                      <span className="line-clamp-2 leading-snug break-words text-center overflow-hidden text-ellipsis whitespace-normal">
                     <Button
                       size="icon"
                       variant="ghost"

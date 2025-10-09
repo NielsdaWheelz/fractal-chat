@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef, useState } from "react";
+import { useState, useRef, useEffect, memo } from "react";
 import {
   Form,
   redirect,
@@ -6,20 +6,19 @@ import {
   useOutletContext,
   useParams,
 } from "react-router";
-import { getAnnotations } from "~/server/annotations.server";
 import { requireUser } from "~/server/auth.server";
+import { getAnnotations } from "~/server/annotations.server";
 import { getDocument } from "~/server/documents.server";
 
-import { CornerDownLeft, MessageCirclePlus, MessageSquareReply, Trash2 } from "lucide-react";
-import DocumentContents from "~/components/document/DocumentContents";
-import { Button } from "~/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "~/components/ui/tooltip";
-import { getColorFromID } from "~/index.server";
+import { Button } from "~/components/ui/button";
+import { CornerDownLeft, MessageCirclePlus, MessageSquareReply, Trash2 } from "lucide-react";
+import DocumentContents from "~/components/document/DocumentContents";
 import { Tweet } from "./tweet";
 
 type PopoverProps = {
@@ -62,8 +61,10 @@ function NotePopover({
       const el = popRef.current;
       if (!el) return;
 
+      // Prefer composedPath to handle portals/shadow DOM correctly
       const path = (e.composedPath?.() ?? []) as EventTarget[];
       if (path.includes(el) || (e.target && el.contains(e.target as Node))) {
+        // Click started inside the popover → do not close
         return;
       }
       onClose();
@@ -110,12 +111,10 @@ function NotePopover({
 
 type LoaderData = {
   document: { id: string; content: string, title: string };
-  color: string
   annotations: Array<{
     id: string;
     start: number;
     end: number;
-    color: string;
     quote: string;
     note: string;
     prefix: string;
@@ -136,11 +135,10 @@ export async function loader({
   }
   const document = await getDocument(params.id);
   const annotations = await getAnnotations(userId, params.id);
-  const color = await getColorFromID(userId);
   if (!document) {
     throw redirect("/");
   }
-  return { document: document, annotations: annotations, color: color };
+  return { document: document, annotations: annotations };
 }
 
 export default function Document() {
@@ -191,7 +189,6 @@ export default function Document() {
         documentId: docId,
         start: parsed.start,
         end: parsed.end,
-        color: color,
         quote: parsed.quote,
         prefix: parsed.prefix,
         suffix: parsed.suffix,
@@ -315,8 +312,6 @@ export default function Document() {
     note: string;
     quote: string;
   }>(null);
-
-
   const { selectionRef, setShowHighlight, setIncludeSelection } =
     useOutletContext<{
       selectionRef: React.MutableRefObject<string>;
@@ -324,16 +319,40 @@ export default function Document() {
       setIncludeSelection: React.Dispatch<React.SetStateAction<boolean>>;
     }>();
 
-  const { document, annotations, color } = useLoaderData() as LoaderData;
+  const { document, annotations } = useLoaderData() as LoaderData;
   const docContent = () => {
     return { __html: document.content };
   };
-  const [rerenderToShowHighlight, setRerenderToShowHighlight] = useState(0);
+  const [annotationJson, setAnnotationJson] = useState("");
   const [annotationText, setannotationText] = useState("");
   const [selectionText, setSelectionText] = useState("");
 
   const docRef = useRef<HTMLDivElement>(null);
+  function onPrepareSubmit() {
+    // parse what you stored in selectionRef (from your selection code)
+    let parsed: any = null;
+    try {
+      parsed = JSON.parse(selectionRef.current);
+    } catch { }
 
+    if (!parsed) return false;
+
+    // build the payload your action expects
+    const payload = {
+      documentId: id,
+      start: parsed.start,
+      end: parsed.end,
+      quote: parsed.quote,
+      prefix: parsed.prefix,
+      suffix: parsed.suffix,
+      body: "Empty Note Body",
+    };
+
+    setAnnotationJson(JSON.stringify(payload));
+    return true;
+  }
+
+  const handleSelectionStart = () => console.log("Selection started");
   const handleSelectionEnd = () => {
     const sel = window.getSelection?.();
     if (!sel || sel.rangeCount === 0) return;
@@ -362,23 +381,10 @@ export default function Document() {
       x: rect.left,
       y: rect.top + 40,
     });
-
-
-    const annPayload = {
-      id: document.id,
-      start: start,
-      end: end,
-      color: color,
-      quote: "",
-      note: "",
-      prefix: "",
-      suffix: "",
-      body: "",
-    };
-
-    annotations.push(annPayload)
-    setRerenderToShowHighlight(prevState => prevState + 1);
   };
+  const handlePopoverShow = () => console.log("Popover shown");
+  const handlePopoverHide = () => console.log("Popover hidden");
+
   function getCharOffset(
     containerEl: HTMLElement,
     node: Node,
@@ -422,7 +428,6 @@ export default function Document() {
     x: number;
     y: number;
   } | null>(null);
-
   function handleDocClick(e: React.MouseEvent<HTMLDivElement>) {
     const target = e.target as HTMLElement;
     const mark = target.closest(".anno-mark") as HTMLElement | null;
@@ -468,10 +473,7 @@ export default function Document() {
             selectionRef={selectionRef}
             x={popup.x}
             y={popup.y}
-            onRequestClose={() => {
-              setPopup(null);
-              annotations.pop()
-            }}
+            onRequestClose={() => setPopup(null)}
           />
         </div>
       )}
@@ -479,13 +481,12 @@ export default function Document() {
       <div
         id="doc-container"
         onMouseUp={handleSelectionEnd}
-        onMouseOver={handleDocClick} // 👈 changed from onClick to onMouseOver
-        onMouseLeave={() => setNotePopup(null)}
+        onClick={handleDocClick} // 👈 add this
         style={{ userSelect: "text" }}
       >
         <DocumentContents
           documentHTML={docContent()}
-          annotations={[...annotations]}
+          annotations={annotations}
         />
       </div>
     </>

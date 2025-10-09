@@ -2,23 +2,32 @@
 
 import * as React from "react"
 import * as AvatarPrimitive from "@radix-ui/react-avatar"
-
+import type { User } from "~/types/types"
 import { cn } from "~/lib/utils"
 
-const borderColor = "#000000"
+// const borderColor = "#000000"
+
+type AvatarProps = React.ComponentProps<typeof AvatarPrimitive.Root> & {
+  user: User
+}
 
 function Avatar({
-  className,
+  className, user, color,
   ...props
-}: React.ComponentProps<typeof AvatarPrimitive.Root>) {
+}: AvatarProps) {
+
+  const colors = ["red", "purple", "blue", "green", "orange", "gray"];
+  console.log("color::" + color);
+
   return (
     <AvatarPrimitive.Root
       data-slot="avatar"
       className={cn(
-        "relative flex size-8 shrink-0 overflow-hidden rounded-full border-4",
+        "relative flex size-8 shrink-0 overflow-hidden rounded-full border-3",
         className
       )}
-      style={{ borderColor }}
+      onClick={() => console.log("color" + color)}
+      style={{ borderColor: colors[Number(color)] }}
       {...props}
     />
   )

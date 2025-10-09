@@ -116,6 +116,7 @@ export const getGroups = async (userId: string): Promise<GroupWithDetails[]> => 
       name: user.name,
       email: user.email,
       image: user.image,
+      color: user.color,
     })
     .from(groupMemberTable)
     .leftJoin(user, eq(groupMemberTable.userId, user.id))
@@ -159,6 +160,7 @@ export const getGroups = async (userId: string): Promise<GroupWithDetails[]> => 
         name: member.name!,
         email: member.email!,
         image: member.image,
+        color: member.color,
         isOwner: false,
       });
     }
@@ -188,15 +190,16 @@ export const getGroups = async (userId: string): Promise<GroupWithDetails[]> => 
     // Add owner to members list (at the beginning)
     const allMembers: GroupMember[] = owner
       ? [
-          {
-            id: owner.id,
-            name: owner.name!,
-            email: owner.email!,
-            image: owner.image,
-            isOwner: true,
-          },
-          ...groupMembers,
-        ]
+        {
+          id: owner.id,
+          name: owner.name!,
+          email: owner.email!,
+          image: owner.image,
+          color: owner.color,
+          isOwner: true,
+        },
+        ...groupMembers,
+      ]
       : groupMembers;
 
     return {
