@@ -38,7 +38,6 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
   const chats = userId && docId ? (await getChats(userId, docId)) : []
   const documents = await getDocuments(userId)
   const groups = await getGroups(userId)
-  console.log(groups)
 
   const waitForDocument = async () => {
     if (params?.id) {

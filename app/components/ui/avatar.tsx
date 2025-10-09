@@ -12,12 +12,12 @@ type AvatarProps = React.ComponentProps<typeof AvatarPrimitive.Root> & {
 }
 
 function Avatar({
-  className, user,
+  className, user, color,
   ...props
 }: AvatarProps) {
 
   const colors = ["red", "purple", "blue", "green", "orange", "gray"];
-
+  console.log("color::" + color);
 
   return (
     <AvatarPrimitive.Root
@@ -26,7 +26,8 @@ function Avatar({
         "relative flex size-8 shrink-0 overflow-hidden rounded-full border-3",
         className
       )}
-      // style={{ borderColor: colors[Number(user.color)] }}
+      onClick={() => console.log("color" + color)}
+      style={{ borderColor: colors[Number(color)] }}
       {...props}
     />
   )
