@@ -50,6 +50,10 @@ import { users } from 'testscripts/dummydata';
 //     updatedAt: timestamp("created_at").defaultNow().notNull()
 // }
 
+//fetch user data with getUsers(in groups.server.ts)
+
+//fetch group members with getGroups(in groups.server.ts)
+
 // retrieving initials from name for fallback
 const updatedUsers = users.map((user) => {
     const parts = user.name.trim().split(/\s+/)
@@ -62,9 +66,9 @@ const updatedUsers = users.map((user) => {
     const fallback = initials.toUpperCase()
     return { ...user, fallback }
 })
-console.log(users[0])
 
-export const AvatarGroupBottomDemo = ({ id, name }) => {
+//creating avatar stack
+export const GroupAvatarStack = ({ id, name }) => {
     return (
         <div className="bg-gradient-to-r from-indigo-100 dark:from-indigo-950 from-10% via-sky-100 dark:via-sky-950 via-30% to-emerald-100 dark:to-emerald-950 to-90% p-1.5 rounded-full">
             <AvatarGroup
@@ -72,12 +76,12 @@ export const AvatarGroupBottomDemo = ({ id, name }) => {
                 invertOverlap
                 tooltipProps={{ side: 'bottom', sideOffset: 12 }}
             >
-                {members.map((member, index) => (
+                {updatedUsers.map((user, index) => (
                     <Avatar key={index}>
-                        <AvatarImage src={member.image} />
-                        <AvatarFallback>{member.fallback}</AvatarFallback>
+                        <AvatarImage src={user.image} />
+                        <AvatarFallback>{user.fallback}</AvatarFallback>
                         <AvatarGroupTooltip>
-                            <p>{member.tooltip}</p>
+                            <p>{user.name}</p>
                         </AvatarGroupTooltip>
                     </Avatar>
                 ))}
@@ -85,4 +89,4 @@ export const AvatarGroupBottomDemo = ({ id, name }) => {
         </div>
     );
 };
-export default AvatarGroupBottomDemo;
+export default GroupAvatarStack;

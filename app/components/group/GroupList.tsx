@@ -6,7 +6,7 @@ import { FileText } from "lucide-react"
 const GroupList = (props: { groups }) => {
   return (
     <>
-      {props?.groups?.map((group: { id: string, name?: string | null}) => {
+      {props?.groups?.map((group: { id: string, name?: string | null }) => {
         const name = (group.name && group.name.trim().length > 0)
           ? group.name
           : (group.id)
@@ -37,4 +37,4 @@ const GroupList = (props: { groups }) => {
   )
 }
 
-export default GroupList
+export default GroupList 

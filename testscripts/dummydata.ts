@@ -1,4 +1,4 @@
-// dummy user array
+// dummy user array. you can use https://www.mockaroo.com/ if you need to make any more tables
 
 export const users = [
     { id: 1, name: "Engelbert Joron", email: "ejoron0@howstuffworks.com", emailVerified: true, image: "https://robohash.org/oditvelnisi.png?size=50x50&set=set1", friends: null, createdAt: "3/22/2025", updatedAt: "5/20/2025" },
