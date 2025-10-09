@@ -50,7 +50,9 @@ import { users } from 'testscripts/dummydata';
 //     updatedAt: timestamp("created_at").defaultNow().notNull()
 // }
 
-//fetch user data
+//fetch user data with getUsers(in groups.server.ts)
+
+//fetch group members with getGroups(in groups.server.ts)
 
 // retrieving initials from name for fallback
 const updatedUsers = users.map((user) => {

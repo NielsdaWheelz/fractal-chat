@@ -35,6 +35,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "~/components/ui/tabs"
+import GroupAvatarStack from "./groupavatar";
 
 type UIMessagePart = { type: string; text?: string }
 type UIMessage = { role: string; parts: UIMessagePart[] }

@@ -28,6 +28,7 @@ import { TooltipProvider } from "@radix-ui/react-tooltip";
 import DocumentList from "./document/DocumentList";
 import SearchResultList from "./SearchResultList";
 import GroupList from "./group/GroupList";
+import GroupAvatarStack from "./groupavatar";
 
 type UIMessagePart = { type: string; text?: string }
 type UIMessage = { role: string; parts: UIMessagePart[] }
