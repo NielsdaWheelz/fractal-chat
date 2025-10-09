@@ -6,7 +6,6 @@ import {
   useOutletContext,
   useParams,
 } from "react-router";
-import { getAnnotations } from "~/server/annotations.server";
 import { requireUser } from "~/server/auth.server";
 import { getDocument } from "~/server/documents.server";
 
@@ -119,6 +118,7 @@ type LoaderData = {
     note: string;
     prefix: string;
     suffix: string;
+    color: string;
   }>;
 };
 
@@ -133,12 +133,35 @@ export async function loader({
   if (!params.id) {
     throw redirect("/");
   }
-  const document = await getDocument(params.id);
-  const annotations = await getAnnotations(userId, params.id);
-  if (!document) {
+  
+  // getDocument now returns document with permission-filtered annotations and comments
+  const documentWithDetails = await getDocument(userId, params.id);
+  
+  if (!documentWithDetails) {
     throw redirect("/");
   }
-  return { document: document, annotations: annotations };
+  
+  // Extract annotations from document (already filtered by permissions)
+  // Map to the simpler format expected by the UI
+  const annotations = documentWithDetails.annotations?.map(anno => ({
+    id: anno.id,
+    start: anno.start,
+    end: anno.end,
+    quote: anno.quote || "",
+    note: anno.body || "",
+    prefix: anno.prefix || "",
+    suffix: anno.suffix || "",
+    color: anno.color || "0", // Default color index
+  })) || [];
+  
+  // Simplify document for UI
+  const document = {
+    id: documentWithDetails.id,
+    content: documentWithDetails.content,
+    title: documentWithDetails.title,
+  };
+  
+  return { document, annotations };
 }
 
 export default function Document() {
@@ -451,7 +474,7 @@ export default function Document() {
   }
   return (
     <>
-      {notePopup && (
+      {notePopup && id && (
         <NotePopover
           docId={id}
           id={notePopup.id}

@@ -4,6 +4,7 @@ import {
   groupTable,
   groupMemberTable,
   permissionTable,
+  groupDocumentTable,
   documentTable,
   annotation,
   comment,
@@ -18,26 +19,26 @@ const resourceTableMap = {
   comment,
   document: documentTable,
   group: groupTable,
-} as const
-
-export async function getUserGroupIds(userId: string): Promise<string[]> {
-  const ownedGroups = await db
-    .select({ id: groupTable.id })
-    .from(groupTable)
-    .where(eq(groupTable.userId, userId))
-
-  const memberGroups = await db
-    .select({ groupId: groupMemberTable.groupId })
-    .from(groupMemberTable)
-    .where(eq(groupMemberTable.userId, userId))
-
-  const groupIds = [
-    ...ownedGroups.map((g) => g.id),
-    ...memberGroups.map((g) => g.groupId),
-  ]
-
-  return [...new Set(groupIds)] // Remove duplicates
 }
+
+// export async function getUserGroupIds(userId: string): Promise<string[]> {
+//   const ownedGroups = await db
+//     .select({ id: groupTable.id })
+//     .from(groupTable)
+//     .where(eq(groupTable.userId, userId))
+
+//   const memberGroups = await db
+//     .select({ groupId: groupMemberTable.groupId })
+//     .from(groupMemberTable)
+//     .where(eq(groupMemberTable.userId, userId))
+
+//   const groupIds = [
+//     ...ownedGroups.map((g) => g.id),
+//     ...memberGroups.map((g) => g.groupId),
+//   ]
+
+//   return [...new Set(groupIds)] // Remove duplicates
+// }
 
 export async function getDirectPermission(
   userId: string,
@@ -265,15 +266,233 @@ export async function computeAccessLevel(
 }
 
 // user has required perms func
+// export async function requirePermission(
+//   userId: string,
+//   resourceType: ResourceType,
+//   resourceId: string,
+//   requiredLevel: PermissionLevel = "read"
+// ): Promise<void> {
+//   const userLevel = await computeAccessLevel(userId, resourceType, resourceId)
+
+//   const levelHierarchy = ["none", "read", "write", "admin"]
+//   const userLevelIndex = levelHierarchy.indexOf(userLevel)
+//   const requiredLevelIndex = levelHierarchy.indexOf(requiredLevel)
+
+//   if (userLevelIndex < requiredLevelIndex) {
+//     throw new ForbiddenError(
+//       `Insufficient permissions: ${requiredLevel} required for ${resourceType}:${resourceId}`
+//     )
+//   }
+// }
+
+////////////////////////////////////////////////////////////////////////
+
+// get all group IDs that a user belongs to (owned or member)
+export async function getUserGroupIds(userId: string): Promise<string[]> {
+  const ownedGroups = await db
+    .select({ id: groupTable.id })
+    .from(groupTable)
+    .where(eq(groupTable.userId, userId))
+
+  const memberGroups = await db
+    .select({ groupId: groupMemberTable.groupId })
+    .from(groupMemberTable)
+    .where(eq(groupMemberTable.userId, userId))
+
+  const groupIds = [
+    ...ownedGroups.map((g) => g.id),
+    ...memberGroups.map((g) => g.groupId),
+  ]
+
+  return [...new Set(groupIds)]
+}
+
+
+// check if two users share any groups
+export async function usersShareGroup(userId1: string, userId2: string): Promise<boolean> {
+  const user1Groups = await getUserGroupIds(userId1)
+  const user2Groups = await getUserGroupIds(userId2)
+  
+  return user1Groups.some(groupId => user2Groups.includes(groupId))
+}
+
+
+// get the resource data including creator and visibility
+async function getResourceData(
+  resourceType: ResourceType,
+  resourceId: string
+): Promise<{ userId: string | null; visibility: Visibility | null } | null> {
+  const table = resourceTableMap[resourceType]
+  if (!table) return null
+
+  const result = await db
+    .select()
+    .from(table)
+    .where(eq(table.id, resourceId))
+
+  if (result.length === 0) return null
+
+  const resource = result[0]
+
+  // Documents have no creator
+  if (resourceType === "document") {
+    return { userId: null, visibility: null }
+  }
+
+  // Other resources have userId and possibly visibility
+  return {
+    userId: resource.userId || null,
+    visibility: resource.visibility || null,
+  }
+}
+
+
+// check if a document is in any of the user's groups
+async function isDocumentInUserGroups(userId: string, documentId: string): Promise<boolean> {
+  const userGroupIds = await getUserGroupIds(userId)
+  
+  if (userGroupIds.length === 0) return false
+
+  const result = await db
+    .select()
+    .from(groupDocumentTable)
+    .where(
+      and(
+        eq(groupDocumentTable.documentId, documentId),
+        inArray(groupDocumentTable.groupId, userGroupIds)
+      )
+    )
+
+  return result.length > 0
+}
+
+
+// get the parent document ID for annotations, comments, and chats
+async function getParentDocumentId(
+  resourceType: ResourceType,
+  resourceId: string
+): Promise<string | null> {
+  if (resourceType === "document") {
+    return resourceId
+  }
+
+  if (resourceType === "chat") {
+    const chatData = await db
+      .select({ documentId: chatTable.documentId })
+      .from(chatTable)
+      .where(eq(chatTable.id, resourceId))
+    
+    return chatData[0]?.documentId || null
+  }
+
+  if (resourceType === "comment") {
+    // Get annotation, then get document from annotation
+    const commentData = await db
+      .select({ annotationId: comment.annotationId })
+      .from(comment)
+      .where(eq(comment.id, resourceId))
+    
+    if (commentData.length === 0) return null
+
+    const annotationData = await db
+      .select({ documentId: annotation.documentId })
+      .from(annotation)
+      .where(eq(annotation.id, commentData[0].annotationId))
+    
+    return annotationData[0]?.documentId || null
+  }
+
+  if (resourceType === "annotation") {
+    const annotationData = await db
+      .select({ documentId: annotation.documentId })
+      .from(annotation)
+      .where(eq(annotation.id, resourceId))
+    
+    return annotationData[0]?.documentId || null
+  }
+
+  return null
+}
+
+// documents: always readable by anyone
+// private: only creator can read/write
+// only creator can write to their resources
+// groups: any member can read/write
+// public resources: visible to everyone (read-only unless creator)
+// shared group visibility: if users share a group AND the document is in that group, they can see each other's annotations/comments
+export async function checkPermissions(
+  userId: string,
+  resourceType: ResourceType,
+  resourceId: string
+): Promise<PermissionLevel> {
+  // Rule 1: Documents are always readable by anyone
+  if (resourceType === "document") {
+    return "read"
+  }
+
+  // Get resource data
+  const resourceData = await getResourceData(resourceType, resourceId)
+  if (!resourceData) {
+    return "none" // Resource doesn't exist
+  }
+
+  const { userId: creatorId, visibility } = resourceData
+
+  // Rule 4: Groups - any member can read/write
+  if (resourceType === "group") {
+    const userGroupIds = await getUserGroupIds(userId)
+    if (userGroupIds.includes(resourceId)) {
+      return "write" // Any member can edit group
+    }
+    return "none"
+  }
+
+  // Rule 3: Creator always has write access (for non-group resources)
+  if (creatorId && creatorId === userId) {
+    return "write"
+  }
+
+  // Rule 2: Private resources only visible to creator
+  if (visibility === "private") {
+    return "none"
+  }
+
+  // Rule 5: Public resources are readable by everyone
+  if (visibility === "public") {
+    return "read"
+  }
+
+  // Rule 6: Shared group visibility for annotations, comments, and chats
+  if (resourceType === "annotation" || resourceType === "comment" || resourceType === "chat") {
+    if (!creatorId) return "none"
+
+    // Check if users share any groups
+    const shareGroup = await usersShareGroup(userId, creatorId)
+    if (!shareGroup) return "none"
+
+    // Check if the parent document is in any of the shared groups
+    const documentId = await getParentDocumentId(resourceType, resourceId)
+    if (!documentId) return "none"
+
+    const docInSharedGroup = await isDocumentInUserGroups(userId, documentId)
+    if (docInSharedGroup) {
+      return "read"
+    }
+  }
+
+  return "none"
+}
+
+// Require a specific permission level, throw error if insufficient
 export async function requirePermission(
   userId: string,
   resourceType: ResourceType,
   resourceId: string,
   requiredLevel: PermissionLevel = "read"
 ): Promise<void> {
-  const userLevel = await computeAccessLevel(userId, resourceType, resourceId)
+  const userLevel = await checkPermissions(userId, resourceType, resourceId)
 
-  const levelHierarchy = ["none", "read", "write", "admin"]
+  const levelHierarchy: PermissionLevel[] = ["none", "read", "write", "admin"]
   const userLevelIndex = levelHierarchy.indexOf(userLevel)
   const requiredLevelIndex = levelHierarchy.indexOf(requiredLevel)
 

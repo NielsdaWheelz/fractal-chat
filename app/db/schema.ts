@@ -186,6 +186,7 @@ export const groupTable = pgTable("group", {
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
+  // visibility: visibilityEnum("visibility"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()
