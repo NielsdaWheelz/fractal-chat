@@ -2,24 +2,27 @@ import { db } from "~/server/index.server";
 import { requirePermission } from "./permissions.server.helper";
 import { comment } from "~/db/schema";
 import { eq } from "drizzle-orm";
-import { NotFoundError } from "./errors.server";
+import { ForbiddenError, NotFoundError } from "./errors.server";
 import type { Comment, CommentCreate, CommentRow } from "~/types/types";
 
-export const getComment = async (userId: string, commentId: string): Promise<Comment> => {
-  await requirePermission(userId, "comment", commentId, "read");
+export async function getComment(userId: string, commentId: string): Promise<CommentData> {
+  const access = await checkPermission(userId, "comment", commentId);
+  if (access === "none") {
+    throw new ForbiddenError("No access to this comment");
+  }
 
-  const commentRow = await db
+  const comm = await db
     .select()
     .from(comment)
-    .where(eq(comment.id, commentId));
+    .where(eq(comment.id, commentId))
+    .limit(1);
 
-  if (commentRow.length === 0) {
+  if (comm.length === 0) {
     throw new NotFoundError("Comment", commentId);
   }
 
-  return commentRowToObject(commentRow[0]);
+  return commentRowToObject(comm[0]);
 }
-
 
 const commentObjectToRow = (commentData: CommentCreate) => {
   return {
@@ -42,4 +45,66 @@ const commentRowToObject = (row: CommentRow): Comment => {
     createdAt: row.createdAt,
     updatedAt: row.updatedAt
   }
+}
+
+export async function createComment(
+  userId: string,
+  commentData: {
+    id: string;
+    annotationId: string;
+    body?: string | null;
+    visibility?: "public" | "private";
+  }
+): Promise<CommentData> {
+  // Verify annotation exists and user can see it
+  const access = await checkPermission(userId, "annotation", commentData.annotationId);
+  if (access === "none") {
+    throw new ForbiddenError("Cannot comment on annotation you cannot see");
+  }
+
+  const result = await db
+    .insert(comment)
+    .values({
+      ...commentData,
+      userId,
+      visibility: commentData.visibility || "private",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    })
+    .returning();
+
+  return result[0];
+}
+
+export async function updateComment(
+  userId: string,
+  commentId: string,
+  updates: {
+    body?: string | null;
+    visibility?: "public" | "private";
+  }
+): Promise<CommentData> {
+  await requirePermission(userId, "comment", commentId, "write");
+
+  const result = await db
+    .update(comment)
+    .set({
+      ...updates,
+      updatedAt: new Date(),
+    })
+    .where(eq(comment.id, commentId))
+    .returning();
+
+  if (result.length === 0) {
+    throw new NotFoundError("Comment", commentId);
+  }
+
+  return result[0];
+}
+
+export async function deleteComment(userId: string, commentId: string): Promise<boolean> {
+  await requirePermission(userId, "comment", commentId, "write");
+
+  await db.delete(comment).where(eq(comment.id, commentId));
+  return true;
 }

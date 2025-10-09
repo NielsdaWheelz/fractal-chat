@@ -106,120 +106,120 @@ export const deletePermission = async (
   return { success: true }
 }
 
-// getPermissionsForResource(resourceType, resourceId)
-// all principals that can access a resource.
-export const getPermissionsforResource = async (resourceType: string, resourceId: string) => {
-  return await db
-    .select()
-    .from(permissionTable)
-    .leftJoin(user, and(
-      eq(permissionTable.principalType, "user" as any),
-      eq(user.id, permissionTable.principalId)
-    ))
-    .leftJoin(groupTable, and(
-      eq(permissionTable.principalType, "group" as any),
-      eq(groupTable.id, permissionTable.principalId)
-    ))
-    .where(and(
-      eq(permissionTable.resourceType, resourceType as any),
-      eq(permissionTable.resourceId, resourceId)
-    ))
-}
+// // getPermissionsForResource(resourceType, resourceId)
+// // all principals that can access a resource.
+// export const getPermissionsforResource = async (resourceType: string, resourceId: string) => {
+//   return await db
+//     .select()
+//     .from(permissionTable)
+//     .leftJoin(user, and(
+//       eq(permissionTable.principalType, "user" as any),
+//       eq(user.id, permissionTable.principalId)
+//     ))
+//     .leftJoin(groupTable, and(
+//       eq(permissionTable.principalType, "group" as any),
+//       eq(groupTable.id, permissionTable.principalId)
+//     ))
+//     .where(and(
+//       eq(permissionTable.resourceType, resourceType as any),
+//       eq(permissionTable.resourceId, resourceId)
+//     ))
+// }
 
-// getPermissionsForPrincipal(principalType, principalId)
-// all resources a user/group/link can access.
-export const getPermissionsForPrincipal = async (principalType: string, principalId: string) => {
-  return await db
-    .select()
-    .from(permissionTable)
-    .leftJoin(chatTable, and(
-      eq(permissionTable.resourceType, "chat" as any),
-      eq(permissionTable.resourceId, chatTable.id)
-    ))
-    .leftJoin(documentTable, and(
-      eq(permissionTable.resourceType, "document" as any),
-      eq(permissionTable.resourceId, documentTable.id)
-    ))
-    .leftJoin(annotation, and(
-      eq(permissionTable.resourceType, "annotation" as any),
-      eq(permissionTable.resourceId, annotation.id)
-    ))
-    .leftJoin(comment, and(
-      eq(permissionTable.resourceType, "comment" as any),
-      eq(permissionTable.resourceId, comment.id)
-    ))
-    .where(and(
-      eq(permissionTable.principalType, principalType as any),
-      eq(permissionTable.principalId, principalId)
-    ))
-}
+// // getPermissionsForPrincipal(principalType, principalId)
+// // all resources a user/group/link can access.
+// export const getPermissionsForPrincipal = async (principalType: string, principalId: string) => {
+//   return await db
+//     .select()
+//     .from(permissionTable)
+//     .leftJoin(chatTable, and(
+//       eq(permissionTable.resourceType, "chat" as any),
+//       eq(permissionTable.resourceId, chatTable.id)
+//     ))
+//     .leftJoin(documentTable, and(
+//       eq(permissionTable.resourceType, "document" as any),
+//       eq(permissionTable.resourceId, documentTable.id)
+//     ))
+//     .leftJoin(annotation, and(
+//       eq(permissionTable.resourceType, "annotation" as any),
+//       eq(permissionTable.resourceId, annotation.id)
+//     ))
+//     .leftJoin(comment, and(
+//       eq(permissionTable.resourceType, "comment" as any),
+//       eq(permissionTable.resourceId, comment.id)
+//     ))
+//     .where(and(
+//       eq(permissionTable.principalType, principalType as any),
+//       eq(permissionTable.principalId, principalId)
+//     ))
+// }
 
-export const makePrivate = async (
-  userId: string,
-  resourceType: ResourceType,
-  resourceId: string
-): Promise<{ success: true }> => {
-  const resourceTable = tableMap[resourceType as keyof typeof tableMap]
-  if (!resourceTable) {
-    throw new BadRequestError(`Invalid resource type: ${resourceType}`)
-  }
+// export const makePrivate = async (
+//   userId: string,
+//   resourceType: ResourceType,
+//   resourceId: string
+// ): Promise<{ success: true }> => {
+//   const resourceTable = tableMap[resourceType as keyof typeof tableMap]
+//   if (!resourceTable) {
+//     throw new BadRequestError(`Invalid resource type: ${resourceType}`)
+//   }
 
-  if (resourceType === "document") {
-    await requirePermission(
-      userId,
-      "document",
-      resourceId,
-      "write"
-    )
-  } else {
-    const isCreator = await isResourceCreator(
-      userId,
-      resourceType,
-      resourceId
-    )
+//   if (resourceType === "document") {
+//     await requirePermission(
+//       userId,
+//       "document",
+//       resourceId,
+//       "write"
+//     )
+//   } else {
+//     const isCreator = await isResourceCreator(
+//       userId,
+//       resourceType,
+//       resourceId
+//     )
 
-    if (!isCreator) {
-      throw new ForbiddenError("Only the creator can make a resource private")
-    }
-  }
+//     if (!isCreator) {
+//       throw new ForbiddenError("Only the creator can make a resource private")
+//     }
+//   }
 
-  if (resourceType !== "document") {
-    await db
-      .delete(permissionTable)
-      .where(
-        and(
-          eq(permissionTable.resourceType, resourceType),
-          eq(permissionTable.resourceId, resourceId),
-          or(
-            ne(permissionTable.principalType, "user"),
-            ne(permissionTable.principalId, userId)
-          )
-        )
-      )
-  } else {
-    await db
-      .delete(permissionTable)
-      .where(
-        and(
-          eq(permissionTable.resourceType, "document"),
-          eq(permissionTable.resourceId, resourceId)
-        )
-      )
-  }
+//   if (resourceType !== "document") {
+//     await db
+//       .delete(permissionTable)
+//       .where(
+//         and(
+//           eq(permissionTable.resourceType, resourceType),
+//           eq(permissionTable.resourceId, resourceId),
+//           or(
+//             ne(permissionTable.principalType, "user"),
+//             ne(permissionTable.principalId, userId)
+//           )
+//         )
+//       )
+//   } else {
+//     await db
+//       .delete(permissionTable)
+//       .where(
+//         and(
+//           eq(permissionTable.resourceType, "document"),
+//           eq(permissionTable.resourceId, resourceId)
+//         )
+//       )
+//   }
 
-  if (resourceType === "annotation") {
-    await db
-      .update(annotation)
-      .set({ visibility: "private" })
-      .where(eq(annotation.id, resourceId))
-  } else if (resourceType === "comment") {
-    await db
-      .update(comment)
-      .set({ visibility: "private" })
-      .where(eq(comment.id, resourceId))
-  }
-  return { success: true }
-}
+//   if (resourceType === "annotation") {
+//     await db
+//       .update(annotation)
+//       .set({ visibility: "private" })
+//       .where(eq(annotation.id, resourceId))
+//   } else if (resourceType === "comment") {
+//     await db
+//       .update(comment)
+//       .set({ visibility: "private" })
+//       .where(eq(comment.id, resourceId))
+//   }
+//   return { success: true }
+// }
 
 const permissionObjectToRow = (permission: Permission) => {
   return {

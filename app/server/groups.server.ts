@@ -2,7 +2,7 @@ import { and, eq, inArray, sql } from "drizzle-orm";
 import { documentTable, groupDocumentTable, groupMemberTable, groupTable, permissionTable, user } from "~/db/schema";
 import { db } from "~/server/index.server";
 import { BadRequestError, ForbiddenError, NotFoundError } from "./errors.server";
-import { computeAccessLevel, requirePermission } from "./permissions.server.helper";
+import { computeAccessLevel, getUserGroupIds, requirePermission } from "./permissions.server.helper";
 import type { Group, GroupCreate, GroupWithDetails, GroupRow, GroupUpdate, GroupMember, DocumentBasic } from "~/types/types";
 
 export const saveGroup = async (group: GroupCreate): Promise<Group> => {
@@ -30,29 +30,43 @@ export const saveGroup = async (group: GroupCreate): Promise<Group> => {
   return groupRowToObject(result[0]);
 }
 
-export const getGroup = async (userId: string, groupId: string): Promise<GroupWithDetails> => {
+export async function getGroup(userId: string, groupId: string): Promise<GroupWithDetails> {
   await requirePermission(userId, "group", groupId, "read");
 
   const groupData = await db
     .select()
     .from(groupTable)
-    .where(eq(groupTable.id, groupId));
+    .where(eq(groupTable.id, groupId))
+    .limit(1);
 
   if (groupData.length === 0) {
     throw new NotFoundError("Group", groupId);
   }
 
-  const members = await db
-    .select({
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      image: user.image,
-    })
+  // Get owner details
+  const ownerData = await db
+    .select()
+    .from(user)
+    .where(eq(user.id, groupData[0].userId))
+    .limit(1);
+
+  // Get members
+  const memberData = await db
+    .select()
     .from(groupMemberTable)
     .leftJoin(user, eq(groupMemberTable.userId, user.id))
     .where(eq(groupMemberTable.groupId, groupId));
 
+  const members: GroupMember[] = [
+    ...(ownerData.length > 0
+      ? [{ ...ownerData[0], isOwner: true }]
+      : []),
+    ...memberData
+      .filter((m): m is typeof m & { id: string } => m.id !== null)
+      .map((m) => ({ ...m, isOwner: false })),
+  ];
+
+  // Get documents
   const documents = await db
     .select({
       id: documentTable.id,
@@ -66,8 +80,8 @@ export const getGroup = async (userId: string, groupId: string): Promise<GroupWi
     .where(eq(groupDocumentTable.groupId, groupId));
 
   return {
-    ...groupRowToObject(groupData[0]),
-    members: members.filter((m): m is GroupMember => m.id !== null),
+    ...groupData[0],
+    members,
     documents: documents.filter((d): d is DocumentBasic => d.id !== null),
   };
 }
@@ -98,59 +112,70 @@ export const getGroups = async (userId: string): Promise<Group[]> => {
   return uniqueGroups.map((g) => groupRowToObject(g));
 }
 
-export const updateGroup = async (
+export async function updateGroup(
   userId: string,
   groupId: string,
   updates: GroupUpdate
-): Promise<Group> => {
-  await requirePermission(userId, "group", groupId, "write");
+): Promise<GroupWithDetails> {
+  // Only owner can update group
+  const group = await db
+    .select({ userId: groupTable.userId })
+    .from(groupTable)
+    .where(eq(groupTable.id, groupId))
+    .limit(1);
 
-  const result = await db
+  if (group.length === 0) {
+    throw new NotFoundError("Group", groupId);
+  }
+
+  if (group[0].userId !== userId) {
+    throw new ForbiddenError("Only the group owner can update the group");
+  }
+
+  await db
     .update(groupTable)
     .set({
       ...updates,
       updatedAt: new Date(),
     })
-    .where(eq(groupTable.id, groupId))
-    .returning();
+    .where(eq(groupTable.id, groupId));
 
-  if (result.length === 0) {
+  return getGroup(userId, groupId);
+}
+
+export async function deleteGroup(userId: string, groupId: string): Promise<boolean> {
+  // Only owner can delete group
+  const group = await db
+    .select({ userId: groupTable.userId })
+    .from(groupTable)
+    .where(eq(groupTable.id, groupId))
+    .limit(1);
+
+  if (group.length === 0) {
     throw new NotFoundError("Group", groupId);
   }
 
-  return groupRowToObject(result[0]);
+  if (group[0].userId !== userId) {
+    throw new ForbiddenError("Only the group owner can delete the group");
+  }
+
+  await db.delete(groupTable).where(eq(groupTable.id, groupId));
+  return true;
 }
 
-export const deleteGroup = async (userId: string, groupId: string): Promise<boolean> => {
-  await requirePermission(userId, "group", groupId, "write");
-
-  // delete relevant perms
-  await db
-    .delete(permissionTable)
-    .where(
-      and(
-        eq(permissionTable.principalType, "group" as any),
-        eq(permissionTable.principalId, groupId)
-      )
-    );
-
-  const result = await db
-    .delete(groupTable)
-    .where(eq(groupTable.id, groupId))
-    .returning();
-
-  return result.length > 0;
-}
-
-export const addGroupMember = async (
+export async function addGroupMember(
   userId: string,
   groupId: string,
   newUserId: string
-) => {
-  await requirePermission(userId, "group", groupId, "write");
+): Promise<void> {
+  // Any member can add users
+  const access = await checkPermission(userId, "group", groupId);
+  if (access === "none") {
+    throw new ForbiddenError("Must be a group member to add users");
+  }
 
-  // user already member?
-  const existingMember = await db
+  // Check if already a member
+  const existing = await db
     .select()
     .from(groupMemberTable)
     .where(
@@ -158,40 +183,52 @@ export const addGroupMember = async (
         eq(groupMemberTable.groupId, groupId),
         eq(groupMemberTable.userId, newUserId)
       )
-    );
+    )
+    .limit(1);
 
-  if (existingMember.length > 0) {
-    throw new BadRequestError("User is already a member of this group");
+  if (existing.length > 0) {
+    throw new BadRequestError("User is already a member");
   }
 
-  const result = await db
-    .insert(groupMemberTable)
-    .values({
-      groupId,
-      userId: newUserId,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    })
-    .returning();
+  // Check if user is the owner (owners don't need to be in member table)
+  const group = await db
+    .select({ userId: groupTable.userId })
+    .from(groupTable)
+    .where(eq(groupTable.id, groupId))
+    .limit(1);
 
-  return result[0];
+  if (group[0].userId === newUserId) {
+    throw new BadRequestError("Group owner is automatically a member");
+  }
+
+  await db.insert(groupMemberTable).values({
+    groupId,
+    userId: newUserId,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  });
 }
 
-export const removeGroupMember = async (
+export async function removeGroupMember(
   userId: string,
   groupId: string,
   memberUserId: string
-) => {
-  await requirePermission(userId, "group", groupId, "write");
+): Promise<void> {
+  // Any member can remove users
+  const access = await checkPermission(userId, "group", groupId);
+  if (access === "none") {
+    throw new ForbiddenError("Must be a group member to remove users");
+  }
 
-  // group owner?
-  const groupData = await db
-    .select()
+  // Cannot remove the owner
+  const group = await db
+    .select({ userId: groupTable.userId })
     .from(groupTable)
-    .where(eq(groupTable.id, groupId));
+    .where(eq(groupTable.id, groupId))
+    .limit(1);
 
-  if (groupData[0].userId === memberUserId) {
-    throw new BadRequestError("Cannot remove the group owner from the group");
+  if (group[0].userId === memberUserId) {
+    throw new BadRequestError("Cannot remove the group owner");
   }
 
   const result = await db
@@ -207,8 +244,6 @@ export const removeGroupMember = async (
   if (result.length === 0) {
     throw new NotFoundError("Group membership", `${groupId}:${memberUserId}`);
   }
-
-  return true;
 }
 
 export const getGroupMembers = async (userId: string, groupId: string): Promise<GroupMember[]> => {
@@ -259,17 +294,29 @@ export const getGroupMembers = async (userId: string, groupId: string): Promise<
   return result;
 }
 
-export const addDocumentToGroup = async (
+export async function addDocumentToGroup(
   userId: string,
   groupId: string,
   documentId: string
-) => {
-  const accessLevel = await computeAccessLevel(userId, "group", groupId);
-  if (accessLevel === "none") {
-    throw new ForbiddenError("Must be a group owner or member to add documents");
+): Promise<void> {
+  // Any member can add documents
+  const access = await checkPermission(userId, "group", groupId);
+  if (access === "none") {
+    throw new ForbiddenError("Must be a group member to add documents");
   }
 
-  // doc already in group?
+  // Check if document exists
+  const doc = await db
+    .select()
+    .from(documentTable)
+    .where(eq(documentTable.id, documentId))
+    .limit(1);
+
+  if (doc.length === 0) {
+    throw new NotFoundError("Document", documentId);
+  }
+
+  // Check if already in group
   const existing = await db
     .select()
     .from(groupDocumentTable)
@@ -278,10 +325,11 @@ export const addDocumentToGroup = async (
         eq(groupDocumentTable.groupId, groupId),
         eq(groupDocumentTable.documentId, documentId)
       )
-    );
+    )
+    .limit(1);
 
   if (existing.length > 0) {
-    throw new BadRequestError("Document is already in this group");
+    throw new BadRequestError("Document already in group");
   }
 
   await db.insert(groupDocumentTable).values({
@@ -290,31 +338,17 @@ export const addDocumentToGroup = async (
     createdAt: new Date(),
     updatedAt: new Date(),
   });
-
-  // group read permission
-  await db
-    .insert(permissionTable)
-    .values({
-      resourceType: "document" as any,
-      resourceId: documentId,
-      principalType: "group" as any,
-      principalId: groupId,
-      permissionLevel: "read" as any,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    })
-
-  return { success: true };
 }
 
-export const removeDocumentFromGroup = async (
+export async function removeDocumentFromGroup(
   userId: string,
   groupId: string,
   documentId: string
-) => {
-  const accessLevel = await computeAccessLevel(userId, "group", groupId);
-  if (accessLevel === "none") {
-    throw new ForbiddenError("Must be a group owner or member to remove documents");
+): Promise<void> {
+  // Any member can remove documents
+  const access = await checkPermission(userId, "group", groupId);
+  if (access === "none") {
+    throw new ForbiddenError("Must be a group member to remove documents");
   }
 
   const result = await db
@@ -328,25 +362,8 @@ export const removeDocumentFromGroup = async (
     .returning();
 
   if (result.length === 0) {
-    throw new NotFoundError(
-      "Group document association",
-      `${groupId}:${documentId}`
-    );
+    throw new NotFoundError("Document in group", `${groupId}:${documentId}`);
   }
-
-  // remove group-permission
-  await db
-    .delete(permissionTable)
-    .where(
-      and(
-        eq(permissionTable.resourceType, "document" as any),
-        eq(permissionTable.resourceId, documentId),
-        eq(permissionTable.principalType, "group" as any),
-        eq(permissionTable.principalId, groupId)
-      )
-    );
-
-  return { success: true };
 }
 
 export const listGroupDocuments = async (userId: string, groupId: string): Promise<DocumentBasic[]> => {
@@ -386,3 +403,27 @@ const groupObjectToRow = (group: GroupCreate) => {
     updatedAt: group.updatedAt
   }
 }
+
+// NEW
+
+
+
+export async function listGroups(userId: string): Promise<GroupWithDetails[]> {
+  const groupIds = await getUserGroupIds(userId);
+
+  if (groupIds.length === 0) {
+    return [];
+  }
+
+  const groups = await Promise.all(
+    groupIds.map((id) => getGroup(userId, id))
+  );
+
+  return groups;
+}
+
+
+
+
+
+

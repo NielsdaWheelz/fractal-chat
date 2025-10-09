@@ -1,23 +1,39 @@
 import { db } from "~/server/index.server";
-import { getUserGroupIds, requirePermission } from "./permissions.server.helper";
-import { annotation, groupDocumentTable, groupMemberTable } from "~/db/schema";
+import { getUserGroupIds, getVisibleCommentIds, requirePermission } from "./permissions.server.helper";
+import { annotation, comment, groupDocumentTable, groupMemberTable } from "~/db/schema";
 import { eq, inArray } from "drizzle-orm";
-import { NotFoundError } from "./errors.server";
-import type { Annotation, AnnotationCreate, AnnotationRow } from "~/types/types";
+import { ForbiddenError, NotFoundError } from "./errors.server";
+import type { Annotation, AnnotationCreate, AnnotationRow, AnnotationWithComments } from "~/types/types";
 
-export const getAnnotation = async (userId: string, annotationId: string) => {
-  await requirePermission(userId, "annotation", annotationId, "read");
+export async function getAnnotation(
+  userId: string,
+  annotationId: string
+): Promise<AnnotationWithComments> {
+  const access = await checkPermission(userId, "annotation", annotationId);
+  if (access === "none") {
+    throw new ForbiddenError("No access to this annotation");
+  }
 
-  const annotationRow = await db
+  const anno = await db
     .select()
     .from(annotation)
-    .where(eq(annotation.id, annotationId));
+    .where(eq(annotation.id, annotationId))
+    .limit(1);
 
-  if (annotationRow.length === 0) {
+  if (anno.length === 0) {
     throw new NotFoundError("Annotation", annotationId);
   }
 
-  return annotationRowToObject(annotationRow[0]);
+  const visibleCommentIds = await getVisibleCommentIds(userId, annotationId);
+  const comments =
+    visibleCommentIds.length > 0
+      ? await db.select().from(comment).where(inArray(comment.id, visibleCommentIds))
+      : [];
+
+  return {
+    ...anno[0],
+    comments,
+  };
 }
 
 export const saveAnnotations = async (annotationToSave: AnnotationCreate) => {
@@ -118,4 +134,89 @@ const annotationRowToObject = (row: AnnotationRow): Annotation => {
     createdAt: row.createdAt,
     updatedAt: row.updatedAt
   }
+}
+
+// NEW
+export async function createAnnotation(
+  userId: string,
+  annotData: {
+    id: string;
+    documentId: string;
+    body?: string | null;
+    visibility?: "public" | "private";
+    start: number;
+    end: number;
+    quote?: string | null;
+    prefix?: string | null;
+    suffix?: string | null;
+  }
+): Promise<AnnotationWithComments> {
+  // Verify document exists
+  const doc = await db
+    .select()
+    .from(documentTable)
+    .where(eq(documentTable.id, annotData.documentId))
+    .limit(1);
+
+  if (doc.length === 0) {
+    throw new NotFoundError("Document", annotData.documentId);
+  }
+
+  const result = await db
+    .insert(annotation)
+    .values({
+      ...annotData,
+      userId,
+      visibility: annotData.visibility || "private",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    })
+    .returning();
+
+  return {
+    ...result[0],
+    comments: [],
+  };
+}
+
+export async function updateAnnotation(
+  userId: string,
+  annotationId: string,
+  updates: {
+    body?: string | null;
+    visibility?: "public" | "private";
+  }
+): Promise<AnnotationWithComments> {
+  await requirePermission(userId, "annotation", annotationId, "write");
+
+  const result = await db
+    .update(annotation)
+    .set({
+      ...updates,
+      updatedAt: new Date(),
+    })
+    .where(eq(annotation.id, annotationId))
+    .returning();
+
+  if (result.length === 0) {
+    throw new NotFoundError("Annotation", annotationId);
+  }
+
+  const visibleCommentIds = await getVisibleCommentIds(userId, annotationId);
+  const comments =
+    visibleCommentIds.length > 0
+      ? await db.select().from(comment).where(inArray(comment.id, visibleCommentIds))
+      : [];
+
+  return {
+    ...result[0],
+    comments,
+  };
+}
+
+export async function deleteAnnotation(userId: string, annotationId: string): Promise<boolean> {
+  await requirePermission(userId, "annotation", annotationId, "write");
+
+  await db.delete(annotation).where(eq(annotation.id, annotationId));
+  return true;
 }
