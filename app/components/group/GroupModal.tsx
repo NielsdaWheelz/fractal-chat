@@ -37,15 +37,15 @@ export function GroupModal({ isOpen, onClose, onSuccess }: CreateGroupModalProps
 
   const fetchUsersAndDocuments = async () => {
     try {
-      // Fetch users - adjust the endpoint to match your API
-      const usersRes = await fetch("/api/users");
+      // Fetch users from groups API
+      const usersRes = await fetch("/api/groups?action=allUsers");
       if (usersRes.ok) {
         const usersData = await usersRes.json();
         setUsers(usersData.success ? usersData.data : []);
       }
 
-      // Fetch documents - adjust the endpoint to match your API
-      const docsRes = await fetch("/api/documents?action=list");
+      // Fetch documents from groups API
+      const docsRes = await fetch("/api/groups?action=allDocuments");
       if (docsRes.ok) {
         const docsData = await docsRes.json();
         setDocuments(docsData.success ? docsData.data : []);
