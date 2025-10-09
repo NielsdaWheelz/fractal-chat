@@ -55,7 +55,7 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
       setMode("search")
     } else if (fetcher.state === 'idle' && fetcher.data?.length === 0) {
       setSearchResults([]);
-    //  setMode("group")
+      //  setMode("group")
     }
   }, [fetcher.data, fetcher.state]);
 
@@ -112,6 +112,22 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span>
+                    <TabsTrigger value="tab-1" className="py-3" onClick={() => {
+                      setMode("document")
+                      setGroupId(null)
+                      setDocumentId(null)
+                    }}>
+                      <Library size={16} aria-hidden="true" />
+                    </TabsTrigger>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent className="px-2 py-1 text-xs">
+                  Reads
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span>
                     <TabsTrigger value="tab-2" className="group py-3" onClick={() => {
                       setMode("groups")
                       setGroupId(null)
@@ -127,24 +143,8 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
                   Groups
                 </TooltipContent>
               </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span>
-                    <TabsTrigger value="tab-1" className="py-3" onClick={() => {
-                      setMode("document")
-                      setGroupId(null)
-                      setDocumentId(null)
-                    }}>
-                      <Library size={16} aria-hidden="true" />
-                    </TabsTrigger>
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent className="px-2 py-1 text-xs">
-                  Reads
-                </TooltipContent>
-              </Tooltip>
             </TabsList>
-            <Button size="icon" variant="ghost" onClick={() => {setIsModalOpen(true)}}>
+            <Button size="icon" variant="ghost" onClick={() => { setIsModalOpen(true) }}>
               <UserPlus className="h-5 w-5" />
               <span className="sr-only">Create New Group</span>
             </Button>
