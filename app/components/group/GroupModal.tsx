@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
+import { Form } from "react-router";
 
 interface User {
   id: string;
@@ -155,7 +156,7 @@ export function GroupModal({ isOpen, onClose, onSuccess }: CreateGroupModalProps
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
+        <Form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md">
               {error}
@@ -244,7 +245,7 @@ export function GroupModal({ isOpen, onClose, onSuccess }: CreateGroupModalProps
               </div>
             )}
           </div>
-        </form>
+        </Form>
 
         {/* Footer */}
         <div className="flex items-center justify-end gap-3 p-6 border-t bg-gray-50">
