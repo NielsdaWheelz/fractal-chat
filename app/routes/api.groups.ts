@@ -236,6 +236,19 @@ export async function action({ request }: Route.ActionArgs) {
         );
       }
 
+      if (!name || name.trim() === "") {
+        return Response.json(
+          {
+            success: false,
+            error: "Bad Request",
+            message: "name is required",
+            code: "MISSING_PARAMS",
+            statusCode: 400,
+          },
+          { status: 400 }
+        );
+      }
+
       const updates: { name?: string } = {};
       if (name !== undefined) updates.name = name;
 

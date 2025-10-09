@@ -1,12 +1,20 @@
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
+import type { GroupWithDetails, UserBasic, DocumentBasic } from "~/types/types";
 
-export function GroupModal({ isOpen, onClose, onSuccess, editGroup }) {
+interface GroupModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess?: () => void;
+  editGroup?: GroupWithDetails | null;
+}
+
+export function GroupModal({ isOpen, onClose, onSuccess, editGroup }: GroupModalProps) {
   const [groupName, setGroupName] = useState("");
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
-  const [documents, setDocuments] = useState<Document[]>([]);
+  const [users, setUsers] = useState<UserBasic[]>([]);
+  const [documents, setDocuments] = useState<DocumentBasic[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -16,9 +24,10 @@ export function GroupModal({ isOpen, onClose, onSuccess, editGroup }) {
       fetchUsersAndDocuments();
       // If editing, populate the form with existing data
       if (editGroup) {
-        setGroupName(editGroup.name);
-        setSelectedMembers(editGroup.members);
-        setSelectedDocuments(editGroup.documents);
+        setGroupName(editGroup.name || "");
+        // Extract IDs from member and document objects
+        setSelectedMembers(editGroup.members.map(m => m.id));
+        setSelectedDocuments(editGroup.documents.map(d => d.id));
       } else {
         // Reset form for new group
         setGroupName("");
@@ -55,12 +64,11 @@ export function GroupModal({ isOpen, onClose, onSuccess, editGroup }) {
 
     try {
       if (editGroup) {
-        // Update existing group
+        // Update existing group name using PATCH
         const updateRes = await fetch("/api/groups", {
-          method: "POST",
+          method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            action: "update",
             groupId: editGroup.id,
             name: groupName,
           }),
@@ -71,13 +79,17 @@ export function GroupModal({ isOpen, onClose, onSuccess, editGroup }) {
           throw new Error(errorData.message || "Failed to update group");
         }
 
+        // Extract existing member and document IDs
+        const existingMemberIds = editGroup.members.map(m => m.id);
+        const existingDocumentIds = editGroup.documents.map(d => d.id);
+
         // Update members (remove old, add new)
-        const membersToRemove = editGroup.members.filter(m => !selectedMembers.includes(m));
-        const membersToAdd = selectedMembers.filter(m => !editGroup.members.includes(m));
+        const membersToRemove = existingMemberIds.filter(id => !selectedMembers.includes(id));
+        const membersToAdd = selectedMembers.filter(id => !existingMemberIds.includes(id));
 
         for (const memberId of membersToRemove) {
           await fetch("/api/groups", {
-            method: "POST",
+            method: "DELETE",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               action: "removeMember",
@@ -100,12 +112,12 @@ export function GroupModal({ isOpen, onClose, onSuccess, editGroup }) {
         }
 
         // Update documents (remove old, add new)
-        const documentsToRemove = editGroup.documents.filter(d => !selectedDocuments.includes(d));
-        const documentsToAdd = selectedDocuments.filter(d => !editGroup.documents.includes(d));
+        const documentsToRemove = existingDocumentIds.filter(id => !selectedDocuments.includes(id));
+        const documentsToAdd = selectedDocuments.filter(id => !existingDocumentIds.includes(id));
 
         for (const documentId of documentsToRemove) {
           await fetch("/api/groups", {
-            method: "POST",
+            method: "DELETE",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               action: "removeDocument",
