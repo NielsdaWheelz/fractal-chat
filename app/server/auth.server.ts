@@ -1,9 +1,15 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { APIError } from "better-auth/api";
-import { db } from "./index.server";
-import * as schema from "../db/schema";
 import { redirect } from "react-router";
+import * as schema from "../db/schema";
+import { db } from "./index.server";
+
+
+const googleClientId = process.env.GOOGLE_CLIENT_ID
+if (!googleClientId) {
+  throw new Error("Missing GOOGLE_CLIENT_ID in environment");
+}
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -16,8 +22,8 @@ export const auth = betterAuth({
   socialProviders: {
     google: {
       prompt: "select_account",
-      clientId: process.env.GOOGLE_CLIENT_ID as string,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+      clientId: googleClientId,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     }
   },
   trustedOrigins: ["http://localhost:5173"],
@@ -30,9 +36,9 @@ export async function getUser(request: Request): Promise<string | undefined> {
 export async function requireUser(request: Request): Promise<string> {
   const user = await getUser(request)
   if (!user) {
-      throw redirect("/")
+    throw redirect("/")
   } else {
-      return user
+    return user
   }
 }
 

@@ -1,40 +1,32 @@
 "use client";
 
+import { ArrowLeft, Highlighter, MessageCircle, MessageCirclePlus } from "lucide-react";
+import type { ComponentProps } from "react";
 import { useEffect, useMemo, useState, type MutableRefObject } from "react";
+import { Form, useFetcher, useParams } from "react-router";
+import ChatBlock from "~/chat/chat-block";
 import { Button } from "~/components/ui/button";
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupLabel,
   SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
   SidebarRail,
-  useSidebar,
+  useSidebar
 } from "~/components/ui/sidebar-right";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-  TooltipProvider
-} from "~/components/ui/tooltip";
-import { NavUser } from "~/components/nav-user";
-import { ArrowLeft, MessageCircle, MessageCirclePlus, BoxIcon, HouseIcon, PanelsTopLeftIcon, Highlighter } from "lucide-react"
-import type { ComponentProps } from "react";
-import { Form, useFetcher, useParams } from "react-router";
-import ChatBlock from "~/chat/chat-block";
-import AvatarGroupBottomDemo from "./groupavatar";
-import ChatList from "./ChatList";
-import AnnotationList from "./AnnotationList";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "~/components/ui/tabs"
+} from "~/components/ui/tabs";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger
+} from "~/components/ui/tooltip";
+import AnnotationList from "./AnnotationList";
+import ChatList from "./ChatList";
 
 type UIMessagePart = { type: string; text?: string }
 type UIMessage = { role: string; parts: UIMessagePart[] }
@@ -46,7 +38,7 @@ export function SidebarApp({ side, data, user, selectionRef, includeSelection, s
   const [mode, setMode] = useState("annotation")
   const { setOpen } = useSidebar()
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null)
-  const [chats, setChats] = useState<ChatListItem[]>(data.chats as ChatListItem[])
+  const [chats, setChats] = useState<ChatListItem[]>(data.chats)
   const [annotations, setAnnotations] = useState(data.annotations)
   const [selectedAnnotationId, setSelectedAnnotationId] = useState<string | null>(null)
   const fetcher = useFetcher<any>()
@@ -56,8 +48,8 @@ export function SidebarApp({ side, data, user, selectionRef, includeSelection, s
   const selectedItemId = mode === "chats" ? selectedChatId : selectedAnnotationId
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    const form = event.currentTarget as HTMLFormElement
-    const input = form.querySelector('input[name="url"]') as HTMLInputElement
+    const form = event.currentTarget
+    const input = form.querySelector('input[name="url"]')
     const value = window.prompt("Enter a URL to import", input?.value || "") || ""
     if (!value.trim()) {
       event.preventDefault()
@@ -66,13 +58,13 @@ export function SidebarApp({ side, data, user, selectionRef, includeSelection, s
   }
 
   useEffect(() => {
-    setChats(data.chats as ChatListItem[])
-    setAnnotations(data.annotations as AnnotationListItem[])
+    setChats(data.chats)
+    setAnnotations(data.annotations)
   }, [data])
 
   useEffect(() => {
     if (fetcher.state === "idle" && fetcher.data?.id) {
-      const newId = fetcher.data.id as string
+      const newId = fetcher.data.id
       setChats((prev) => [{ id: newId, messages: [] }, ...prev])
       setSelectedChatId(newId)
     }
@@ -81,7 +73,7 @@ export function SidebarApp({ side, data, user, selectionRef, includeSelection, s
   // Sync selected chat with URL param if present
   useEffect(() => {
     if (params.chatId) {
-      const id = params.chatId as string
+      const id = params.chatId
       setSelectedChatId(id)
       setChats((prev) => (prev.some((c) => c.id === id) ? prev : [{ id, messages: [] }, ...prev]))
       setOpen(true)
@@ -98,16 +90,16 @@ export function SidebarApp({ side, data, user, selectionRef, includeSelection, s
   const selectedAnnotation = useMemo(() => chats.find(c => c.id === selectedAnnotationId) || null, [chats, selectedAnnotationId])
 
   const convertMessages = (messages) => {
-    if (Array.isArray(messages)) return messages as UIMessage[]
+    if (Array.isArray(messages)) return messages
     if (typeof messages === "string") {
       try {
         const parsed = JSON.parse(messages)
-        return Array.isArray(parsed) ? (parsed as UIMessage[]) : []
+        return Array.isArray(parsed) ? (parsed) : []
       } catch {
-        return [] as UIMessage[]
+        return []
       }
     }
-    return [] as UIMessage[]
+    return []
   }
 
   const headerTitle = useMemo(() => {
@@ -125,7 +117,7 @@ export function SidebarApp({ side, data, user, selectionRef, includeSelection, s
   }, [selectedChat])
 
   const selectedChatMessages = useMemo(() => {
-    if (!selectedChat) return [] as UIMessage[]
+    if (!selectedChat) return []
     const raw = (selectedChat).messages
     const messages = convertMessages(raw)
     return messages
@@ -182,7 +174,7 @@ export function SidebarApp({ side, data, user, selectionRef, includeSelection, s
             </TabsList>
             {/* New Chat Button */}
             {/* <fetcher.Form method="post" action="chat-create"> */}
-            <Form method="post" action={`/workspace/document/${useParams().id}/chat-create`}>
+            <Form method="post" action={`/workspace/document/${useParams().id ?? "DocId Missing"}/chat-create`}>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button size="icon" variant="ghost" type="submit">
@@ -215,7 +207,7 @@ export function SidebarApp({ side, data, user, selectionRef, includeSelection, s
           )}
           {selectedChat && mode === "chat" && (
             <div className="h-full">
-              <ChatBlock chatId={selectedChat.id} initialMessages={selectedChatMessages} docId={useParams().id as string} selectionRef={selectionRef} includeSelection={includeSelection} setIncludeSelection={setIncludeSelection} />
+              <ChatBlock chatId={selectedChat.id} initialMessages={selectedChatMessages} docId={(useParams().id) ?? "DocId Missing"} selectionRef={selectionRef} includeSelection={includeSelection} setIncludeSelection={setIncludeSelection} />
             </div>
           )}
           {mode === "annotation" && (

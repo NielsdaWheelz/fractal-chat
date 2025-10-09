@@ -1,9 +1,9 @@
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { documentTable, groupDocumentTable, groupMemberTable, groupTable, permissionTable, user } from "~/db/schema";
 import { db } from "~/server/index.server";
+import type { DocumentBasic, Group, GroupCreate, GroupMember, GroupRow, GroupUpdate, GroupWithDetails } from "~/types/types";
 import { BadRequestError, ForbiddenError, NotFoundError } from "./errors.server";
 import { computeAccessLevel, requirePermission } from "./permissions.server.helper";
-import type { Group, GroupCreate, GroupWithDetails, GroupRow, GroupUpdate, GroupMember, DocumentBasic } from "~/types/types";
 
 export const saveGroup = async (group: GroupCreate): Promise<Group> => {
   const existingGroup = await db
@@ -129,7 +129,7 @@ export const deleteGroup = async (userId: string, groupId: string): Promise<bool
     .delete(permissionTable)
     .where(
       and(
-        eq(permissionTable.principalType, "group" as any),
+        eq(permissionTable.principalType, "group"),
         eq(permissionTable.principalId, groupId)
       )
     );
@@ -295,11 +295,11 @@ export const addDocumentToGroup = async (
   await db
     .insert(permissionTable)
     .values({
-      resourceType: "document" as any,
+      resourceType: "document",
       resourceId: documentId,
-      principalType: "group" as any,
+      principalType: "group",
       principalId: groupId,
-      permissionLevel: "read" as any,
+      permissionLevel: "read",
       createdAt: new Date(),
       updatedAt: new Date(),
     })
@@ -339,9 +339,9 @@ export const removeDocumentFromGroup = async (
     .delete(permissionTable)
     .where(
       and(
-        eq(permissionTable.resourceType, "document" as any),
+        eq(permissionTable.resourceType, "document"),
         eq(permissionTable.resourceId, documentId),
-        eq(permissionTable.principalType, "group" as any),
+        eq(permissionTable.principalType, "group"),
         eq(permissionTable.principalId, groupId)
       )
     );

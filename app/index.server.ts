@@ -1,7 +1,7 @@
-import { drizzle } from 'drizzle-orm/postgres-js'
-import postgres from 'postgres'
-import { and, eq, sql, desc, ilike, inArray, or, ne } from 'drizzle-orm';
-import { chatTable, documentChunksTable, groupTable, documentTable, authorTable, documentAuthorsTable, user, annotation, groupMemberTable, groupDocumentTable, comment, permissionTable } from '~/db/schema'
+import { and, desc, eq, ilike, inArray, ne, or, sql } from 'drizzle-orm';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
+import { annotation, authorTable, chatTable, comment, documentAuthorsTable, documentChunksTable, documentTable, groupDocumentTable, groupMemberTable, groupTable, permissionTable, user } from '~/db/schema';
 
 const client = postgres(process.env.DATABASE_URL!);
 export const db = drizzle(client);
@@ -11,7 +11,7 @@ const tableMap = {
   annotation,
   comment,
   document: documentTable,
-} as const
+}
 
 async function main() {
   db

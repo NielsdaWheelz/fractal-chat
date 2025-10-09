@@ -1,16 +1,16 @@
-import { db } from "~/server/index.server"
-import { eq, and, or, inArray } from "drizzle-orm"
+import { and, eq, inArray, or } from "drizzle-orm"
 import {
-  groupTable,
-  groupMemberTable,
-  permissionTable,
-  documentTable,
   annotation,
-  comment,
   chatTable,
+  comment,
+  documentTable,
+  groupMemberTable,
+  groupTable,
+  permissionTable,
 } from "~/db/schema"
-import { ForbiddenError, NotFoundError } from "./errors.server"
+import { db } from "~/server/index.server"
 import type { PermissionLevel, ResourceType, Visibility } from "~/types/types"
+import { ForbiddenError } from "./errors.server"
 
 const resourceTableMap = {
   chat: chatTable,
@@ -18,7 +18,7 @@ const resourceTableMap = {
   comment,
   document: documentTable,
   group: groupTable,
-} as const
+}
 
 export async function getUserGroupIds(userId: string): Promise<string[]> {
   const ownedGroups = await db
@@ -211,13 +211,13 @@ async function getParentResource(
 // returns PermissionLevel: admin, write, read, none
 export async function computeAccessLevel(
   userId: string,
-  resourceType: ResourceType,
+  resourceType: string,
   resourceId: string
 ): Promise<PermissionLevel> {
   const table = resourceTableMap[resourceType]
   if (!table) return "none"
 
-  if (resourceType === "document") return "read" 
+  if (resourceType === "document") return "read"
 
   const resource = await db
     .select()

@@ -1,21 +1,18 @@
+import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
 import { useMemo, useState } from "react";
+import { SearchResultsTool } from "~/chat/search-results-tool";
 import {
   ChatInput,
   ChatInputSubmit,
   ChatInputTextArea,
 } from "~/components/ui/chat-input";
 import {
-  ChatMessage,
-  ChatMessageAvatar,
-  ChatMessageContent,
+  ChatMessage
 } from "~/components/ui/chat-message";
 import { ChatMessageArea } from "~/components/ui/chat-message-area";
-import { MessageTool } from "~/chat/message-tool";
-import { SearchResultsTool } from "~/chat/search-results-tool";
-import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport } from "ai";
-import { extractMentionIds } from "~/utils/mention-parser";
 import { MentionMessageContent } from "~/components/ui/mention-message-content";
+import { extractMentionIds } from "~/utils/mention-parser";
 
 type ChatBlockProps = {
   chatId: string;
@@ -47,17 +44,17 @@ export default function ChatBlock({ chatId, initialMessages, docId, selectionRef
     const textToSend = includeSelection && selectedText
       ? `${selectedText}\n\n${message}`
       : message;
-    
+
     const mentions = extractMentionIds(textToSend);
-    
+
     sendMessage(
-      { text: textToSend }, 
-      { 
-        body: { 
-          documentId: docId, 
+      { text: textToSend },
+      {
+        body: {
+          documentId: docId,
           selection: includeSelection ? selectedText : undefined,
           mentions
-        } 
+        }
       }
     );
     setMessage("");
@@ -87,7 +84,7 @@ export default function ChatBlock({ chatId, initialMessages, docId, selectionRef
                             <SearchResultsTool
                               key={`${message.id}-${i}`}
                               toolPart={{
-                                type: part.type as string,
+                                type: part.type,
                                 state: part.state,
                                 input: part.input,
                                 output: part.output,

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, memo } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import {
   Form,
   redirect,
@@ -6,19 +6,19 @@ import {
   useOutletContext,
   useParams,
 } from "react-router";
-import { requireUser } from "~/server/auth.server";
 import { getAnnotations } from "~/server/annotations.server";
+import { requireUser } from "~/server/auth.server";
 import { getDocument } from "~/server/documents.server";
 
+import { CornerDownLeft, MessageCirclePlus, MessageSquareReply, Trash2 } from "lucide-react";
+import DocumentContents from "~/components/document/DocumentContents";
+import { Button } from "~/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "~/components/ui/tooltip";
-import { Button } from "~/components/ui/button";
-import { CornerDownLeft, MessageCirclePlus, MessageSquareReply, Trash2 } from "lucide-react";
-import DocumentContents from "~/components/document/DocumentContents";
 import { Tweet } from "./tweet";
 
 type PopoverProps = {
@@ -62,8 +62,8 @@ function NotePopover({
       if (!el) return;
 
       // Prefer composedPath to handle portals/shadow DOM correctly
-      const path = (e.composedPath?.() ?? []) as EventTarget[];
-      if (path.includes(el) || (e.target && el.contains(e.target as Node))) {
+      const path = (e.composedPath?.() ?? []);
+      if (path.includes(el) || (e.target && el.contains(e.target))) {
         // Click started inside the popover → do not close
         return;
       }
@@ -166,7 +166,7 @@ export default function Document() {
         const el = rootRef.current;
         if (!el) return;
         // If click is outside the popover, close it
-        if (!el.contains(e.target as Node)) {
+        if (!el.contains(e.target)) {
           onRequestClose();
         }
       };
@@ -232,6 +232,7 @@ export default function Document() {
               name="note"
               placeholder="Type text..."
               onChange={(e) => {
+                console.log(e.target.value)
                 // auto-resize logic
                 e.currentTarget.style.height = "auto";
                 e.currentTarget.style.height = `${Math.min(e.currentTarget.scrollHeight, 3 * 24)}px`; // 3 lines max (assuming 24px line-height)
@@ -271,7 +272,7 @@ export default function Document() {
                 </TooltipContent>
               </Tooltip>
             </Form>
-        
+
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button size="icon" variant="ghost" onClick={() => {
@@ -289,7 +290,7 @@ export default function Document() {
               <TooltipTrigger asChild>
                 <Button size="icon" variant="ghost" onClick={() => {
                 }}>
-                  <Tweet title={docTitle} annotationText={annotationText} selectionText={selectionText}></Tweet>
+                  <Tweet title={docTitle} annotationText={""} selectionText={selectionText}></Tweet>
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
@@ -317,7 +318,7 @@ export default function Document() {
       setIncludeSelection: React.Dispatch<React.SetStateAction<boolean>>;
     }>();
 
-  const { document, annotations } = useLoaderData() as LoaderData;
+  const { document, annotations } = useLoaderData();
   const docContent = () => {
     return { __html: document.content };
   };
@@ -396,7 +397,7 @@ export default function Document() {
     let charCount = 0;
 
     while (walker.nextNode()) {
-      const current = walker.currentNode as Text;
+      const current = walker.currentNode;
       if (current === node) {
         return charCount + nodeOffset;
       }
@@ -427,8 +428,8 @@ export default function Document() {
     y: number;
   } | null>(null);
   function handleDocClick(e: React.MouseEvent<HTMLDivElement>) {
-    const target = e.target as HTMLElement;
-    const mark = target.closest(".anno-mark") as HTMLElement | null;
+    const target = e.target;
+    const mark = target.closest(".anno-mark");
     if (!mark) return;
 
     // prevent selection handler from running

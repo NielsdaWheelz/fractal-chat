@@ -1,13 +1,12 @@
-import type { Route } from "../+types/root";
 import { requireUser } from "~/server/auth.server";
+import { BadRequestError, ForbiddenError, NotFoundError } from "~/server/errors.server";
 import {
   createPermission,
   deletePermission,
   makePrivate,
 } from "~/server/permissions.server";
 import { computeAccessLevel } from "~/server/permissions.server.helper";
-import { BadRequestError, ForbiddenError, NotFoundError } from "~/server/errors.server";
-import type { ApiError, ApiSuccess, PermissionLevel, PrincipalType, ResourceType } from "~/types/types";
+import type { Route } from "../+types/root";
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
@@ -16,7 +15,11 @@ export async function loader({ request }: Route.LoaderArgs) {
     const action = url.searchParams.get("action");
 
     if (action === "check") {
-      const resourceType = url.searchParams.get("resourceType") as ResourceType;
+      const paramsResourceType = url.searchParams.get("resourceType")
+      if (paramsResourceType === null) {
+        throw new Error("resourceType is null")
+      }
+      const resourceType = paramsResourceType;
       const resourceId = url.searchParams.get("resourceId");
 
       if (!resourceType || !resourceId) {
@@ -77,9 +80,9 @@ export async function action({ request }: Route.ActionArgs) {
 
       const result = await createPermission(
         userId,
-        resourceType as ResourceType,
+        resourceType,
         resourceId,
-        principalType as PrincipalType,
+        principalType,
         principalId,
         permissionLevel || "read"
       );
@@ -109,9 +112,9 @@ export async function action({ request }: Route.ActionArgs) {
 
       const result = await deletePermission(
         userId,
-        resourceType as ResourceType,
+        resourceType,
         resourceId,
-        principalType as PrincipalType,
+        principalType,
         principalId
       );
 
@@ -135,7 +138,7 @@ export async function action({ request }: Route.ActionArgs) {
         );
       }
 
-      const result = await makePrivate(userId, resourceType as ResourceType, resourceId);
+      const result = await makePrivate(userId, resourceType, resourceId);
       return Response.json({ success: true, data: result });
     }
 

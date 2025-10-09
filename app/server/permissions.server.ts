@@ -1,16 +1,16 @@
-import { db } from "~/server/index.server"
-import { BadRequestError, ForbiddenError, NotFoundError } from "./errors.server"
-import { computeAccessLevel, isResourceCreator, requirePermission } from "./permissions.server.helper"
 import { and, eq, ne, or } from "drizzle-orm"
 import { annotation, chatTable, comment, documentTable, groupTable, permissionTable, user } from "~/db/schema"
-import type { Permission, PermissionCreate, PermissionRow, ResourceType, PrincipalType, PermissionLevel } from "~/types/types"
+import { db } from "~/server/index.server"
+import type { Permission, PermissionRow, PrincipalType, ResourceType } from "~/types/types"
+import { BadRequestError, ForbiddenError, NotFoundError } from "./errors.server"
+import { isResourceCreator, requirePermission } from "./permissions.server.helper"
 
 const tableMap = {
   chat: chatTable,
   annotation,
   comment,
   document: documentTable,
-} as const
+}
 
 export const createPermission = async (
   userId: string,
@@ -113,11 +113,11 @@ export const getPermissionsforResource = async (resourceType: string, resourceId
     .select()
     .from(permissionTable)
     .leftJoin(user, and(
-      eq(permissionTable.principalType, "user" as any),
+      eq(permissionTable.principalType, "user"),
       eq(user.id, permissionTable.principalId)
     ))
     .leftJoin(groupTable, and(
-      eq(permissionTable.principalType, "group" as any),
+      eq(permissionTable.principalType, "group"),
       eq(groupTable.id, permissionTable.principalId)
     ))
     .where(and(
@@ -133,19 +133,19 @@ export const getPermissionsForPrincipal = async (principalType: string, principa
     .select()
     .from(permissionTable)
     .leftJoin(chatTable, and(
-      eq(permissionTable.resourceType, "chat" as any),
+      eq(permissionTable.resourceType, "chat"),
       eq(permissionTable.resourceId, chatTable.id)
     ))
     .leftJoin(documentTable, and(
-      eq(permissionTable.resourceType, "document" as any),
+      eq(permissionTable.resourceType, "document"),
       eq(permissionTable.resourceId, documentTable.id)
     ))
     .leftJoin(annotation, and(
-      eq(permissionTable.resourceType, "annotation" as any),
+      eq(permissionTable.resourceType, "annotation"),
       eq(permissionTable.resourceId, annotation.id)
     ))
     .leftJoin(comment, and(
-      eq(permissionTable.resourceType, "comment" as any),
+      eq(permissionTable.resourceType, "comment"),
       eq(permissionTable.resourceId, comment.id)
     ))
     .where(and(
@@ -235,11 +235,11 @@ const permissionObjectToRow = (permission: Permission) => {
 
 const permissionRowToObject = (row: PermissionRow): Permission => {
   return {
-    resourceType: row.resourceType as ResourceType,
+    resourceType: row.resourceType,
     resourceId: row.resourceId,
-    principalType: row.principalType as PrincipalType,
+    principalType: row.principalType,
     principalId: row.principalId,
-    permissionLevel: row.permissionLevel as PermissionLevel,
+    permissionLevel: row.permissionLevel,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt
   }

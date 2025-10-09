@@ -1,32 +1,26 @@
 import { MessageCircle } from "lucide-react";
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupLabel,
-  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarRail,
-  useSidebar,
+  SidebarMenuItem
 } from "~/components/ui/sidebar-right";
 
 const convertMessages = (messages) => {
-  if (Array.isArray(messages)) return messages as UIMessage[]
+  if (Array.isArray(messages)) return messages
   if (typeof messages === "string") {
     try {
       const parsed = JSON.parse(messages)
-      return Array.isArray(parsed) ? (parsed as UIMessage[]) : []
+      return Array.isArray(parsed) ? (parsed) : []
     } catch {
-      return [] as UIMessage[]
+      return []
     }
   }
-  return [] as UIMessage[]
+  return []
 }
 
-const ChatList = (props: {chats, setSelectedChatId}) => {
+const ChatList = (props: { chats, setSelectedChatId }) => {
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Recent</SidebarGroupLabel>

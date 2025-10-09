@@ -1,25 +1,25 @@
-import type { 
-  annotation, 
-  authorTable, 
-  chatTable, 
-  comment, 
+import type {
+  annotation,
+  authorTable,
+  chatTable,
+  comment,
   documentTable,
   groupTable,
   permissionTable,
-  user 
+  user
 } from "~/db/schema";
 
 export const VISIBILITY = {
   PRIVATE: "private",
   PUBLIC: "public",
-} as const;
+};
 
 export const PERMISSION_LEVEL = {
   NONE: "none",
   READ: "read",
   WRITE: "write",
   ADMIN: "admin",
-} as const;
+};
 
 export const RESOURCE_TYPE = {
   DOCUMENT: "document",
@@ -27,12 +27,12 @@ export const RESOURCE_TYPE = {
   COMMENT: "comment",
   CHAT: "chat",
   GROUP: "group",
-} as const;
+};
 
 export const PRINCIPAL_TYPE = {
   USER: "user",
   GROUP: "group",
-} as const;
+};
 
 export type Visibility = typeof VISIBILITY[keyof typeof VISIBILITY];
 export type PermissionLevel = typeof PERMISSION_LEVEL[keyof typeof PERMISSION_LEVEL];
@@ -291,3 +291,6 @@ export function isApiError(response: ApiResponse): response is ApiError {
 export function isApiSuccess<T>(response: ApiResponse<T>): response is ApiSuccess<T> {
   return response.success === true;
 }
+
+
+//Cleanup Starts Here

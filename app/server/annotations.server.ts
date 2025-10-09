@@ -4,6 +4,7 @@ import { annotation, groupDocumentTable, groupMemberTable } from "~/db/schema";
 import { eq, inArray } from "drizzle-orm";
 import { NotFoundError } from "./errors.server";
 import type { Annotation, AnnotationCreate, AnnotationRow } from "~/types/types";
+import type { RowList } from "postgres";
 
 export const getAnnotation = async (userId: string, annotationId: string) => {
   await requirePermission(userId, "annotation", annotationId, "read");

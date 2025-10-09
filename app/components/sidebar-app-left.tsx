@@ -1,5 +1,10 @@
 "use client";
 
+import { TooltipProvider } from "@radix-ui/react-tooltip";
+import { ArrowLeft, FilePlus2, Library, Search, SearchX, UserPlus, Users } from "lucide-react";
+import { useEffect, useState, type ComponentProps } from "react";
+import { Form, useFetcher } from "react-router";
+import { NavUser } from "~/components/nav-user";
 import { Button } from "~/components/ui/button";
 import {
   Sidebar,
@@ -9,25 +14,18 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarRail,
+  SidebarRail
 } from "~/components/ui/sidebar-left";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "~/components/ui/tooltip";
-import { NavUser } from "~/components/nav-user";
-import { FilePlus2, BookOpenText, FileText, Search, SearchX, ArrowLeft, Users, Library, UserPlus } from "lucide-react";
-import { useEffect, useState, type ComponentProps } from "react";
-import { Form, NavLink, useFetcher } from "react-router";
-import UploadForm from "./upload-form";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import { TooltipProvider } from "@radix-ui/react-tooltip";
 import DocumentList from "./document/DocumentList";
-import SearchResultList from "./SearchResultList";
 import GroupList from "./group/GroupList";
+import SearchResultList from "./SearchResultList";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+import UploadForm from "./upload-form";
 
 type UIMessagePart = { type: string; text?: string }
 type UIMessage = { role: string; parts: UIMessagePart[] }
@@ -60,8 +58,8 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
   }, [fetcher.data, fetcher.state]);
 
   const handleSearchSubmit = (event) => {
-    const form = event.currentTarget as HTMLFormElement
-    const input = form.querySelector('input[name="query"]') as HTMLInputElement
+    const form = event.currentTarget
+    const input = form.querySelector('input[name="query"]')
     const value = input?.value || "";
 
     if (!value.trim()) {
@@ -76,9 +74,9 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
 
   const handleNewDocSubmit = (event) => {
     // event.preventDefault()
-    const form = event.currentTarget as HTMLFormElement
+    const form = event.currentTarget
 
-    const input = form.querySelector('input[name="url"]') as HTMLInputElement
+    const input = form.querySelector('input[name="url"]')
     // const value = window.prompt("Enter a URL to import", input?.value || "") || ""
     if (!value.trim()) {
       event.preventDefault()

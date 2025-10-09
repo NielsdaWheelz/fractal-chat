@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 type Ann = { id?: string; start: number; end: number; note?: string };
 
@@ -26,7 +26,7 @@ export default function DocumentContents({
     const nodes: { node: Text; start: number; end: number }[] = [];
     let pos = 0;
     while (walker.nextNode()) {
-      const node = walker.currentNode as Text;
+      const node = walker.currentNode;
       const len = node.nodeValue?.length ?? 0;
       nodes.push({ node, start: pos, end: pos + len });
       pos += len;
@@ -66,12 +66,12 @@ export default function DocumentContents({
         mark.setAttribute("data-start", String(start));
         mark.setAttribute("data-end", String(end));
         if (meta?.id) mark.setAttribute("data-annid", meta.id);
-        const noteVal = (meta as any)?.note ?? (meta as any)?.body ?? "";
-        const noteID = (meta as any)?.note ?? (meta as any)?.id ?? "";
+        const noteVal = (meta)?.note ?? (meta)?.body ?? "";
+        const noteID = (meta)?.note ?? (meta)?.id ?? "";
         mark.setAttribute("data-note", noteVal);
         mark.setAttribute("data-id", noteID);
-        if ((meta as any)?.id)
-          mark.setAttribute("data-annid", String((meta as any).id));
+        if ((meta)?.id)
+          mark.setAttribute("data-annid", String((meta).id));
 
         const frag = document.createDocumentFragment();
         if (before) frag.append(before);
