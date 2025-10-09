@@ -303,7 +303,7 @@ export default function Document() {
       <div
         id="doc-container"
         onMouseUp={handleSelectionEnd}
-        onClick={handleDocClick} // 👈 add this
+        onClick={handleDocClick}
         style={{ userSelect: "text" }}
       >
         <DocumentContents
