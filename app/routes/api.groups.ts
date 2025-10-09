@@ -13,6 +13,8 @@ import {
   removeDocumentFromGroup,
   listGroupDocuments,
 } from "~/server/groups.server";
+import { getAllUsers } from "~/server/users.server";
+import { getAllDocuments } from "~/server/documents.server";
 import { BadRequestError, ForbiddenError, NotFoundError } from "~/server/errors.server";
 import type { ApiError, ApiSuccess, GroupCreate } from "~/types/types";
 
@@ -85,6 +87,23 @@ export async function loader({ request }: Route.LoaderArgs) {
 
       const documents = await listGroupDocuments(userId, groupId);
       return Response.json({ success: true, data: documents });
+    }
+
+    if (action === "allUsers") {
+      const users = await getAllUsers();
+      return Response.json({ success: true, data: users });
+    }
+
+    if (action === "allDocuments") {
+      const documents = await getAllDocuments();
+      const formattedDocuments = documents.map(doc => ({
+        id: doc.id,
+        title: doc.title,
+        url: doc.url,
+        publishedTime: doc.publishedTime,
+        createdAt: doc.createdAt,
+      }));
+      return Response.json({ success: true, data: formattedDocuments });
     }
 
     return Response.json(
