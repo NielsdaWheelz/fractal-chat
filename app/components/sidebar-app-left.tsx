@@ -1,5 +1,9 @@
 "use client";
 
+import { ArrowLeft, FilePlus2, Library, Search, SearchX, UserPlus, Users } from "lucide-react";
+import { useEffect, useState, type ComponentProps } from "react";
+import { Form, useFetcher } from "react-router";
+import { NavUser } from "~/components/nav-user";
 import { Button } from "~/components/ui/button";
 import {
   Sidebar,
@@ -9,26 +13,18 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarRail,
+  SidebarRail
 } from "~/components/ui/sidebar-left";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "~/components/ui/tooltip";
-import { NavUser } from "~/components/nav-user";
-import { FilePlus2, BookOpenText, FileText, Search, SearchX, ArrowLeft, Users, Library, UserPlus } from "lucide-react";
-import { useEffect, useState, type ComponentProps } from "react";
-import { Form, NavLink, useFetcher } from "react-router";
-import UploadForm from "./upload-form";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import { TooltipProvider } from "@radix-ui/react-tooltip";
 import DocumentList from "./document/DocumentList";
-import SearchResultList from "./SearchResultList";
 import GroupList from "./group/GroupList";
-import GroupAvatarStack from "./groupavatar";
+import SearchResultList from "./SearchResultList";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+import UploadForm from "./upload-form";
 
 type UIMessagePart = { type: string; text?: string }
 type UIMessage = { role: string; parts: UIMessagePart[] }
@@ -37,7 +33,7 @@ type UserInfo = { name: string; email: string; avatar: string }
 type SidebarAppProps = { data: any[]; user: UserInfo; side: "left" | "right" } & ComponentProps<typeof Sidebar>
 
 export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
-  const [mode, setMode] = useState("group")
+  const [mode, setMode] = useState("document")
   const [groupId, setGroupId] = useState(null)
   const [documentId, setDocumentId] = useState(null)
   const [url, setUrl] = useState("")
@@ -50,13 +46,14 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
     if (data?.document) setDocumentId(document.id)
   }), [data]
 
+
   useEffect(() => {
     if (fetcher.data && fetcher.data.length > 0) {
       setSearchResults(fetcher.data);
       setMode("search")
     } else if (fetcher.state === 'idle' && fetcher.data?.length === 0) {
       setSearchResults([]);
-      setMode("group")
+    //  setMode("group")
     }
   }, [fetcher.data, fetcher.state]);
 
@@ -118,34 +115,34 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
                 <TooltipTrigger asChild>
                   <span>
                     <TabsTrigger value="tab-2" className="group py-3" onClick={() => {
-                      setMode("document")
+                      setMode("groups")
                       setGroupId(null)
                       setDocumentId(null)
                     }}>
                       <span className="relative">
-                        <Library size={16} aria-hidden="true" />
+                        <Users size={16} aria-hidden="true" />
                       </span>
                     </TabsTrigger>
                   </span>
                 </TooltipTrigger>
                 <TooltipContent className="px-2 py-1 text-xs">
-                  Reads
+                  Groups
                 </TooltipContent>
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span>
                     <TabsTrigger value="tab-1" className="py-3" onClick={() => {
-                      setMode("group")
+                      setMode("document")
                       setGroupId(null)
                       setDocumentId(null)
                     }}>
-                      <Users size={16} aria-hidden="true" />
+                      <Library size={16} aria-hidden="true" />
                     </TabsTrigger>
                   </span>
                 </TooltipTrigger>
                 <TooltipContent className="px-2 py-1 text-xs">
-                  Groups
+                  Reads
                 </TooltipContent>
               </Tooltip>
             </TabsList>
@@ -157,12 +154,12 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
           </div>
           <TabsContent value="tab-1">
             <div className="flex items-center gap-2">
-              <span className="text-md font-semibold">Groups</span>
+              <span className="text-md font-semibold">Reads</span>
             </div>
           </TabsContent>
           <TabsContent value="tab-2">
             <div className="flex items-center gap-2">
-              <span className="text-md font-semibold">Reads</span>
+              <span className="text-md font-semibold">Groups</span>
             </div>
           </TabsContent>
         </Tabs>
