@@ -1,4 +1,4 @@
-import AvatarGroupBottomDemo from "./groupavatar";
+import GroupAvatarStack from "./groupavatar";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "./ui/dialog";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "./ui/form";
 import { Popover } from "./ui/popover";
@@ -24,7 +24,7 @@ export default function groupsList({ groups }: { groups: Group[] }) {
                     key={group.id}
                     className="flex items-center gap-3 rounded-md border p-2 hover:bg-muted"
                 >
-                    <AvatarGroupBottomDemo {...group} />
+                    <GroupAvatarStack {...group} />
                     <span className="truncate font-medium">{group.name}</span>
                 </li>
             ))}

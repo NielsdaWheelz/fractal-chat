@@ -113,44 +113,40 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
               <span className="sr-only">Back</span>
             </Button>
             <TabsList>
-              <TooltipProvider delayDuration={0}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span>
-                      <TabsTrigger value="tab-1" className="py-3" onClick={() => {
-                        setMode("group")
-                        setGroupId(null)
-                        setDocumentId(null)
-                      }}>
-                        <Users size={16} aria-hidden="true" />
-                      </TabsTrigger>
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent className="px-2 py-1 text-xs">
-                    Groups
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              <TooltipProvider delayDuration={0}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span>
-                      <TabsTrigger value="tab-2" className="group py-3" onClick={() => {
-                        setMode("document")
-                        setGroupId(null)
-                        setDocumentId(null)
-                      }}>
-                        <span className="relative">
-                          <Library size={16} aria-hidden="true" />
-                        </span>
-                      </TabsTrigger>
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent className="px-2 py-1 text-xs">
-                    Reads
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span>
+                    <TabsTrigger value="tab-2" className="group py-3" onClick={() => {
+                      setMode("document")
+                      setGroupId(null)
+                      setDocumentId(null)
+                    }}>
+                      <span className="relative">
+                        <Library size={16} aria-hidden="true" />
+                      </span>
+                    </TabsTrigger>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent className="px-2 py-1 text-xs">
+                  Reads
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span>
+                    <TabsTrigger value="tab-1" className="py-3" onClick={() => {
+                      setMode("group")
+                      setGroupId(null)
+                      setDocumentId(null)
+                    }}>
+                      <Users size={16} aria-hidden="true" />
+                    </TabsTrigger>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent className="px-2 py-1 text-xs">
+                  Groups
+                </TooltipContent>
+              </Tooltip>
             </TabsList>
             <Button size="icon" variant="ghost" onClick={openNewGroupModal}>
               <UserPlus className="h-5 w-5" />
