@@ -27,6 +27,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import UploadForm from "./upload-form";
 import GroupAvatarStack from "./groupavatar";
 import { GroupModal } from "./group/GroupModal";
+import { Accordion } from "./ui/accordion";
 
 type UIMessagePart = { type: string; text?: string }
 type UIMessage = { role: string; parts: UIMessagePart[] }
@@ -55,7 +56,7 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
       setMode("search")
     } else if (fetcher.state === 'idle' && fetcher.data?.length === 0) {
       setSearchResults([]);
-    //  setMode("group")
+      //  setMode("group")
     }
   }, [fetcher.data, fetcher.state]);
 
@@ -112,24 +113,6 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span>
-                    <TabsTrigger value="tab-2" className="group py-3" onClick={() => {
-                      setMode("groups")
-                      setGroupId(null)
-                      setDocumentId(null)
-                    }}>
-                      <span className="relative">
-                        <Users size={16} aria-hidden="true" />
-                      </span>
-                    </TabsTrigger>
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent className="px-2 py-1 text-xs">
-                  Groups
-                </TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span>
                     <TabsTrigger value="tab-1" className="py-3" onClick={() => {
                       setMode("document")
                       setGroupId(null)
@@ -143,8 +126,26 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
                   Reads
                 </TooltipContent>
               </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span>
+                    <TabsTrigger value="tab-2" className="group py-3" onClick={() => {
+                      setMode("group")
+                      setGroupId(null)
+                      setDocumentId(null)
+                    }}>
+                      <span className="relative">
+                        <Users size={16} aria-hidden="true" />
+                      </span>
+                    </TabsTrigger>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent className="px-2 py-1 text-xs">
+                  Groups
+                </TooltipContent>
+              </Tooltip>
             </TabsList>
-            <Button size="icon" variant="ghost" onClick={() => {setIsModalOpen(true)}}>
+            <Button size="icon" variant="ghost" onClick={() => { setIsModalOpen(true) }}>
               <UserPlus className="h-5 w-5" />
               <span className="sr-only">Create New Group</span>
             </Button>
@@ -238,7 +239,9 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
                 <>
                   <SidebarGroupLabel>Recent</SidebarGroupLabel>
                   <SidebarMenu>
-                    <GroupList groups={data.groups} />
+                    <Accordion type="single" collapsible className="w-full" defaultValue="3">
+                      <GroupList groups={data.groups} />
+                    </Accordion>
                   </SidebarMenu>
                 </>
             }
