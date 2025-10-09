@@ -274,7 +274,7 @@ export default function Document() {
                 </TooltipContent>
               </Tooltip>
             </Form>
-        
+
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button size="icon" variant="ghost" onClick={() => {
@@ -326,7 +326,7 @@ export default function Document() {
   const docContent = () => {
     return { __html: document.content };
   };
-  const [annotationJson, setAnnotationJson] = useState("");
+  const [rerenderToShowHighlight, setRerenderToShowHighlight] = useState(0);
   const [annotationText, setannotationText] = useState("");
   const [selectionText, setSelectionText] = useState("");
 
@@ -360,6 +360,22 @@ export default function Document() {
       x: rect.left,
       y: rect.top + 40,
     });
+
+
+    const annPayload = {
+      id: document.id,
+      start: start,
+      end: end,
+      color: color,
+      quote: "",
+      note: "",
+      prefix: "",
+      suffix: "",
+      body: "",
+    };
+
+    annotations.push(annPayload)
+    setRerenderToShowHighlight(prevState => prevState + 1);
   };
   function getCharOffset(
     containerEl: HTMLElement,
@@ -404,7 +420,7 @@ export default function Document() {
     x: number;
     y: number;
   } | null>(null);
-  
+
   function handleDocClick(e: React.MouseEvent<HTMLDivElement>) {
     const target = e.target as HTMLElement;
     const mark = target.closest(".anno-mark") as HTMLElement | null;
@@ -450,7 +466,10 @@ export default function Document() {
             selectionRef={selectionRef}
             x={popup.x}
             y={popup.y}
-            onRequestClose={() => setPopup(null)}
+            onRequestClose={() => {
+              setPopup(null);
+              annotations.pop()
+            }}
           />
         </div>
       )}
@@ -464,7 +483,7 @@ export default function Document() {
       >
         <DocumentContents
           documentHTML={docContent()}
-          annotations={annotations}
+          annotations={[...annotations]}
         />
       </div>
     </>
