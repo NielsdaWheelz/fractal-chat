@@ -85,7 +85,7 @@ export interface DocumentChunk {
   embedding: number[];
 }
 
-export interface Annotation {
+export type Annotation = {
   id: string;
   userId: string;
   documentId: string;
