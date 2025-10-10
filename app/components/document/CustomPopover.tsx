@@ -163,7 +163,7 @@ export function CustomPopover({
                             </Button>
                         </TooltipTrigger>
                         <TooltipContent>
-                            <p>Add to existing chat</p>
+                            <p>Add to current chat</p>
                         </TooltipContent>
                     </Tooltip>
                     <Tooltip>
