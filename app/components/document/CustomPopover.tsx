@@ -17,6 +17,7 @@ type PopoverProps = {
     // optional: position; if you want to move with selection
     x?: number;
     y?: number;
+    theme: string;
     onRequestClose: () => void;
 };
 
@@ -29,6 +30,7 @@ export function CustomPopover({
     setIncludeSelection,
     selectionRef,
     onRequestClose,
+    theme,
     x = 0,
     y = 0,
 }: PopoverProps) {
@@ -167,7 +169,7 @@ export function CustomPopover({
                         <TooltipTrigger asChild>
                             <Button size="icon" variant="ghost" onClick={() => {
                             }}>
-                                <Tweet title={docTitle} annotationText={tweetSidenote} selectionText={selectionText} docId={docId}></Tweet>
+                                <Tweet title={docTitle} annotationText={tweetSidenote} selectionText={selectionText} docId={docId} theme={theme}></Tweet>
                             </Button>
                         </TooltipTrigger>
                         <TooltipContent>

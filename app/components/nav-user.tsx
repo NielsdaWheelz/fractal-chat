@@ -84,8 +84,7 @@ export function NavUser({
                 </div>
               </div>
 
-                <h1>theme: {theme}</h1>
-              <Tabs.Root defaultValue={theme}>
+\              <Tabs.Root defaultValue={theme}>
                 <TabsList>
                   <Tooltip>
                     <TooltipTrigger asChild>

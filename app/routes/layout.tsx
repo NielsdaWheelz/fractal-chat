@@ -115,7 +115,7 @@ const Layout = ({ loaderData }: Route.ComponentProps) => {
               </div>
             </header>
             <Outlet
-              context={{ selectionRef, setShowHighlight, setIncludeSelection }}
+              context={{ selectionRef, setShowHighlight, setIncludeSelection, theme }}
             />
           </SidebarInset>
           <SidebarRight
