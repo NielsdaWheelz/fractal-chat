@@ -14,6 +14,8 @@ export type PermissionLevel = "none" | "read" | "write" | "admin"
 export type ResourceType = "document" | "annotation" | "comment" | "chat" | "group"
 export type PrincipalType = "group" | "user"
 
+//This uses Supabase's special DB magic to tell us what the types are for the rows that each table returns
+// mouseover the type name to see what it is!
 export type UserRow = typeof user.$inferSelect;
 export type DocumentRow = typeof documentTable.$inferSelect;
 export type AnnotationRow = typeof annotation.$inferSelect;
@@ -23,7 +25,7 @@ export type GroupRow = typeof groupTable.$inferSelect;
 export type PermissionRow = typeof permissionTable.$inferSelect;
 export type AuthorRow = typeof authorTable.$inferSelect;
 
-export interface User {
+export type User = {
   id: string;
   name: string;
   email: string;
@@ -35,14 +37,14 @@ export interface User {
   updatedAt: Date;
 }
 
-export interface UserBasic {
+export type UserBasic = {
   id: string;
   name: string;
   email: string;
   image: string | null;
 }
 
-export interface Document {
+export type Document = {
   id: string;
   url: string | null;
   title: string;
@@ -53,7 +55,7 @@ export interface Document {
   updatedAt: Date;
 }
 
-export interface DocumentCreate {
+export type DocumentCreate = {
   id: string;
   url: string;
   title: string;
@@ -65,7 +67,7 @@ export interface DocumentCreate {
   updatedAt: Date;
 }
 
-export interface DocumentBasic {
+export type DocumentBasic = {
   id: string;
   title: string;
   url: string | null;
@@ -73,11 +75,11 @@ export interface DocumentBasic {
   createdAt: Date;
 }
 
-export interface DocumentWithDetails extends Document {
+export type DocumentWithDetails = Document & {
   annotations?: AnnotationWithComments[];
 }
 
-export interface DocumentChunk {
+export type DocumentChunk = {
   id: string;
   documentId: string;
   text: string;
@@ -101,7 +103,7 @@ export type Annotation = {
   updatedAt: Date;
 }
 
-export interface AnnotationCreate {
+export type AnnotationCreate = {
   id: string;
   userId: string;
   documentId: string;
@@ -117,11 +119,11 @@ export interface AnnotationCreate {
   updatedAt: Date;
 }
 
-export interface AnnotationWithComments extends Annotation {
+export type AnnotationWithComments = Annotation & {
   comments: Comment[];
 }
 
-export interface Comment {
+export type Comment = {
   id: string;
   body: string | null;
   userId: string;
@@ -131,7 +133,7 @@ export interface Comment {
   updatedAt: Date;
 }
 
-export interface CommentCreate {
+export type CommentCreate = {
   id: string;
   body: string;
   userId: string;
@@ -140,7 +142,7 @@ export interface CommentCreate {
   updatedAt: Date;
 }
 
-export interface Chat {
+export type Chat = {
   id: string;
   userId: string;
   documentId: string;
@@ -149,7 +151,7 @@ export interface Chat {
   updatedAt: Date;
 }
 
-export interface ChatCreate {
+export type ChatCreate = {
   id: string;
   userId: string;
   documentId: string;
@@ -158,26 +160,26 @@ export interface ChatCreate {
   updatedAt: Date;
 }
 
-export interface Message {
+export type Message = {
   role: "user" | "assistant" | "system";
   content: string;
   timestamp?: Date;
   [key: string]: any;
 }
 
-export interface Author {
+export type Author = {
   id: string;
   name: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
-export interface AuthorBasic {
+export type AuthorBasic = {
   id: string;
   name: string;
 }
 
-export interface Group {
+export type Group = {
   id: string;
   name: string | null;
   userId: string;
@@ -185,7 +187,7 @@ export interface Group {
   updatedAt: Date;
 }
 
-export interface GroupCreate {
+export type GroupCreate = {
   id: string;
   name: string;
   userId: string;
@@ -193,20 +195,20 @@ export interface GroupCreate {
   updatedAt: Date;
 }
 
-export interface GroupWithDetails extends Group {
+export type GroupWithDetails = Group & {
   members: GroupMember[];
   documents: DocumentBasic[];
 }
 
-export interface GroupMember extends UserBasic {
+export type GroupMember = UserBasic & {
   isOwner?: boolean;
 }
 
-export interface GroupUpdate {
+export type GroupUpdate = {
   name?: string;
 }
 
-export interface Permission {
+export type Permission = {
   resourceType: ResourceType;
   resourceId: string;
   principalType: PrincipalType;
@@ -216,7 +218,7 @@ export interface Permission {
   updatedAt: Date;
 }
 
-export interface PermissionCreate {
+export type PermissionCreate = {
   resourceType: ResourceType;
   resourceId: string;
   principalType: PrincipalType;
@@ -224,7 +226,7 @@ export interface PermissionCreate {
   permissionLevel: "read" | "write" | "admin";
 }
 
-export interface SearchResult {
+export type SearchResult = {
   chunkId: string;
   chunkText: string;
   chunkIndex: number;
@@ -235,24 +237,24 @@ export interface SearchResult {
   similarity: number;
 }
 
-export interface SearchRequest {
+export type SearchRequest = {
   query: string;
   topK?: number;
   documentIds?: string[];
 }
 
-export interface SearchResponse {
+export type SearchResponse = {
   success: boolean;
   results: SearchResult[];
   count: number;
 }
 
-export interface ApiSuccess<T = unknown> {
+export type ApiSuccess<T = unknown> = {
   success: true;
   data?: T;
 }
 
-export interface ApiError {
+export type ApiError = {
   success: false;
   error: string;
   message: string;
