@@ -25,7 +25,8 @@ import { SidebarApp as SidebarLeft } from "~/components/sidebar-app-left";
 import { SidebarApp as SidebarRight } from "~/components/sidebar-app-right";
 import { useRef, useState } from "react";
 import { TooltipProvider } from "../components/ui/tooltip";
-import { getAnnotations } from "~/index.server";
+// import { getAnnotations } from "~/index.server";
+import { getAnnotations } from "~/server/annotations.server";
 import { getGroups } from "~/server/groups.server";
 
 
