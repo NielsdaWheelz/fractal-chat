@@ -251,7 +251,7 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
                 <>
                   <SidebarGroupLabel>Recent</SidebarGroupLabel>
                   <SidebarMenu>
-                    <DocumentList documents={data.documents} />
+                    <DocumentList documents={documents} />
                   </SidebarMenu>
                 </>
                 : mode === "group" &&
@@ -259,7 +259,7 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
                   <SidebarGroupLabel>Recent</SidebarGroupLabel>
                   <SidebarMenu>
                     <Accordion type="single" collapsible className="w-full" defaultValue="3">
-                      <GroupList groups={data.groups} onEditGroup={handleEditGroup} />
+                      <GroupList groups={groups} onEditGroup={handleEditGroup} />
                     </Accordion>
                   </SidebarMenu>
                 </>
