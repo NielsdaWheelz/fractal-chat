@@ -145,6 +145,7 @@ export default function Document() {
     return { __html: document.content };
   };
   const [annotationJson, setAnnotationJson] = useState("");
+  const [rerenderToShowHighlight, setRerenderToShowHighlight] = useState(0);
   const [annotationText, setannotationText] = useState("");
   const [selectionText, setSelectionText] = useState("");
 
@@ -178,6 +179,25 @@ export default function Document() {
       x: rect.left,
       y: rect.top + 40,
     });
+
+    const sendAnnotationToDocument: Annotation = {
+      id: "",
+      userId: "",
+      documentId: document.id,
+      body: "",
+      start: start,
+      color: color,
+      end: end,
+      quote: "",
+      prefix: "",
+      suffix: "",
+      visibility: "private",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    annotations.push(sendAnnotationToDocument)
+    setRerenderToShowHighlight(() => rerenderToShowHighlight + 1);
   };
 
   function getCharOffset(
@@ -270,7 +290,12 @@ export default function Document() {
             setIncludeSelection={setIncludeSelection}
             x={popup.x}
             y={popup.y}
-            onRequestClose={() => setPopup(null)}
+            onRequestClose={
+              () => {
+                setPopup(null)
+                annotations.pop();
+              }
+            }
           />
         </div>
       )}
@@ -283,7 +308,7 @@ export default function Document() {
       >
         <DocumentContents
           documentHTML={docContent()}
-          annotations={annotations}
+          annotations={[...annotations]}
         />
       </div>
     </>
