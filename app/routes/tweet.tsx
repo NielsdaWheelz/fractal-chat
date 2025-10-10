@@ -16,7 +16,7 @@ type TweetProps = {
 
 export function Tweet({ title, annotationText, selectionText, url, hashtags = [], via, docId, theme }: TweetProps) {
     const params = new URLSearchParams()
-    const text = `"${selectionText}"\n-${title}\n\nSidenote:\n${annotationText}\n\nhttps://localhost:5173/workspace/document/${docId}/`
+    const text = `"${selectionText}"\n-${title}\n\nSidenote:\n${annotationText}\n\nhttps://fractal-chat.vercel.app//workspace/document/${docId}/`
 
     if (text) params.set("text", text)
     if (url) params.set("url", url)
@@ -32,7 +32,7 @@ export function Tweet({ title, annotationText, selectionText, url, hashtags = []
             className="inline-flex items-center rounded-xl px-3 py-2"
         >
             <img
-                src={theme =="light" ? twitterImageLight : twitterImageDark}
+                src={theme == "light" ? twitterImageLight : twitterImageDark}
                 alt="Tweet"
                 className="w-4 h-4"
             />
