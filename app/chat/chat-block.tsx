@@ -6,11 +6,8 @@ import {
 } from "~/components/ui/chat-input";
 import {
   ChatMessage,
-  ChatMessageAvatar,
-  ChatMessageContent,
 } from "~/components/ui/chat-message";
 import { ChatMessageArea } from "~/components/ui/chat-message-area";
-import { MessageTool } from "~/chat/message-tool";
 import { SearchResultsTool } from "~/chat/search-results-tool";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";

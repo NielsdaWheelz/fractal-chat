@@ -1,5 +1,4 @@
 import { NavLink } from "react-router"
-import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip"
 import { SidebarMenuButton, SidebarMenuItem } from "./ui/sidebar-left"
 import { FileText } from "lucide-react"
 

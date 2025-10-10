@@ -11,7 +11,7 @@ import { getDocument } from "~/server/documents.server";
 import { CustomPopover } from "~/components/document/CustomPopover";
 import DocumentContents from "~/components/document/DocumentContents";
 import { NotePopover } from "~/components/document/NotePopover";
-import { getColorFromID } from "~/index.server";
+import { getColorFromID } from "~/server/users.server";
 import type { Annotation } from "~/types/types";
 
 

@@ -64,11 +64,15 @@
 
 
 /* Hover color when you move your mouse over a highlight */
-.anno-mark:hover {
+
+mark.anno-mark.is-hovered {
   background-color: #ffea80;
   /* brighter yellow */
 }
 
+mark.anno-mark.is-selected {
+  background: rgba(255, 215, 64, 0.35);
+}
 
 html,
 body {
@@ -158,7 +162,7 @@ body {
   --card: oklch(0.208 0.042 265.755);
   --card-foreground: oklch(0.984 0.003 247.858);
   --popover: oklch(0.208 0.042 265.755);
-  --popover-foreground: oklch(0.984 0.003 247.858);
+  --popover-foreground: oklch(27.925% 0.03006 248.979);
   --primary: oklch(0.929 0.013 255.508);
   --primary-foreground: oklch(0.208 0.042 265.755);
   --secondary: oklch(0.279 0.041 260.031);
