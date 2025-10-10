@@ -66,7 +66,7 @@ function NotePopover({
   return (
     <div
       ref={popRef}
-      className="fixed bg-white border border-gray-200 p-3 rounded-xl shadow-lg z-10 max-w-[420px] flex flex-row items-center gap-1"
+      className="fixed bg-sidebar border border-gray-200 p-3 rounded-xl shadow-lg z-10 max-w-[420px] flex flex-row items-center gap-1"
       style={{ left: x, top: y }}
       role="dialog"
       aria-label="Annotation"
