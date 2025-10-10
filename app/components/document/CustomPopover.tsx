@@ -79,11 +79,11 @@ export function CustomPopover({
     return (
         <div
             ref={rootRef}
+            className="bg-sidebar text-accent-foreground"
             style={{
                 position: "fixed",
                 left: x,
                 top: y,
-                background: "white",
                 border: "1px solid #e5e7eb",
                 padding: "16px 20px",
                 borderRadius: 12,
@@ -94,7 +94,7 @@ export function CustomPopover({
                 pointerEvents: "auto",
             }}
         >
-            <p className="mb-3 text-sm text-gray-700 font-medium break-words">
+            <p className="mb-3 text-sm font-medium break-words">
                 {selectionText}
             </p>
             <div className="flex flex-col gap-3 items-center">
