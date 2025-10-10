@@ -17,7 +17,7 @@ function Avatar({
 }: AvatarProps) {
 
   const colors = ["red", "purple", "blue", "green", "orange", "gray"];
-  console.log("color::" + color);
+
 
   return (
     <AvatarPrimitive.Root

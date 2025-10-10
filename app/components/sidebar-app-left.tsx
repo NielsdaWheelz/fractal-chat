@@ -13,7 +13,8 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
-  SidebarRail
+  SidebarRail,
+  SidebarSeparator
 } from "~/components/ui/sidebar-left";
 import {
   Tooltip,
@@ -160,13 +161,20 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
                 </TooltipContent>
               </Tooltip>
             </TabsList>
-            <Button size="icon" variant="ghost" onClick={() => {
-              setEditingGroup(null);
-              setIsModalOpen(true);
-            }}>
-              <UserPlus className="h-5 w-5" />
-              <span className="sr-only">Create New Group</span>
-            </Button>
+            <Tooltip>
+              <TooltipTrigger>
+                <Button size="icon" variant="ghost" onClick={() => {
+                  setEditingGroup(null);
+                  setIsModalOpen(true);
+                }}>
+                  <UserPlus className="h-5 w-5" />
+                  <span className="sr-only">Create New Group</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                New Group
+              </TooltipContent>
+            </Tooltip>
             <GroupModal
               isOpen={isModalOpen}
               onClose={() => setIsModalOpen(false)}
@@ -187,56 +195,63 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
       </SidebarHeader>
       <SidebarContent>
         <fetcher.Form method="get" action="/workspace/document-search" onSubmit={handleSearchSubmit}>
-          <input className="text-xs py-2 pl-4 pr-2" type="text" name="query" placeholder="Search" value={query} onChange={(e) => { setQuery(e.target.value) }} />
-          {searchResults.length > 0 ?
-            <>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button size="icon" variant="ghost" onClick={() => {
-                    setSearchResults([])
-                    setMode("group")
-                    setQuery("")
-                  }}>
-                    <SearchX className="h-5 w-5" />
-                    <span className="sr-only">Clear Search</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Clear Search</p>
-                </TooltipContent>
-              </Tooltip>
-            </>
-            :
-            <>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button size="icon" variant="ghost" type="submit">
-                    <Search className="h-5 w-5" />
-                    <span className="sr-only">Search</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Search</p>
-                </TooltipContent>
-              </Tooltip>
-            </>
-          }
+          <div className="flex items-center justify-between">
+            <input className="text-xs py-2 pl-4 pr-2" type="text" name="query" placeholder="Search" value={query} onChange={(e) => { setQuery(e.target.value) }} />
+            {searchResults.length > 0 ?
+              <>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button size="icon" variant="ghost" onClick={() => {
+                      setSearchResults([])
+                      setMode("group")
+                      setQuery("")
+                    }}>
+                      <SearchX className="h-5 w-5" />
+                      <span className="sr-only">Clear Search</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Clear Search</p>
+                  </TooltipContent>
+                </Tooltip>
+              </>
+              :
+              <>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button size="icon" variant="ghost" type="submit">
+                      <Search className="h-5 w-5" />
+                      <span className="sr-only">Search</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Search</p>
+                  </TooltipContent>
+                </Tooltip>
+              </>
+            }
+          </div>
         </fetcher.Form>
         <Form method="post" action="document-create" onSubmit={handleNewDocSubmit} autoComplete="off">
-          <input className="text-xs py-2 pl-4 pr-2" type="text" name="url" value={url} onInput={handleUrlInput} placeholder="Add Read by URL" />
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button size="icon" variant="ghost" type="submit">
-                <FilePlus2 className="h-5 w-5" />
-                <span className="sr-only">New Document</span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>New Document</p>
-            </TooltipContent>
-          </Tooltip>
+          <div className="flex items-center justify-between">
+            <input className="text-xs py-2 pl-4 pr-2" type="text" name="url" value={url} onInput={handleUrlInput} placeholder="Add Read by URL" />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button size="icon" variant="ghost" type="submit">
+                  <FilePlus2 className="h-5 w-5" />
+                  <span className="sr-only">Add Read</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Add Read</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
         </Form>
         <UploadForm />
+        <SidebarSeparator />
+      </SidebarContent>
+      <SidebarContent>
         <div className="flex flex-col gap-4">
           <SidebarGroup>
             {searchResults.length > 0 ?
@@ -268,7 +283,7 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
         </div>
       </SidebarContent>
       <SidebarRail />
-      <SidebarFooter>
+      <SidebarFooter className="mt-auto">
         <NavUser user={user} />
       </SidebarFooter>
     </Sidebar>

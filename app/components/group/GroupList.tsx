@@ -40,8 +40,8 @@ const GroupList = (props: { groups, onEditGroup }) => {
                               props.onEditGroup({
                                 id: group.id,
                                 name: name,
-                                members: group.members?.map(m => m.id) || [],
-                                documents: group.documents?.map(d => d.id) || []
+                                members: group.members || [],
+                                documents: group.documents || []
                               });
                             }}
                           >

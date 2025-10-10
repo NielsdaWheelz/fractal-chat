@@ -59,7 +59,7 @@ export const documentAuthorsTable = pgTable("document_authors", {
 
 export const documentChunksTable = pgTable("document_chunks", {
   id: text("id").primaryKey(),
-  documentId: text("document_id").notNull(),
+  documentId: text("document_id").notNull().references(() => documentTable.id, { onDelete: "cascade" }),
   text: text("text").notNull(),
   chunkIndex: integer("chunk_index").notNull(),
   embedding: vector("embedding", { dimensions: 512 }).notNull(),
