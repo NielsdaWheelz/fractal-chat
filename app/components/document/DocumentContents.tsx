@@ -6,7 +6,9 @@ type TextSpan = { node: Text; start: number; end: number };
 export default function DocumentContents({
   documentHTML,
   annotations,
+  theme
 }: {
+  theme: string;
   documentHTML: { __html: string };
   annotations: Annotation[];
 }) {
@@ -239,7 +241,7 @@ export default function DocumentContents({
   return (
     <div
       id="doc-container" // ← keep this id for selection math
-      className="docContainer flex-1 flex flex-col h-full overflow-y-auto p-8 gap-4"
+      className={`docContainer flex-1 flex flex-col h-full overflow-y-auto p-8 gap-4  ${theme=="light" ? "text-[oklch(37.3%_0.034_259.733)]" : "text-white"}`}
       dangerouslySetInnerHTML={{ __html: html }}
     />
   );
