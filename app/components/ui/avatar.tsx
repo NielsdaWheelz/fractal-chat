@@ -17,7 +17,7 @@ function Avatar({
 }: AvatarProps) {
 
   const colors = ["red", "purple", "blue", "green", "orange", "gray"];
-  console.log("color::" + color);
+
 
   return (
     <AvatarPrimitive.Root
@@ -26,7 +26,7 @@ function Avatar({
         "relative flex size-8 shrink-0 overflow-hidden rounded-full border-3",
         className
       )}
-      onClick={() => console.log("color" + color)}
+      // onClick={() => console.log("color" + color)}
       style={{ borderColor: colors[Number(color)] }}
       {...props}
     />

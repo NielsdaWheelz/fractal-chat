@@ -22,6 +22,7 @@ import {
 import { clientSignOut } from "~/utils/auth.client";
 import { TabsList, TabsTrigger } from "./ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
+import createFallback from "~/helperfunctions/createFallback";
 
 export function NavUser({
   user,
@@ -34,8 +35,10 @@ export function NavUser({
     name: string;
     email: string;
     avatar: string;
+    fallback: string;
   };
 }) {
+  user = createFallback(user)
   const { isMobile } = useSidebar();
   const navigate = useNavigate();
 
@@ -84,7 +87,7 @@ export function NavUser({
                 </div>
               </div>
 
-\              <Tabs.Root defaultValue={theme}>
+              <Tabs.Root defaultValue={theme}>
                 <TabsList>
                   <Tooltip>
                     <TooltipTrigger asChild>

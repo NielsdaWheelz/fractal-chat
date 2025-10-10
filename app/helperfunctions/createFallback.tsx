@@ -1,7 +1,7 @@
-import users from "./dummydata"
+import type { User } from "~/types/types"
 
-// retrieving initials from name for fallback
-const updatedUsers = users.map((user) => {
+//pulling initials for fallback
+export default function createFallback(user: User) {
     const parts = user.name.trim().split(/\s+/)
 
     const initials =
@@ -11,4 +11,4 @@ const updatedUsers = users.map((user) => {
 
     const fallback = initials.toUpperCase()
     return { ...user, fallback }
-})
+}

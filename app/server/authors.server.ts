@@ -3,7 +3,6 @@ import { authorTable, documentAuthorsTable, documentTable } from "~/db/schema"
 import { db } from "~/server/index.server"
 import type { Author, AuthorBasic, AuthorRow } from "~/types/types"
 
-// Author-related functions
 export const getAuthors = async (searchTerm?: string): Promise<AuthorBasic[]> => {
   const whereConditions = []
 

@@ -10,7 +10,7 @@ export const chunkText = async (rawText: string) => {
   });
 
   const docs = await splitter.createDocuments([rawText]);
-  return docs; // Each doc has { pageContent, metadata }
+  return docs;
 }
 
 export const generateEmbeddings = async (chunkTexts: string[]) => {
