@@ -26,7 +26,9 @@ export const saveAnnotations = async (annotationToSave: AnnotationCreate):Promis
   await db.insert(annotation).values(dbAnnotation).onConflictDoUpdate({ target: annotation.id, set: dbAnnotation })
 }
 
-export const deleteAnnotations = async (id: string) => {
+export const deleteAnnotations = async (userId: string, id: string) => {
+  await requirePermission(userId, "annotation", id, "write");
+
   return await db.delete(annotation).where(eq(annotation.id, id));
 }
 
