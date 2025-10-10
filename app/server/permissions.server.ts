@@ -1,9 +1,9 @@
 import { db } from "~/server/index.server"
 import { BadRequestError, ForbiddenError, NotFoundError } from "./errors.server"
-import { computeAccessLevel, isResourceCreator, requirePermission } from "./permissions.server.helper"
+import { isResourceCreator, requirePermission } from "./permissions.server.helper"
 import { and, eq, ne, or } from "drizzle-orm"
 import { annotation, chatTable, comment, documentTable, groupTable, permissionTable, user } from "~/db/schema"
-import type { Permission, PermissionCreate, PermissionRow, ResourceType, PrincipalType, PermissionLevel } from "~/types/types"
+import type { Permission, PermissionRow, ResourceType, PrincipalType, PermissionLevel } from "~/types/types"
 
 const tableMap = {
   chat: chatTable,
@@ -84,7 +84,6 @@ export const deletePermission = async (
     "write"
   )
 
-  // Delete the permission
   const result = await db
     .delete(permissionTable)
     .where(

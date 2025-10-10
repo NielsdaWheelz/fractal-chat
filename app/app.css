@@ -162,7 +162,7 @@ body {
   --card: oklch(0.208 0.042 265.755);
   --card-foreground: oklch(0.984 0.003 247.858);
   --popover: oklch(0.208 0.042 265.755);
-  --popover-foreground: oklch(0.984 0.003 247.858);
+  --popover-foreground: oklch(27.925% 0.03006 248.979);
   --primary: oklch(0.929 0.013 255.508);
   --primary-foreground: oklch(0.208 0.042 265.755);
   --secondary: oklch(0.279 0.041 260.031);
@@ -197,5 +197,24 @@ body {
 
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  .docContainer {
+    @apply prose;
+    @apply mx-auto;
+  }
+
+  .docContainer :where(img, video, iframe, figure) {
+    @apply mx-auto my-6 block rounded-lg;
+  }
+
+  .docContainer :where(video, iframe) {
+    @apply w-full aspect-video;
+  }
+
+  .docContainer :where(figcaption) {
+    @apply text-sm text-muted-foreground text-center mt-2;
   }
 }

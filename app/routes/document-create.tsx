@@ -35,8 +35,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
   // const result = insertBeforeChar(rawText, "<p>", "\n");
   const styledText = rawText.replace("<p>", "<br> <p>")
-  console.log(rawText)
-  console.log(styledText)
 
   const chunkedDocs = await chunkText(styledText)
 

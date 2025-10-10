@@ -1,33 +1,30 @@
-import type { Route } from "./+types/layout";
+import { useEffect, useRef, useState } from "react";
 import { Outlet, redirect } from "react-router";
-import { getSession, getUser } from "~/server/auth.server";
-import { getDocument, getDocuments } from "~/server/documents.server";
-import { getChats } from "~/server/chats.server";
-import { getDocumentAuthors } from "~/server/authors.server";
-import { Button } from "~/components/ui/button";
+import { SidebarApp as SidebarLeft } from "~/components/sidebar-app-left";
+import { SidebarApp as SidebarRight } from "~/components/sidebar-app-right";
 import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbList,
   BreadcrumbPage,
 } from "~/components/ui/breadcrumb";
-import { Separator } from "~/components/ui/separator";
 import {
-  SidebarInset,
   SidebarProvider as LeftSidebarProvider,
+  SidebarInset,
   SidebarTriggerLeft,
 } from "~/components/ui/sidebar-left";
 import {
   SidebarProvider as RightSidebarProvider,
   SidebarTriggerRight,
 } from "~/components/ui/sidebar-right";
-import { SidebarApp as SidebarLeft } from "~/components/sidebar-app-left";
-import { SidebarApp as SidebarRight } from "~/components/sidebar-app-right";
-import { useRef, useState } from "react";
-import { TooltipProvider } from "../components/ui/tooltip";
 // import { getAnnotations } from "~/index.server";
 import { getAnnotations } from "~/server/annotations.server";
+import { getSession, getUser } from "~/server/auth.server";
+import { getDocumentAuthors } from "~/server/authors.server";
+import { getChats } from "~/server/chats.server";
+import { getDocument, getDocuments } from "~/server/documents.server";
 import { getGroups } from "~/server/groups.server";
+import type { Route } from "./+types/layout";
 
 
 export const loader = async ({ request, params }: Route.LoaderArgs) => {
@@ -74,6 +71,11 @@ const Layout = ({ loaderData }: Route.ComponentProps) => {
   const selectionRef = useRef<string>("");
   const [showHighlight, setShowHighlight] = useState(false);
   const [includeSelection, setIncludeSelection] = useState<boolean>(() => !!selectionRef?.current?.trim());
+
+   useEffect(() => {
+    document.documentElement.classList.add("dark");
+    document.documentElement.style.colorScheme = "dark";
+  }, []);
 
   return (
     <>

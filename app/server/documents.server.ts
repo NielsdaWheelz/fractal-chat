@@ -1,7 +1,6 @@
-import { annotation, comment, documentChunksTable, documentTable, permissionTable } from "~/db/schema"
+import { comment, documentChunksTable, documentTable } from "~/db/schema"
 import { db } from "~/server/index.server"
-import { getGroups } from "./groups.server"
-import { and, eq, inArray, or } from "drizzle-orm"
+import { eq } from "drizzle-orm"
 import type { Document, DocumentCreate, DocumentChunk, DocumentRow } from "~/types/types"
 
 export const getAllDocuments = async (): Promise<DocumentRow[]> => {
@@ -45,7 +44,6 @@ export const saveDocumentChunks = async (chunks: DocumentChunk[]) => {
 
   return await db.insert(documentChunksTable).values(dbChunks)
 }
-
 
 const documentRowToObject = (row: DocumentRow): Document => {
   return {

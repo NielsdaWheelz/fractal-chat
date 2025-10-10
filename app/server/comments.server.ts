@@ -20,7 +20,6 @@ export const getComment = async (userId: string, commentId: string): Promise<Com
   return commentRowToObject(commentRow[0]);
 }
 
-
 const commentObjectToRow = (commentData: CommentCreate) => {
   return {
     id: commentData.id,

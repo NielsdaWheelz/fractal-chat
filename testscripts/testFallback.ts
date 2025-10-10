@@ -12,4 +12,3 @@ const updatedUsers = users.map((user) => {
     const fallback = initials.toUpperCase()
     return { ...user, fallback }
 })
-console.log(updatedUsers[0])
