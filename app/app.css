@@ -198,7 +198,8 @@ body {
 
 @layer components {
   .docContainer {
-    @apply prose
+    @apply prose;
+    @apply mx-auto;
   }
 
   .docContainer :where(img, video, iframe, figure) {
