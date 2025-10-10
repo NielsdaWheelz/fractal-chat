@@ -279,7 +279,7 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
         </div>
       </SidebarContent>
       <SidebarRail />
-      <SidebarFooter>
+      <SidebarFooter className="mt-auto">
         <NavUser user={user} />
       </SidebarFooter>
     </Sidebar>
