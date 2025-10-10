@@ -45,6 +45,8 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const fetcher = useFetcher();
   const [editingGroup, setEditingGroup] = useState(null);
+  const [groups, setGroups] = useState(data.groups)
+  const [documents, setDocuments] = useState(data.documents)
 
   const handleEditGroup = (group) => {
     setEditingGroup(group);
@@ -58,6 +60,8 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
 
   useEffect(() => {
     if (data?.document) setDocumentId(document.id)
+    if (data?.documents) setDocuments(data.documents)
+    if (data?.groups) setGroups(data.groups)
   }), [data]
 
 
