@@ -43,3 +43,15 @@ const commentRowToObject = (row: CommentRow): Comment => {
     updatedAt: row.updatedAt
   }
 }
+
+export const rowToComment = (row: CommentRow): Comment => {
+  return {
+    id: row.id,
+    body: row.body,
+    userId: row.userId,
+    annotationId: row.annotationId,
+    visibility: row.visibility,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt
+  }
+}

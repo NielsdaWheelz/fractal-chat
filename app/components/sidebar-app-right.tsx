@@ -48,7 +48,7 @@ export function SidebarApp({ side, data, user, selectionRef, includeSelection, s
   const { setOpen } = useSidebar()
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null)
   const [chats, setChats] = useState<ChatListItem[]>(data.chats as ChatListItem[])
-  const [annotations, setAnnotations] = useState(data.annotations)
+  const [annotations, setAnnotations] = useState(data.annotations?.annotations || [])
   const [selectedAnnotationId, setSelectedAnnotationId] = useState<string | null>(null)
   const fetcher = useFetcher<any>()
   const params = useParams()
@@ -68,7 +68,7 @@ export function SidebarApp({ side, data, user, selectionRef, includeSelection, s
 
   useEffect(() => {
     setChats(data.chats as ChatListItem[])
-    setAnnotations(data.annotations as AnnotationListItem[])
+    setAnnotations(data.annotations?.annotations || [])
   }, [data])
 
   useEffect(() => {
@@ -221,7 +221,6 @@ export function SidebarApp({ side, data, user, selectionRef, includeSelection, s
           )}
           {mode === "annotation" && (
             <AnnotationList annotations={annotations} setSelectedAnnotationId={setSelectedAnnotationId} />
-
           )}
         </div>
       </SidebarContent>

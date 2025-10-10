@@ -1,9 +1,10 @@
-import { eq, inArray } from "drizzle-orm";
-import { annotation, groupDocumentTable, groupMemberTable } from "~/db/schema";
+import { eq, inArray, and } from "drizzle-orm";
+import { annotation, comment, groupDocumentTable, groupMemberTable } from "~/db/schema";
 import { db } from "~/server/index.server";
-import type { Annotation, AnnotationCreate, AnnotationRow } from "~/types/types";
+import type { Annotation, AnnotationCreate, AnnotationRow, AnnotationWithComments, Comment } from "~/types/types";
 import { NotFoundError } from "./errors.server";
 import { getUserGroupIds, requirePermission } from "./permissions.server.helper";
+import { rowToComment } from "./comments.server";
 
 export const getAnnotation = async (userId: string, annotationId: string) => {
   await requirePermission(userId, "annotation", annotationId, "read");
@@ -31,60 +32,115 @@ export const deleteAnnotations = async (id: string) => {
 
 // all annos for a doc
 export const getAnnotations = async (userId: string, documentId: string) => {
-  await requirePermission(userId, "document", documentId, "read");
-
-  const userGroupIds = await getUserGroupIds(userId);
-
-  const documentGroups = await db
-    .select({ groupId: groupDocumentTable.groupId })
-    .from(groupDocumentTable)
-    .where(eq(groupDocumentTable.documentId, documentId));
-
-  const documentGroupIds = documentGroups.map((g) => g.groupId);
-
-  // intersection of user & doc gorups
-  const sharedGroupIds = userGroupIds.filter((id) =>
-    documentGroupIds.includes(id)
-  );
-
-  // all members of user's groups
-  const groupMemberUserIds =
-    sharedGroupIds.length > 0
-      ? await db
-        .select({ userId: groupMemberTable.userId })
-        .from(groupMemberTable)
-        .where(inArray(groupMemberTable.groupId, sharedGroupIds))
-      : [];
-
-  const memberIds = [
-    ...new Set(groupMemberUserIds.map((m) => m.userId)),
-    userId,
-  ];
-
-  const annotations = await db
+  const allAnnotations = await db
     .select()
     .from(annotation)
-    .where(eq(annotation.documentId, documentId));
-
-  const accessibleAnnotations = annotations.filter((anno) => {
-    // creator's annos
-    if (anno.userId === userId) return true;
-
-    if (anno.visibility === "private") return false
-
-    // group member annos
-    if (memberIds.includes(anno.userId)) return true
-
-    // public annos
-    if (anno.visibility === "public") return true
-
-    // check if user has explicit permission?
-    return false;
-  });
-
-  return accessibleAnnotations.map((a) => annotationRowToObject(a));
+    .where(eq(annotation.documentId, documentId))
+  
+  if (allAnnotations.length === 0) {
+    return {
+      annotations: []
+    }
+  }
+  
+  const annotationIds = allAnnotations.map(a => a.id)
+  const allComments = await db
+    .select()
+    .from(comment)
+    .where(inArray(comment.annotationId, annotationIds))
+  
+  const userGroupIds = await getUserGroupIds(userId)
+  
+  const documentGroups = userGroupIds.length > 0 
+    ? await db
+        .select({ groupId: groupDocumentTable.groupId })
+        .from(groupDocumentTable)
+        .where(
+          and(
+            eq(groupDocumentTable.documentId, documentId),
+            inArray(groupDocumentTable.groupId, userGroupIds)
+          )
+        )
+    : []
+  
+  const documentInUserGroups = documentGroups.length > 0
+  
+  const allCreatorIds = new Set<string>()
+  allAnnotations.forEach(a => allCreatorIds.add(a.userId))
+  allComments.forEach(c => allCreatorIds.add(c.userId))
+  allCreatorIds.delete(userId)
+  
+  const creatorsWhoShareGroups = new Set<string>()
+  
+  if (allCreatorIds.size > 0 && userGroupIds.length > 0) {
+    const sharedGroupMembers = await db
+      .select({ userId: groupMemberTable.userId })
+      .from(groupMemberTable)
+      .where(
+        and(
+          inArray(groupMemberTable.groupId, userGroupIds),
+          inArray(groupMemberTable.userId, Array.from(allCreatorIds))
+        )
+      )
+    
+    sharedGroupMembers.forEach(m => creatorsWhoShareGroups.add(m.userId))
+  }
+  
+  const hasPermission = (
+    resourceType: 'annotation' | 'comment',
+    creatorId: string,
+    visibility: string | null
+  ): boolean => {
+    if (creatorId === userId) return true
+    
+    if (visibility === 'private') return false
+    
+    if (visibility === 'public') return true
+    
+    if (documentInUserGroups && creatorsWhoShareGroups.has(creatorId)) {
+      return true
+    }
+    
+    return false
+  }
+  
+  const visibleAnnotations: AnnotationWithComments[] = []
+  
+  for (const anno of allAnnotations) {
+    if (hasPermission('annotation', anno.userId, anno.visibility)) {
+      const annoComments = allComments.filter(c => c.annotationId === anno.id)
+      
+      const visibleComments: Comment[] = annoComments
+        .filter(comm => hasPermission('comment', comm.userId, comm.visibility))
+        .map(comm => rowToComment(comm))
+      
+      visibleAnnotations.push({
+        ...rowToAnnotation(anno),
+        comments: visibleComments
+      })
+    }
+  }
+  
+  return { annotations: visibleAnnotations }
 }
 
+export const rowToAnnotation = (row: AnnotationRow): Annotation => {
+  return {
+    id: row.id,
+    userId: row.userId,
+    documentId: row.documentId,
+    body: row.body,
+    color: row.color,
+    start: row.start,
+    end: row.end,
+    quote: row.quote,
+    prefix: row.prefix,
+    suffix: row.suffix,
+    visibility: row.visibility,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt
+  }
+}
 
 const annotationObjectToRow = (annotation: AnnotationCreate) => {
   return {

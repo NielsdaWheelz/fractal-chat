@@ -23,6 +23,8 @@ import type {
   CommentRow
 } from "~/types/types"
 import { getUserGroupIds } from "./permissions.server.helper"
+import { rowToAnnotation } from "./annotations.server"
+import { rowToComment } from "./comments.server"
 
 export const getAllDocuments = async (): Promise<DocumentRow[]> => {
   const results = await db.select().from(documentTable)
@@ -171,36 +173,6 @@ const rowToDocument = (row: DocumentRow): Document => {
     content: row.content,
     textContent: row.textContent,
     publishedTime: row.publishedTime,
-    createdAt: row.createdAt,
-    updatedAt: row.updatedAt
-  }
-}
-
-const rowToAnnotation = (row: AnnotationRow): Annotation => {
-  return {
-    id: row.id,
-    userId: row.userId,
-    documentId: row.documentId,
-    body: row.body,
-    color: row.color,
-    start: row.start,
-    end: row.end,
-    quote: row.quote,
-    prefix: row.prefix,
-    suffix: row.suffix,
-    visibility: row.visibility,
-    createdAt: row.createdAt,
-    updatedAt: row.updatedAt
-  }
-}
-
-const rowToComment = (row: CommentRow): Comment => {
-  return {
-    id: row.id,
-    body: row.body,
-    userId: row.userId,
-    annotationId: row.annotationId,
-    visibility: row.visibility,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt
   }

@@ -25,7 +25,7 @@ import { SidebarApp as SidebarLeft } from "~/components/sidebar-app-left";
 import { SidebarApp as SidebarRight } from "~/components/sidebar-app-right";
 import { useRef, useState } from "react";
 import { TooltipProvider } from "../components/ui/tooltip";
-import { getAnnotations } from "~/index.server";
+import { getAnnotations } from "~/server/annotations.server";
 import { getGroups } from "~/server/groups.server";
 
 
@@ -61,7 +61,11 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
   const authors = await waitForDocAuthors();
   const annotations = await waitForAnnotations();
 
-  return { user, chats, groups, documents, document, authors, annotations }
+  // const res = await getAnnotations(userId, params.id);
+  // console.log(JSON.stringify(res, null, 2));
+
+  const result = { user, chats, groups, documents, document, authors, annotations }
+  return result
 }
 
 const Layout = ({ loaderData }: Route.ComponentProps) => {
@@ -77,7 +81,6 @@ const Layout = ({ loaderData }: Route.ComponentProps) => {
   return (
     <>
       {/* documents chats */}
-
       <LeftSidebarProvider>
         <SidebarLeft side="left" data={loaderData} user={uiUser} />
         <RightSidebarProvider>
