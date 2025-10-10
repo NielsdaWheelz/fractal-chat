@@ -13,7 +13,8 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
-  SidebarRail
+  SidebarRail,
+  SidebarSeparator
 } from "~/components/ui/sidebar-left";
 import {
   Tooltip,
@@ -240,6 +241,9 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
           </Tooltip>
         </Form>
         <UploadForm />
+        <SidebarSeparator />
+      </SidebarContent>
+      <SidebarContent>
         <div className="flex flex-col gap-4">
           <SidebarGroup>
             {searchResults.length > 0 ?
