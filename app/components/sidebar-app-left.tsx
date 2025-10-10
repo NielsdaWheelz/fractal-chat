@@ -28,6 +28,7 @@ import SearchResultList from "./SearchResultList";
 import { Accordion } from "./ui/accordion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import UploadForm from "./upload-form";
+import Logo from "./logo";
 
 type UIMessagePart = { type: string; text?: string }
 type UIMessage = { role: string; parts: UIMessagePart[] }
@@ -35,7 +36,7 @@ type ChatListItem = { id: string; messages?: UIMessage[] }
 type UserInfo = { name: string; email: string; avatar: string }
 type SidebarAppProps = { setTheme: React.Dispatch<React.SetStateAction<string>>; theme: string; data: any[]; user: UserInfo; side: "left" | "right" } & ComponentProps<typeof Sidebar>
 
-export function SidebarApp({ side, setTheme,theme, data, user, ...props }: SidebarAppProps) {
+export function SidebarApp({ side, setTheme, theme, data, user, ...props }: SidebarAppProps) {
   const [mode, setMode] = useState("document")
   const [groupId, setGroupId] = useState(null)
   const [documentId, setDocumentId] = useState(null)
@@ -102,15 +103,7 @@ export function SidebarApp({ side, setTheme,theme, data, user, ...props }: Sideb
   return (
     <Sidebar className="border-r-0" {...props} side="left">
       <SidebarHeader>
-        <div className="flex items-center justify-between p-2">
-          <div className="flex items-center gap-3">
-            <img
-              src="/logo-transparent-bg.png"
-              alt="App logo"
-              className="h-full w-full object-contain"
-            />
-          </div>
-        </div>
+        <Logo theme={theme} />
         <Tabs defaultValue="tab-1" className="items-center">
           <div className="flex w-full items-center justify-between">
             <Button size="icon" variant="ghost" onClick={() => {
