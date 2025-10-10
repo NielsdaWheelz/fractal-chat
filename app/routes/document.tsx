@@ -1,6 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import {
-  Form,
   redirect,
   useLoaderData,
   useOutletContext
@@ -9,92 +8,11 @@ import { getAnnotations } from "~/server/annotations.server";
 import { requireUser } from "~/server/auth.server";
 import { getDocument } from "~/server/documents.server";
 
-import { Trash2 } from "lucide-react";
 import { CustomPopover } from "~/components/document/CustomPopover";
 import DocumentContents from "~/components/document/DocumentContents";
-import { Button } from "~/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger
-} from "~/components/ui/tooltip";
+import { NotePopover } from "~/components/document/NotePopover";
 import { getColorFromID } from "~/index.server";
 import type { Annotation } from "~/types/types";
-
-
-// memo prevents unnecessary re-renders; most important is that the component
-// TYPE is stable by being top-level. Memo is a nice-to-have.
-
-function NotePopover({
-  docId,
-  id,
-  x,
-  y,
-  quote,
-  note,
-  onClose,
-}: {
-  docId: string;
-  id: string;
-  x: number;
-  y: number;
-  quote: string;
-  note: string;
-  onClose: () => void;
-}) {
-  const popRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    const close = (e: PointerEvent) => {
-      const el = popRef.current;
-      if (!el) return;
-
-      // Prefer composedPath to handle portals/shadow DOM correctly
-      const path = (e.composedPath?.() ?? []) as EventTarget[];
-      if (path.includes(el) || (e.target && el.contains(e.target as Node))) {
-        // Click started inside the popover → do not close
-        return;
-      }
-      onClose();
-    };
-
-    // Keep capture=true so outside clicks still win, but we now guard inside clicks
-    document.addEventListener("pointerdown", close, true);
-    return () => document.removeEventListener("pointerdown", close, true);
-  }, [onClose]);
-
-  return (
-    <div
-      ref={popRef}
-      className="fixed bg-sidebar border border-gray-200 p-3 rounded-xl shadow-lg z-10 max-w-[420px] flex flex-row items-center gap-1"
-      style={{ left: x, top: y }}
-      role="dialog"
-      aria-label="Annotation"
-    >
-      <p className="text-sm">{note || "(no note saved)"}</p>
-
-      <Form method="post" action={`/workspace/delete-annotation/${docId}/${id}`}>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              size="icon"
-              variant="ghost"
-              type="submit"
-              // Optional: also stop propagation at capture just to be extra safe
-              onPointerDownCapture={(e) => e.stopPropagation()}
-            >
-              <Trash2 />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>delete annotation</p>
-          </TooltipContent>
-        </Tooltip>
-      </Form>
-    </div>
-  );
-}
-
 
 
 type LoaderData = {
@@ -145,6 +63,7 @@ export default function Document() {
     return { __html: document.content };
   };
   const [annotationJson, setAnnotationJson] = useState("");
+  const [rerenderToShowHighlight, setRerenderToShowHighlight] = useState(0);
   const [annotationText, setannotationText] = useState("");
   const [selectionText, setSelectionText] = useState("");
 
@@ -178,6 +97,25 @@ export default function Document() {
       x: rect.left,
       y: rect.top + 40,
     });
+
+    const sendAnnotationToDocument: Annotation = {
+      id: "",
+      userId: "",
+      documentId: document.id,
+      body: "",
+      start: start,
+      color: color,
+      end: end,
+      quote: "",
+      prefix: "",
+      suffix: "",
+      visibility: "private",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    annotations.push(sendAnnotationToDocument)
+    setRerenderToShowHighlight(() => rerenderToShowHighlight + 1);
   };
 
   function getCharOffset(
@@ -270,7 +208,12 @@ export default function Document() {
             setIncludeSelection={setIncludeSelection}
             x={popup.x}
             y={popup.y}
-            onRequestClose={() => setPopup(null)}
+            onRequestClose={
+              () => {
+                setPopup(null)
+                annotations.pop();
+              }
+            }
           />
         </div>
       )}
@@ -283,7 +226,7 @@ export default function Document() {
       >
         <DocumentContents
           documentHTML={docContent()}
-          annotations={annotations}
+          annotations={[...annotations]}
         />
       </div>
     </>

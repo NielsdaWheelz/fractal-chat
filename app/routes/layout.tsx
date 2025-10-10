@@ -17,7 +17,8 @@ import {
   SidebarProvider as RightSidebarProvider,
   SidebarTriggerRight,
 } from "~/components/ui/sidebar-right";
-import { getAnnotations } from "~/index.server";
+// import { getAnnotations } from "~/index.server";
+import { getAnnotations } from "~/server/annotations.server";
 import { getSession, getUser } from "~/server/auth.server";
 import { getDocumentAuthors } from "~/server/authors.server";
 import { getChats } from "~/server/chats.server";
