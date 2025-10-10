@@ -3,6 +3,7 @@ import { SidebarMenuButton, SidebarMenuItem } from "./ui/sidebar-left"
 import { FileText } from "lucide-react"
 
 const SearchResultList = (props: { results }) => {
+
   return (
     <>
       {props.results.map((match) => {
