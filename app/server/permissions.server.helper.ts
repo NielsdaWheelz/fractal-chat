@@ -9,7 +9,7 @@ import {
   comment,
   chatTable,
 } from "~/db/schema"
-import { ForbiddenError, NotFoundError } from "./errors.server"
+import { ForbiddenError } from "./errors.server"
 import type { PermissionLevel, ResourceType, Visibility } from "~/types/types"
 
 const resourceTableMap = {
@@ -36,7 +36,7 @@ export async function getUserGroupIds(userId: string): Promise<string[]> {
     ...memberGroups.map((g) => g.groupId),
   ]
 
-  return [...new Set(groupIds)] // Remove duplicates
+  return [...new Set(groupIds)]
 }
 
 export async function getDirectPermission(
