@@ -64,11 +64,15 @@
 
 
 /* Hover color when you move your mouse over a highlight */
-.anno-mark:hover {
+
+mark.anno-mark.is-hovered {
   background-color: #ffea80;
   /* brighter yellow */
 }
 
+mark.anno-mark.is-selected {
+  background: rgba(255, 215, 64, 0.35);
+}
 
 html,
 body {
