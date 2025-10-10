@@ -167,7 +167,7 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
               isOpen={isModalOpen}
               onClose={() => setIsModalOpen(false)}
               editGroup={editingGroup}
-              />
+            />
           </div>
           <TabsContent value="tab-1">
             <div className="flex items-center gap-2">
@@ -183,7 +183,7 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
       </SidebarHeader>
       <SidebarContent>
         <fetcher.Form method="get" action="/workspace/document-search" onSubmit={handleSearchSubmit}>
-          <input className="text-xs py-2 pl-4 pr-2" type="text" name="query" placeholder="search" value={query} onChange={(e) => { setQuery(e.target.value) }} />
+          <input className="text-xs py-2 pl-4 pr-2" type="text" name="query" placeholder="Search" value={query} onChange={(e) => { setQuery(e.target.value) }} />
           {searchResults.length > 0 ?
             <>
               <Tooltip>
@@ -194,7 +194,7 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
                     setQuery("")
                   }}>
                     <SearchX className="h-5 w-5" />
-                    <span className="sr-only">clear search</span>
+                    <span className="sr-only">Clear Search</span>
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
@@ -208,7 +208,7 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
                 <TooltipTrigger asChild>
                   <Button size="icon" variant="ghost" type="submit">
                     <Search className="h-5 w-5" />
-                    <span className="sr-only">search</span>
+                    <span className="sr-only">Search</span>
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
@@ -218,8 +218,8 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
             </>
           }
         </fetcher.Form>
-        <Form method="post" action="document-create" onSubmit={handleNewDocSubmit}>
-          <input className="text-xs py-2 pl-4 pr-2" type="text" name="url" value={url} onInput={handleUrlInput} placeholder="new document url" />
+        <Form method="post" action="document-create" onSubmit={handleNewDocSubmit} autoComplete="off">
+          <input className="text-xs py-2 pl-4 pr-2" type="text" name="url" value={url} onInput={handleUrlInput} placeholder="Add Read by URL" />
           <Tooltip>
             <TooltipTrigger asChild>
               <Button size="icon" variant="ghost" type="submit">

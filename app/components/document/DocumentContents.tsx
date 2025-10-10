@@ -95,7 +95,7 @@ export default function DocumentContents({
   return (
     <div
       id="doc-container" // ← keep this id for selection math
-      className="flex-1 flex flex-col h-full overflow-y-auto p-8 gap-4"
+      className="docContainer flex-1 flex flex-col h-full overflow-y-auto p-8 gap-4"
       dangerouslySetInnerHTML={{ __html: html }}
     />
   );
