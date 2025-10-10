@@ -26,7 +26,6 @@ import { getDocument, getDocuments } from "~/server/documents.server";
 import { getGroups } from "~/server/groups.server";
 import type { Route } from "./+types/layout";
 
-
 export const loader = async ({ request, params }: Route.LoaderArgs) => {
   const session = await getSession(request)
   if (!session?.user) return redirect("/")

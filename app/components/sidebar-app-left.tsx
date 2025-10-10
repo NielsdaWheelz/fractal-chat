@@ -2,7 +2,7 @@
 
 import { ArrowLeft, FilePlus2, Library, Search, SearchX, UserPlus, Users } from "lucide-react";
 import { useEffect, useState, type ComponentProps } from "react";
-import { Form, useFetcher } from "react-router";
+import { Form, useFetcher, useRevalidator } from "react-router";
 import { NavUser } from "~/components/nav-user";
 import { Button } from "~/components/ui/button";
 import {
@@ -26,13 +26,11 @@ import GroupList from "./group/GroupList";
 import SearchResultList from "./SearchResultList";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import UploadForm from "./upload-form";
-import GroupAvatarStack from "./groupavatar";
 import { GroupModal } from "./group/GroupModal";
 import { Accordion } from "./ui/accordion";
 
 type UIMessagePart = { type: string; text?: string }
 type UIMessage = { role: string; parts: UIMessagePart[] }
-type ChatListItem = { id: string; messages?: UIMessage[] }
 type UserInfo = { name: string; email: string; avatar: string }
 type SidebarAppProps = { data: any[]; user: UserInfo; side: "left" | "right" } & ComponentProps<typeof Sidebar>
 
@@ -45,6 +43,7 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
   const [query, setQuery] = useState("")
   const [isModalOpen, setIsModalOpen] = useState(false);
   const fetcher = useFetcher();
+  const revalidator = useRevalidator();
   const [editingGroup, setEditingGroup] = useState(null);
   const [groups, setGroups] = useState(data.groups)
   const [documents, setDocuments] = useState(data.documents)
@@ -54,17 +53,17 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
     setIsModalOpen(true);
   }
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setEditingGroup(null);
+  const handleGroupSuccess = () => {
+    revalidator.revalidate();
   }
 
   useEffect(() => {
-    if (data?.document) setDocumentId(document.id)
+    if (data?.document) setDocumentId(data.document.id)
     if (data?.documents) setDocuments(data.documents)
     if (data?.groups) setGroups(data.groups)
-  }), [data]
-
+    console.log(data)
+  }, [data])
+  
 
   useEffect(() => {
     if (fetcher.data && fetcher.data.length > 0) {
@@ -178,6 +177,7 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
             <GroupModal
               isOpen={isModalOpen}
               onClose={() => setIsModalOpen(false)}
+              onSuccess={handleGroupSuccess}
               editGroup={editingGroup}
             />
           </div>
