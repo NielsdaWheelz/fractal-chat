@@ -171,7 +171,7 @@ export default function Document() {
     e.stopPropagation();
 
     const note = mark.getAttribute("data-note") ?? "";
-    const id = mark.getAttribute("data-id") ?? "";
+    const id = mark.getAttribute("data-annid") ?? "";
     const quote = mark.textContent ?? "";
     const rect = mark.getBoundingClientRect();
 
@@ -183,6 +183,7 @@ export default function Document() {
       y: rect.bottom + 8,
     });
   }
+
   return (
     <>
       {notePopup && (
