@@ -4,6 +4,7 @@ import { SidebarMenuButton, SidebarMenuItem } from "./ui/sidebar-left"
 import { FileText } from "lucide-react"
 
 const SearchResultList = (props: { searchResults }) => {
+
   return (
     <>
       {props.searchResults.map((match) => {

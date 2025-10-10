@@ -156,13 +156,20 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
                 </TooltipContent>
               </Tooltip>
             </TabsList>
-            <Button size="icon" variant="ghost" onClick={() => {
-              setEditingGroup(null);
-              setIsModalOpen(true);
-            }}>
-              <UserPlus className="h-5 w-5" />
-              <span className="sr-only">Create New Group</span>
-            </Button>
+            <Tooltip>
+              <TooltipTrigger>
+                <Button size="icon" variant="ghost" onClick={() => {
+                  setEditingGroup(null);
+                  setIsModalOpen(true);
+                }}>
+                  <UserPlus className="h-5 w-5" />
+                  <span className="sr-only">Create New Group</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                New Group
+              </TooltipContent>
+            </Tooltip>
             <GroupModal
               isOpen={isModalOpen}
               onClose={() => setIsModalOpen(false)}
@@ -224,11 +231,11 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
             <TooltipTrigger asChild>
               <Button size="icon" variant="ghost" type="submit">
                 <FilePlus2 className="h-5 w-5" />
-                <span className="sr-only">New Document</span>
+                <span className="sr-only">Add Read</span>
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>New Document</p>
+              <p>Add Read</p>
             </TooltipContent>
           </Tooltip>
         </Form>
