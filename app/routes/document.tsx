@@ -18,7 +18,7 @@ import {
   TooltipContent,
   TooltipTrigger
 } from "~/components/ui/tooltip";
-import { getColorFromID } from "~/index.server";
+import { getColorFromID } from "~/server/users.server";
 import type { Annotation } from "~/types/types";
 
 
