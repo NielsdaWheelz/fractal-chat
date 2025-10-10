@@ -2,7 +2,7 @@
 import {
     AvatarGroup,
     AvatarGroupTooltip,
-} from '../../components/ui/shadcn-io/avatar-group';
+} from './ui/avatar-group';
 import {
     Avatar,
     AvatarFallback,
