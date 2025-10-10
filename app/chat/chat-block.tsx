@@ -9,10 +9,12 @@ import {
 } from "~/components/ui/chat-message";
 import { ChatMessageArea } from "~/components/ui/chat-message-area";
 import { SearchResultsTool } from "~/chat/search-results-tool";
+import { SelectionPart } from "~/chat/selection-part";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { extractMentionIds } from "~/utils/mention-parser";
 import { MentionMessageContent } from "~/components/ui/mention-message-content";
+import { parseSelectionFromMessage } from "~/utils/selection-parser";
 
 type ChatBlockProps = {
   chatId: string;
@@ -41,18 +43,33 @@ export default function ChatBlock({ chatId, initialMessages, docId, selectionRef
 
   const handleSubmit = () => {
     if (!message.trim()) return;
-    const textToSend = includeSelection && selectedText
-      ? `${selectedText}\n\n${message}`
+    
+    let selectionData: { text: string; prefix?: string; suffix?: string } | null = null;
+    if (includeSelection && selectedText) {
+      try {
+        const parsed = JSON.parse(selectedText);
+        selectionData = {
+          text: parsed.quote || selectedText,
+          prefix: parsed.prefix,
+          suffix: parsed.suffix,
+        };
+      } catch {
+        selectionData = { text: selectedText };
+      }
+    }
+    
+    const mentions = extractMentionIds(message);
+    
+    const messageText = selectionData 
+      ? `[SELECTION]\n${selectionData.prefix ? `...${selectionData.prefix} ` : ''}${selectionData.text}${selectionData.suffix ? ` ${selectionData.suffix}...` : ''}\n[/SELECTION]\n\n${message}`
       : message;
     
-    const mentions = extractMentionIds(textToSend);
-    
     sendMessage(
-      { text: textToSend }, 
+      { text: messageText }, 
       { 
         body: { 
-          documentId: docId, 
-          selection: includeSelection ? selectedText : undefined,
+          documentId: docId,
+          selectionData: selectionData || undefined,
           mentions
         } 
       }
@@ -86,8 +103,8 @@ export default function ChatBlock({ chatId, initialMessages, docId, selectionRef
                               toolPart={{
                                 type: part.type as string,
                                 state: part.state,
-                                input: part.input,
-                                output: part.output,
+                                input: part.input as Record<string, unknown> | undefined,
+                                output: part.output as any,
                                 toolCallId: part.toolCallId,
                                 errorText: part.errorText,
                               }}
@@ -100,6 +117,11 @@ export default function ChatBlock({ chatId, initialMessages, docId, selectionRef
                 </ChatMessage>
               );
             }
+            
+            const textParts = message.parts.filter(p => p.type === 'text');
+            const firstTextPart = textParts[0];
+            const parsed = firstTextPart ? parseSelectionFromMessage((firstTextPart as any).text || '') : { hasSelection: false, messageText: '' };
+            
             return (
               <ChatMessage
                 key={message.id}
@@ -107,15 +129,16 @@ export default function ChatBlock({ chatId, initialMessages, docId, selectionRef
                 variant="bubble"
                 type="outgoing"
               >
-                {message.parts.map((part: { type: string; text?: string }, i: number) => {
-                  switch (part.type) {
-                    case 'text': {
-                      return (
-                        <MentionMessageContent key={`${message.id}-text-${i}`} content={part.text ?? ''} />
-                      )
-                    }
-                  }
-                })}
+                {parsed.hasSelection && parsed.selectionData && (
+                  <SelectionPart
+                    text={parsed.selectionData.text}
+                    prefix={parsed.selectionData.prefix}
+                    suffix={parsed.selectionData.suffix}
+                  />
+                )}
+                {parsed.messageText && (
+                  <MentionMessageContent content={parsed.messageText} />
+                )}
               </ChatMessage>
             );
           })}
