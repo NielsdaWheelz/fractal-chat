@@ -29,7 +29,6 @@ export async function action({ request, params }: ActionFunctionArgs) {
     try {
       payload = JSON.parse(raw);
     } catch {
-          console.log("adfg");
 
       return new Response("Invalid JSON in 'annotation'", { status: 400 });
     }
