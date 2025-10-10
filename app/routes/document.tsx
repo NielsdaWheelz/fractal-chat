@@ -10,15 +10,8 @@ import { getDocument } from "~/server/documents.server";
 
 import { CustomPopover } from "~/components/document/CustomPopover";
 import DocumentContents from "~/components/document/DocumentContents";
-import { Button } from "~/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger
-} from "~/components/ui/tooltip";
-import { getColorFromID } from "~/server/users.server";
 import { NotePopover } from "~/components/document/NotePopover";
-import { getColorFromID } from "~/index.server";
+import { getColorFromID } from "~/server/users.server";
 import type { Annotation } from "~/types/types";
 
 
