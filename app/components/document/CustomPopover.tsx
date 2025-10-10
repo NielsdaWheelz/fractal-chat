@@ -56,6 +56,7 @@ export function CustomPopover({
         let parsed: any = null;
         try {
             parsed = JSON.parse(selectionRef.current);
+            onRequestClose();
         } catch { }
         if (!parsed) {
             e.preventDefault();
