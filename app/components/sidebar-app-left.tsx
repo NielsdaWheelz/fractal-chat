@@ -23,18 +23,18 @@ import {
 } from "~/components/ui/tooltip";
 import DocumentList from "./document/DocumentList";
 import GroupList from "./group/GroupList";
+import { GroupModal } from "./group/GroupModal";
 import SearchResultList from "./SearchResultList";
+import { Accordion } from "./ui/accordion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import UploadForm from "./upload-form";
-import { GroupModal } from "./group/GroupModal";
-import { Accordion } from "./ui/accordion";
 
 type UIMessagePart = { type: string; text?: string }
 type UIMessage = { role: string; parts: UIMessagePart[] }
 type UserInfo = { name: string; email: string; avatar: string }
-type SidebarAppProps = { data: any[]; user: UserInfo; side: "left" | "right" } & ComponentProps<typeof Sidebar>
+type SidebarAppProps = { setTheme: React.Dispatch<React.SetStateAction<string>>; theme: string; data: any[]; user: UserInfo; side: "left" | "right" } & ComponentProps<typeof Sidebar>
 
-export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
+export function SidebarApp({ side, setTheme,theme, data, user, ...props }: SidebarAppProps) {
   const [mode, setMode] = useState("document")
   const [groupId, setGroupId] = useState(null)
   const [documentId, setDocumentId] = useState(null)
@@ -284,7 +284,7 @@ export function SidebarApp({ side, data, user, ...props }: SidebarAppProps) {
       </SidebarContent>
       <SidebarRail />
       <SidebarFooter className="mt-auto">
-        <NavUser user={user} />
+        <NavUser user={user} setTheme={setTheme} theme={theme} />
       </SidebarFooter>
     </Sidebar>
   );

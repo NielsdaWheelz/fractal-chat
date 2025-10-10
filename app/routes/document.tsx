@@ -50,11 +50,12 @@ export default function Document() {
     note: string;
     quote: string;
   }>(null);
-  const { selectionRef, setShowHighlight, setIncludeSelection } =
+  const { selectionRef, setShowHighlight, setIncludeSelection, theme } =
     useOutletContext<{
       selectionRef: React.MutableRefObject<string>;
       setShowHighlight: React.Dispatch<React.SetStateAction<boolean>>;
       setIncludeSelection: React.Dispatch<React.SetStateAction<boolean>>;
+      theme: string
     }>();
 
   const { document, annotations, color } = useLoaderData() as LoaderData;
@@ -199,6 +200,7 @@ export default function Document() {
         <div data-annotation-popover>
           <CustomPopover
             docId={id!}
+            theme={theme}
             color={color}
             docTitle={document.title}
             selectionText={selectionText}

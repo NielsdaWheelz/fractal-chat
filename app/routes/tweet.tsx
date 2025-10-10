@@ -1,4 +1,6 @@
-import twitterImage from "../assets/twitter-icon.png"
+import twitterImageDark from "../assets/twitter-icon-dark.png"
+import twitterImageLight from "../assets/twitter-icon-light.png"
+
 
 
 type TweetProps = {
@@ -9,9 +11,10 @@ type TweetProps = {
     hashtags?: string[]
     via?: string // your handle without @
     docId: string
+    theme: string
 }
 
-export function Tweet({ title, annotationText, selectionText, url, hashtags = [], via, docId }: TweetProps) {
+export function Tweet({ title, annotationText, selectionText, url, hashtags = [], via, docId, theme }: TweetProps) {
     const params = new URLSearchParams()
     const text = `"${selectionText}"\n-${title}\n\nSidenote:\n${annotationText}\n\nhttps://localhost:5173/workspace/document/${docId}/`
 
@@ -29,7 +32,7 @@ export function Tweet({ title, annotationText, selectionText, url, hashtags = []
             className="inline-flex items-center rounded-xl px-3 py-2"
         >
             <img
-                src={twitterImage}
+                src={theme =="light" ? twitterImageLight : twitterImageDark}
                 alt="Tweet"
                 className="w-4 h-4"
             />
