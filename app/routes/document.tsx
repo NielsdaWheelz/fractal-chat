@@ -229,6 +229,7 @@ export default function Document() {
         <DocumentContents
           documentHTML={docContent()}
           annotations={[...annotations]}
+          theme={theme}
         />
       </div>
     </>

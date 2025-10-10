@@ -19,10 +19,10 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "~/components/ui/sidebar-left";
+import createFallback from "~/helperfunctions/createFallback";
 import { clientSignOut } from "~/utils/auth.client";
 import { TabsList, TabsTrigger } from "./ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
-import createFallback from "~/helperfunctions/createFallback";
 
 export function NavUser({
   user,
@@ -93,11 +93,11 @@ export function NavUser({
                     <TooltipTrigger asChild>
                       <span>
                         <TabsTrigger
-                          value="dark"
+                          value="light"
                           className="py-3"
-                          onClick={() => {setTheme("dark")}}
+                          onClick={() => {setTheme("light")}}
                         >
-                          <Moon size={16} aria-hidden="true" />
+                          <Sun size={16} aria-hidden="true" />
                         </TabsTrigger>
                       </span>
                     </TooltipTrigger>
@@ -109,12 +109,12 @@ export function NavUser({
                     <TooltipTrigger asChild>
                       <span>
                         <TabsTrigger
-                          value="light"
+                          value="dark"
                           className="group py-3"
-                          onClick={() => {setTheme("light")}}
+                          onClick={() => {setTheme("dark")}}
                         >
                           <span className="relative">
-                            <Sun size={16} aria-hidden="true" />
+                            <Moon size={16} aria-hidden="true" />
                           </span>
                         </TabsTrigger>
                       </span>
@@ -132,7 +132,6 @@ export function NavUser({
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleClick}>
               <LogOut />
-              {theme}
               Log out
             </DropdownMenuItem>
           </DropdownMenuContent>
