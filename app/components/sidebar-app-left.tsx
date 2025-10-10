@@ -32,9 +32,9 @@ type UIMessagePart = { type: string; text?: string }
 type UIMessage = { role: string; parts: UIMessagePart[] }
 type ChatListItem = { id: string; messages?: UIMessage[] }
 type UserInfo = { name: string; email: string; avatar: string }
-type SidebarAppProps = { setTheme: React.Dispatch<React.SetStateAction<string>>; data: any[]; user: UserInfo; side: "left" | "right" } & ComponentProps<typeof Sidebar>
+type SidebarAppProps = { setTheme: React.Dispatch<React.SetStateAction<string>>; theme: string; data: any[]; user: UserInfo; side: "left" | "right" } & ComponentProps<typeof Sidebar>
 
-export function SidebarApp({ side, setTheme, data, user, ...props }: SidebarAppProps) {
+export function SidebarApp({ side, setTheme,theme, data, user, ...props }: SidebarAppProps) {
   const [mode, setMode] = useState("document")
   const [groupId, setGroupId] = useState(null)
   const [documentId, setDocumentId] = useState(null)
@@ -264,7 +264,7 @@ export function SidebarApp({ side, setTheme, data, user, ...props }: SidebarAppP
       </SidebarContent>
       <SidebarRail />
       <SidebarFooter>
-        <NavUser user={user} setTheme={setTheme} />
+        <NavUser user={user} setTheme={setTheme} theme={theme} />
       </SidebarFooter>
     </Sidebar>
   );

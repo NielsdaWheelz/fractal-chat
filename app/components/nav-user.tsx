@@ -25,9 +25,11 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 export function NavUser({
   user,
-  setTheme
+  setTheme,
+  theme,
 }: {
 	setTheme: React.Dispatch<React.SetStateAction<string>>;
+  theme: string;
   user: {
     name: string;
     email: string;
@@ -35,7 +37,6 @@ export function NavUser({
   };
 }) {
   const { isMobile } = useSidebar();
-
   const navigate = useNavigate();
 
   const handleClick = async () => {
@@ -70,7 +71,9 @@ export function NavUser({
             sideOffset={4}
           >
             <DropdownMenuLabel className="p-0 font-normal">
-              <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+                          <div className="flex flex-row gap-3 items-end">
+
+              <div className="flex items-center gap-2 px-1 py-1.5 text-left text-s text-foreground">
                 <Avatar className="h-8 w-8 rounded-lg">
                   <AvatarImage src={user.avatar} alt={user.name} />
                   <AvatarFallback className="rounded-lg">CN</AvatarFallback>
@@ -81,7 +84,8 @@ export function NavUser({
                 </div>
               </div>
 
-              <Tabs.Root defaultValue="light">
+                <h1>theme: {theme}</h1>
+              <Tabs.Root defaultValue={theme}>
                 <TabsList>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -119,10 +123,14 @@ export function NavUser({
                   </Tooltip>
                 </TabsList>
               </Tabs.Root>
+          </div>
+
+
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleClick}>
               <LogOut />
+              {theme}
               Log out
             </DropdownMenuItem>
           </DropdownMenuContent>

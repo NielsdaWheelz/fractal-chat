@@ -82,6 +82,7 @@ const Layout = ({ loaderData }: Route.ComponentProps) => {
       document.documentElement.classList.add("dark");
       document.documentElement.style.colorScheme = "dark";
     }
+
   }, [theme]);
 
   return (
@@ -89,7 +90,7 @@ const Layout = ({ loaderData }: Route.ComponentProps) => {
       {/* documents chats */}
 
       <LeftSidebarProvider>
-        <SidebarLeft side="left" data={loaderData} user={uiUser} setTheme={setTheme} />
+        <SidebarLeft side="left" data={loaderData} user={uiUser} setTheme={setTheme} theme={theme} />
         <RightSidebarProvider>
           <SidebarInset className="flex flex-col h-screen overflow-y-auto">
             <header className="sticky top-0 flex h-14 shrink-0 items-center gap-2 z-50 backdrop-blur-sm rounded-md">
