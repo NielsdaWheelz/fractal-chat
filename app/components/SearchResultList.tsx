@@ -3,11 +3,11 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip"
 import { SidebarMenuButton, SidebarMenuItem } from "./ui/sidebar-left"
 import { FileText } from "lucide-react"
 
-const SearchResultList = (props: { searchResults }) => {
+const SearchResultList = (props: { results }) => {
 
   return (
     <>
-      {props.searchResults.map((match) => {
+      {props.results.map((match) => {
         const resultText = match.chunkText.slice(0, 25)
         const title = (match.documentTitle && match.documentTitle.trim().length > 0)
           ? match.documentTitle
