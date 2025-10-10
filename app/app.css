@@ -17,46 +17,56 @@
 }
 
 .purple {
-  background-color: #e9d8fd; /* light purple */
+  background-color: #e9d8fd;
+  /* light purple */
 }
 
 .red {
-  background-color: #fdd8d8; /* light red */
+  background-color: #fdd8d8;
+  /* light red */
 }
 
 .green {
-  background-color: #d8fdea; /* light green */
+  background-color: #d8fdea;
+  /* light green */
 }
 
 .blue {
-  background-color: #d8defd; /* light blue */
+  background-color: #d8defd;
+  /* light blue */
 }
 
 .orange {
-  background-color: #fdebd8; /* light orange */
+  background-color: #fdebd8;
+  /* light orange */
 }
 
 .yellow {
-  background-color: #fff9d8; /* light yellow */
+  background-color: #fff9d8;
+  /* light yellow */
 }
 
 .teal {
-  background-color: #d8fdf6; /* light teal */
+  background-color: #d8fdf6;
+  /* light teal */
 }
 
 .pink {
-  background-color: #fdd8f6; /* light pink */
+  background-color: #fdd8f6;
+  /* light pink */
 }
 
 .brown {
-  background-color: #f5e9d8; /* light brown */
+  background-color: #f5e9d8;
+  /* light brown */
 }
 
 
 
 /* Hover color when you move your mouse over a highlight */
 .anno-mark:hover {
-  background-color: #ffea80; /* brighter yellow */
+  background-color: #ffea80;
+  /* brighter yellow */
 }
 
 
@@ -183,5 +193,23 @@ body {
 
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  .docContainer {
+    @apply prose
+  }
+
+  .docContainer :where(img, video, iframe, figure) {
+    @apply mx-auto my-6 block rounded-lg;
+  }
+
+  .docContainer :where(video, iframe) {
+    @apply w-full aspect-video;
+  }
+
+  .docContainer :where(figcaption) {
+    @apply text-sm text-muted-foreground text-center mt-2;
   }
 }
