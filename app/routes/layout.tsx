@@ -93,7 +93,7 @@ const Layout = ({ loaderData }: Route.ComponentProps) => {
         <SidebarLeft side="left" data={loaderData} user={uiUser} setTheme={setTheme} theme={theme} />
         <RightSidebarProvider>
           <SidebarInset className="flex flex-col h-screen overflow-y-auto">
-            <header className="sticky top-0 flex h-14 shrink-0 items-center gap-2 z-50 backdrop-blur-sm rounded-md">
+            <header className="sticky top-0 flex h-14 shrink-0 items-center gap-2 z-50 rounded-md">
               <div className="flex flex-1 justify-between items-center gap-2 px-3">
                 <SidebarTriggerLeft />
                 {/* <Separator orientation="vertical" className="mr-2 h-4" /> */}
@@ -101,12 +101,6 @@ const Layout = ({ loaderData }: Route.ComponentProps) => {
                   <BreadcrumbList>
                     <BreadcrumbItem>
                       <BreadcrumbPage className="line-clamp-1 items-center">
-                        <span className="">
-                          {loaderData.document?.title ?? ""} -{" "}
-                        </span>
-                        <span className="text-xs">
-                          {loaderData.authors ?? ""}
-                        </span>
                       </BreadcrumbPage>
                     </BreadcrumbItem>
                   </BreadcrumbList>
