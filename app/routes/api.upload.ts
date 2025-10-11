@@ -1,11 +1,10 @@
-import type { ActionFunctionArgs } from "react-router";
-import { fileTypeFromBuffer } from 'file-type'
-import { join } from "path";
-import { writeFile, unlink } from "fs/promises";
-import { EPub } from 'epub2'
+import { EPub } from 'epub2';
+import { unlink, writeFile } from "fs/promises";
 import { tmpdir } from "os";
-import { saveDocument } from "~/server/documents.server";
+import { join } from "path";
+import { redirect, type ActionFunctionArgs } from "react-router";
 import { requireUser } from "~/server/auth.server";
+import { saveDocument } from "~/server/documents.server";
 
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -35,12 +34,13 @@ export async function action({ request }: ActionFunctionArgs) {
             id: documentId,
             userId: userId,
             url: "epub",
-            title: "The Tempest",
+            title: book.metadata.title,
             content: html,
             textContent: null,
             publishedTime: null,
         }
         await saveDocument(document)
+        return redirect(`/workspace/document/${documentId}`)
     } finally {
         await unlink(tmpPath).catch(() => { });
     }
