@@ -29,7 +29,7 @@ export function NavUser({
   setTheme,
   theme,
 }: {
-	setTheme: React.Dispatch<React.SetStateAction<string>>;
+  setTheme: React.Dispatch<React.SetStateAction<string>>;
   theme: string;
   user: {
     name: string;
@@ -58,7 +58,7 @@ export function NavUser({
             >
               <Avatar className="h-8 w-8 rounded-lg">
                 <AvatarImage src={user?.avatar} alt={user.name} />
-                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                <AvatarFallback className="rounded-lg">{user.fallback}</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">{user.name}</span>
@@ -74,58 +74,58 @@ export function NavUser({
             sideOffset={4}
           >
             <DropdownMenuLabel className="p-0 font-normal">
-                          <div className="flex flex-row gap-3 items-end">
+              <div className="flex flex-row gap-3 items-end">
 
-              <div className="flex items-center gap-2 px-1 py-1.5 text-left text-s text-foreground">
-                <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
-                </Avatar>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">{user.name}</span>
-                  <span className="truncate text-xs">{user.email}</span>
+                <div className="flex items-center gap-2 px-1 py-1.5 text-left text-s text-foreground">
+                  <Avatar className="h-8 w-8 rounded-lg">
+                    <AvatarImage src={user.avatar} alt={user.name} />
+                    <AvatarFallback className="rounded-lg">{user.fallback}</AvatarFallback>
+                  </Avatar>
+                  <div className="grid flex-1 text-left text-sm leading-tight">
+                    <span className="truncate font-semibold">{user.name}</span>
+                    <span className="truncate text-xs">{user.email}</span>
+                  </div>
                 </div>
-              </div>
 
-              <Tabs.Root defaultValue={theme}>
-                <TabsList>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span>
-                        <TabsTrigger
-                          value="light"
-                          className="py-3"
-                          onClick={() => {setTheme("light")}}
-                        >
-                          <Sun size={16} aria-hidden="true" />
-                        </TabsTrigger>
-                      </span>
-                    </TooltipTrigger>
-                    <TooltipContent className="px-2 py-1 text-xs">
-                      Dark Mode
-                    </TooltipContent>
-                  </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span>
-                        <TabsTrigger
-                          value="dark"
-                          className="group py-3"
-                          onClick={() => {setTheme("dark")}}
-                        >
-                          <span className="relative">
-                            <Moon size={16} aria-hidden="true" />
-                          </span>
-                        </TabsTrigger>
-                      </span>
-                    </TooltipTrigger>
-                    <TooltipContent className="px-2 py-1 text-xs">
-                      Light Mode
-                    </TooltipContent>
-                  </Tooltip>
-                </TabsList>
-              </Tabs.Root>
-          </div>
+                <Tabs.Root defaultValue={theme}>
+                  <TabsList>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span>
+                          <TabsTrigger
+                            value="light"
+                            className="py-3"
+                            onClick={() => { setTheme("light") }}
+                          >
+                            <Sun size={16} aria-hidden="true" />
+                          </TabsTrigger>
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent className="px-2 py-1 text-xs">
+                        Dark Mode
+                      </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span>
+                          <TabsTrigger
+                            value="dark"
+                            className="group py-3"
+                            onClick={() => { setTheme("dark") }}
+                          >
+                            <span className="relative">
+                              <Moon size={16} aria-hidden="true" />
+                            </span>
+                          </TabsTrigger>
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent className="px-2 py-1 text-xs">
+                        Light Mode
+                      </TooltipContent>
+                    </Tooltip>
+                  </TabsList>
+                </Tabs.Root>
+              </div>
 
 
             </DropdownMenuLabel>
