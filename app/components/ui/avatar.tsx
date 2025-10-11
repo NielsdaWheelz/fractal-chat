@@ -1,9 +1,9 @@
 "use client"
 
-import * as React from "react"
 import * as AvatarPrimitive from "@radix-ui/react-avatar"
-import type { User } from "~/types/types"
+import * as React from "react"
 import { cn } from "~/lib/utils"
+import type { User } from "~/types/types"
 
 // const borderColor = "#000000"
 
@@ -16,8 +16,7 @@ function Avatar({
   ...props
 }: AvatarProps) {
 
-  const colors = ["red", "purple", "blue", "green", "orange", "gray"];
-
+  const colors = ["#a87af5", "#f57ac7", "#f5a87a", "#c7f57a", "#7af5a8", "#7ac7f5"];
 
   return (
     <AvatarPrimitive.Root
@@ -62,4 +61,5 @@ function AvatarFallback({
   )
 }
 
-export { Avatar, AvatarImage, AvatarFallback }
+export { Avatar, AvatarFallback, AvatarImage }
+
