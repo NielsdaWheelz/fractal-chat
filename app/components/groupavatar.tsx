@@ -25,7 +25,8 @@ export const GroupAvatarStack = ({ users }) => {
     })
 
 
-    const colors = ["red", "purple", "blue", "green", "orange", "gray"];
+
+    const colors = ["color-brand-50", "color-brand-100", "color-brand-200", "color-brand-300", "color-brand-400", "color-brand-500"];
 
     return (
         <div className="bg-gradient-to-r from-indigo-100 dark:from-indigo-950 from-10% via-sky-100 dark:via-sky-950 via-30% to-emerald-100 dark:to-emerald-950 to-90% p-1.5 rounded-full">
