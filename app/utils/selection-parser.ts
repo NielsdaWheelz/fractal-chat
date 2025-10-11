@@ -3,7 +3,7 @@ export function parseSelectionFromMessage(content: string): {
   selectionData?: { text: string; prefix?: string; suffix?: string };
   messageText: string;
 } {
-  const selectionRegex = /\[SELECTION\]\n((?:\.\.\.([^\n]+)\s+)?([^\n]+?)(?:\s+([^\n]+)\.\.\.)?)?\n\[\/SELECTION\]\n\n([\s\S]*)/;
+  const selectionRegex = /\[SELECTION\]\n([\s\S]*?)\n\[\/SELECTION\]\n\n([\s\S]*)/;
   const match = content.match(selectionRegex);
 
   if (!match) {
@@ -14,16 +14,23 @@ export function parseSelectionFromMessage(content: string): {
   }
 
   const fullSelection = match[1] || '';
-  const prefix = match[2];
-  const suffix = match[4];
-  const messageText = match[5] || '';
+  const messageText = match[2] || '';
+
+  const prefixMatch = fullSelection.match(/^\.\.\.([^\n]+?)\s+/);
+  const suffixMatch = fullSelection.match(/\s+([^\n]+?)\.\.\.\s*$/);
 
   let text = fullSelection;
-  if (prefix) {
-    text = text.replace(`...${prefix} `, '');
+  let prefix: string | undefined;
+  let suffix: string | undefined;
+
+  if (prefixMatch) {
+    prefix = prefixMatch[1].trim();
+    text = text.replace(/^\.\.\.[^\n]+?\s+/, '');
   }
-  if (suffix) {
-    text = text.replace(` ${suffix}...`, '');
+
+  if (suffixMatch) {
+    suffix = suffixMatch[1].trim();
+    text = text.replace(/\s+[^\n]+?\.\.\.\s*$/, '');
   }
 
   return {

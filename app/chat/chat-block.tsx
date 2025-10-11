@@ -118,9 +118,10 @@ export default function ChatBlock({ chatId, initialMessages, docId, selectionRef
               );
             }
             
-            const textParts = message.parts.filter(p => p.type === 'text');
+            const textParts = message.parts?.filter(p => p.type === 'text') || [];
             const firstTextPart = textParts[0];
-            const parsed = firstTextPart ? parseSelectionFromMessage((firstTextPart as any).text || '') : { hasSelection: false, messageText: '' };
+            const messageContent = (firstTextPart as any)?.text || '';
+            const parsed = parseSelectionFromMessage(messageContent);
             
             return (
               <ChatMessage
@@ -129,16 +130,21 @@ export default function ChatBlock({ chatId, initialMessages, docId, selectionRef
                 variant="bubble"
                 type="outgoing"
               >
-                {parsed.hasSelection && parsed.selectionData && (
-                  <SelectionPart
-                    text={parsed.selectionData.text}
-                    prefix={parsed.selectionData.prefix}
-                    suffix={parsed.selectionData.suffix}
-                  />
-                )}
-                {parsed.messageText && (
-                  <MentionMessageContent content={parsed.messageText} />
-                )}
+                <div className="flex flex-col gap-1">
+                  {parsed.hasSelection && parsed.selectionData && (
+                    <SelectionPart
+                      text={parsed.selectionData.text}
+                      prefix={parsed.selectionData.prefix}
+                      suffix={parsed.selectionData.suffix}
+                    />
+                  )}
+                  {parsed.messageText && (
+                    <MentionMessageContent content={parsed.messageText} />
+                  )}
+                  {!parsed.hasSelection && messageContent && (
+                    <MentionMessageContent content={messageContent} />
+                  )}
+                </div>
               </ChatMessage>
             );
           })}
