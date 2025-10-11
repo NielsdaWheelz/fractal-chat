@@ -2,7 +2,7 @@
 
 import { ArrowLeft, FilePlus2, Library, Search, SearchX, UserPlus, Users } from "lucide-react";
 import { useEffect, useState, type ComponentProps } from "react";
-import { Form, useFetcher } from "react-router";
+import { Form, useFetcher, useRevalidator } from "react-router";
 import { NavUser } from "~/components/nav-user";
 import { Button } from "~/components/ui/button";
 import {
@@ -28,14 +28,14 @@ import SearchResultList from "./SearchResultList";
 import { Accordion } from "./ui/accordion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import UploadForm from "./upload-form";
+import Logo from "./logo";
 
 type UIMessagePart = { type: string; text?: string }
 type UIMessage = { role: string; parts: UIMessagePart[] }
-type ChatListItem = { id: string; messages?: UIMessage[] }
 type UserInfo = { name: string; email: string; avatar: string }
 type SidebarAppProps = { setTheme: React.Dispatch<React.SetStateAction<string>>; theme: string; data: any[]; user: UserInfo; side: "left" | "right" } & ComponentProps<typeof Sidebar>
 
-export function SidebarApp({ side, setTheme,theme, data, user, ...props }: SidebarAppProps) {
+export function SidebarApp({ side, setTheme, theme, data, user, ...props }: SidebarAppProps) {
   const [mode, setMode] = useState("document")
   const [groupId, setGroupId] = useState(null)
   const [documentId, setDocumentId] = useState(null)
@@ -44,22 +44,27 @@ export function SidebarApp({ side, setTheme,theme, data, user, ...props }: Sideb
   const [query, setQuery] = useState("")
   const [isModalOpen, setIsModalOpen] = useState(false);
   const fetcher = useFetcher();
+  const revalidator = useRevalidator();
   const [editingGroup, setEditingGroup] = useState(null);
+  const [groups, setGroups] = useState(data.groups)
+  const [documents, setDocuments] = useState(data.documents)
 
   const handleEditGroup = (group) => {
     setEditingGroup(group);
     setIsModalOpen(true);
   }
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setEditingGroup(null);
+  const handleGroupSuccess = () => {
+    revalidator.revalidate();
   }
 
   useEffect(() => {
-    if (data?.document) setDocumentId(document.id)
-  }), [data]
-
+    if (data?.document) setDocumentId(data.document.id)
+    if (data?.documents) setDocuments(data.documents)
+    if (data?.groups) setGroups(data.groups)
+    console.log(data)
+  }, [data])
+  
 
   useEffect(() => {
     if (fetcher.data && fetcher.data.length > 0) {
@@ -102,15 +107,7 @@ export function SidebarApp({ side, setTheme,theme, data, user, ...props }: Sideb
   return (
     <Sidebar className="border-r-0" {...props} side="left">
       <SidebarHeader>
-        <div className="flex items-center justify-between p-2">
-          <div className="flex items-center gap-3">
-            <img
-              src="/logo-transparent-bg.png"
-              alt="App logo"
-              className="h-full w-full object-contain"
-            />
-          </div>
-        </div>
+        <Logo theme={theme} />
         <Tabs defaultValue="tab-1" className="items-center">
           <div className="flex w-full items-center justify-between">
             <Button size="icon" variant="ghost" onClick={() => {
@@ -173,6 +170,7 @@ export function SidebarApp({ side, setTheme,theme, data, user, ...props }: Sideb
             <GroupModal
               isOpen={isModalOpen}
               onClose={() => setIsModalOpen(false)}
+              onSuccess={handleGroupSuccess}
               editGroup={editingGroup}
             />
           </div>
@@ -261,7 +259,7 @@ export function SidebarApp({ side, setTheme,theme, data, user, ...props }: Sideb
                 <>
                   <SidebarGroupLabel>Recent</SidebarGroupLabel>
                   <SidebarMenu>
-                    <DocumentList documents={data.documents} />
+                    <DocumentList documents={documents} />
                   </SidebarMenu>
                 </>
                 : mode === "group" &&
@@ -269,7 +267,7 @@ export function SidebarApp({ side, setTheme,theme, data, user, ...props }: Sideb
                   <SidebarGroupLabel>Recent</SidebarGroupLabel>
                   <SidebarMenu>
                     <Accordion type="single" collapsible className="w-full" defaultValue="3">
-                      <GroupList groups={data.groups} onEditGroup={handleEditGroup} />
+                      <GroupList groups={groups} onEditGroup={handleEditGroup} />
                     </Accordion>
                   </SidebarMenu>
                 </>

@@ -8,7 +8,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
   const userId = await requireUser(request);
 
 
-  const id = params.id; // document id from route
+  const id = params.id;
   const docId = params.docId;
 
 
@@ -16,7 +16,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
   const contentType = request.headers.get("content-type") ?? "";
   let payload: any;
-  await deleteAnnotations(id);
+  await deleteAnnotations(userId, id);
 
   throw redirect(`/workspace/document/${docId}`)
 }

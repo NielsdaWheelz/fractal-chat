@@ -8,6 +8,19 @@
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+
+  /* brand scale highlighter border colors */
+  --color-brand-50: #a87af5;
+  --color-brand-100: #f57ac7;
+  --color-brand-200: #f5a87a;
+  --color-brand-300: #c7f57a;
+  --color-brand-400: #7af5a8;
+  --color-brand-500: #7ac7f5;
+  /* --color-brand-600: ;
+  --color-brand-700: ;
+  --color-brand-800: ;
+  --color-brand-900: ; */
+
 }
 
 /* Base color for annotation highlights */

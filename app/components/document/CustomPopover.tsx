@@ -56,6 +56,7 @@ export function CustomPopover({
         let parsed: any = null;
         try {
             parsed = JSON.parse(selectionRef.current);
+            onRequestClose();
         } catch { }
         if (!parsed) {
             e.preventDefault();
@@ -162,7 +163,7 @@ export function CustomPopover({
                             </Button>
                         </TooltipTrigger>
                         <TooltipContent>
-                            <p>Add to existing chat</p>
+                            <p>Add to current chat</p>
                         </TooltipContent>
                     </Tooltip>
                     <Tooltip>

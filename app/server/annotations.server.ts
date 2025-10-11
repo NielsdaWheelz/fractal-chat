@@ -4,7 +4,6 @@ import { db } from "~/server/index.server";
 import type { Annotation, AnnotationCreate, AnnotationRow } from "~/types/types";
 import { NotFoundError } from "./errors.server";
 import { getUserGroupIds, requirePermission } from "./permissions.server.helper";
-import type { RowList } from "postgres";
 
 export const getAnnotation = async (userId: string, annotationId: string):Promise<Annotation> => {
   await requirePermission(userId, "annotation", annotationId, "read");
@@ -26,7 +25,9 @@ export const saveAnnotations = async (annotationToSave: AnnotationCreate):Promis
   await db.insert(annotation).values(dbAnnotation).onConflictDoUpdate({ target: annotation.id, set: dbAnnotation })
 }
 
-export const deleteAnnotations = async (id: string) => {
+export const deleteAnnotations = async (userId: string, id: string) => {
+  await requirePermission(userId, "annotation", id, "write");
+
   return await db.delete(annotation).where(eq(annotation.id, id));
 }
 
