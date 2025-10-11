@@ -1,13 +1,13 @@
 'use client';
 import {
-    AvatarGroup,
-    AvatarGroupTooltip,
-} from './ui/avatar-group';
-import {
     Avatar,
     AvatarFallback,
     AvatarImage,
 } from '../components/ui/avatar';
+import {
+    AvatarGroup,
+    AvatarGroupTooltip,
+} from './ui/avatar-group';
 
 
 //pulling initials for fallback
@@ -26,7 +26,7 @@ export const GroupAvatarStack = ({ users }) => {
 
 
 
-    const colors = ["color-brand-50", "color-brand-100", "color-brand-200", "color-brand-300", "color-brand-400", "color-brand-500"];
+    const colors = ["#a87af5", "#f57ac7", "#f5a87a", "#c7f57a", "#7af5a8", "#7ac7f5"];
 
     return (
         <div className="bg-gradient-to-r from-indigo-100 dark:from-indigo-950 from-10% via-sky-100 dark:via-sky-950 via-30% to-emerald-100 dark:to-emerald-950 to-90% p-1.5 rounded-full">
