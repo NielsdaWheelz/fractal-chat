@@ -11,9 +11,6 @@ import {
   ChatMessage,
 } from "~/components/ui/chat-message";
 import { ChatMessageArea } from "~/components/ui/chat-message-area";
-import { SearchResultsTool } from "~/chat/search-results-tool";
-import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport } from "ai";
 import { MentionMessageContent } from "~/components/ui/mention-message-content";
 import { extractMentionIds } from "~/utils/mention-parser";
 import { parseSelectionFromMessage } from "~/utils/selection-parser";
@@ -37,14 +34,14 @@ function parseSelection(raw: unknown) {
       return null;
     }
   }
-  if (typeof raw === "object") return raw as any;
+  if (typeof raw === "object") return raw;
   return null;
 }
 
 function getSelectionQuote(raw: unknown) {
   const obj = parseSelection(raw);
   if (obj && typeof obj === "object" && "quote" in obj) {
-    return String((obj as any).quote ?? "");
+    return String((obj).quote ?? "");
   }
   return typeof raw === "string" ? raw : "";
 }
@@ -62,21 +59,19 @@ export default function ChatBlock({ chatId, initialMessages, docId, selectionRef
   const isLoading = status === "submitted" || status === "streaming";
 
   const selectedText = selectionRef?.current ?? "";
-     const selectionQuote = useMemo(
-        () => getSelectionQuote(selectedText),
-        [selectedText]
-      );
-    
+  const selectionQuote = useMemo(
+    () => getSelectionQuote(selectedText),
+    [selectedText]
+  );
+
 
   const truncatedSelection = useMemo(() => selectionQuote.length > 80
     ? `${selectionQuote.slice(0, 40)}...${selectionQuote.slice(selectionQuote.length - 40)}`
     : selectionQuote, [selectionQuote]);
 
- 
-    
   const handleSubmit = () => {
     if (!message.trim()) return;
-    
+
     let selectionData: { text: string; prefix?: string; suffix?: string } | null = null;
     if (includeSelection && selectedText) {
       try {
@@ -90,21 +85,21 @@ export default function ChatBlock({ chatId, initialMessages, docId, selectionRef
         selectionData = { text: selectedText };
       }
     }
-    
+
     const mentions = extractMentionIds(message);
-    
-    const messageText = selectionData 
+
+    const messageText = selectionData
       ? `[SELECTION]\n${selectionData.prefix ? `...${selectionData.prefix} ` : ''}${selectionData.text}${selectionData.suffix ? ` ${selectionData.suffix}...` : ''}\n[/SELECTION]\n\n${message}`
       : message;
-    
+
     sendMessage(
-      { text: messageText }, 
-      { 
-        body: { 
+      { text: messageText },
+      {
+        body: {
           documentId: docId,
           selectionData: selectionData || undefined,
           mentions
-        } 
+        }
       }
     );
     setMessage("");
@@ -134,10 +129,10 @@ export default function ChatBlock({ chatId, initialMessages, docId, selectionRef
                             <SearchResultsTool
                               key={`${message.id}-${i}`}
                               toolPart={{
-                                type: part.type as string,
+                                type: part.type,
                                 state: part.state,
-                                input: part.input as Record<string, unknown> | undefined,
-                                output: part.output as any,
+                                input: part.input,
+                                output: part.output,
                                 toolCallId: part.toolCallId,
                                 errorText: part.errorText,
                               }}
@@ -150,12 +145,12 @@ export default function ChatBlock({ chatId, initialMessages, docId, selectionRef
                 </ChatMessage>
               );
             }
-            
+
             const textParts = message.parts?.filter(p => p.type === 'text') || [];
             const firstTextPart = textParts[0];
-            const messageContent = (firstTextPart as any)?.text || '';
+            const messageContent = (firstTextPart)?.text || '';
             const parsed = parseSelectionFromMessage(messageContent);
-            
+
             return (
               <ChatMessage
                 key={message.id}

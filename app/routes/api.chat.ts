@@ -123,7 +123,7 @@ Follow the moral, psychological, prosaic, and poetical examples of Socrates, Dan
         id: id,
         userId: userId,
         documentId: documentId,
-        messages: [...messages, ...data.messages] as any,
+        messages: [...messages, ...data.messages],
         createdAt: new Date(),
         updatedAt: new Date()
       })
