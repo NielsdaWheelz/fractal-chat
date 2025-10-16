@@ -6,6 +6,7 @@ declare module "react-router" {
   interface Register {
     pages: Pages
     routeFiles: RouteFiles
+    routeModules: RouteModules
   }
 }
 
@@ -160,4 +161,25 @@ type RouteFiles = {
     id: "routes/document-create";
     page: "/workspace/document-create";
   };
+};
+
+type RouteModules = {
+  "root": typeof import("./app/root.tsx");
+  "routes/home": typeof import("./app/routes/home.tsx");
+  "routes/sign-in": typeof import("./app/routes/sign-in.tsx");
+  "routes/sign-up": typeof import("./app/routes/sign-up.tsx");
+  "routes/api.auth": typeof import("./app/routes/api.auth.ts");
+  "routes/api.permissions": typeof import("./app/routes/api.permissions.ts");
+  "routes/api.groups": typeof import("./app/routes/api.groups.ts");
+  "routes/api.chat": typeof import("./app/routes/api.chat.ts");
+  "routes/api.document": typeof import("./app/routes/api.document.ts");
+  "routes/api.upload": typeof import("./app/routes/api.upload.ts");
+  "routes/layout": typeof import("./app/routes/layout.tsx");
+  "routes/delete-annotation": typeof import("./app/routes/delete-annotation.ts");
+  "routes/document-search": typeof import("./app/routes/document-search.tsx");
+  "routes/document": typeof import("./app/routes/document.tsx");
+  "routes/chat": typeof import("./app/routes/chat.tsx");
+  "routes/chat-create": typeof import("./app/routes/chat-create.tsx");
+  "routes/save-annotation": typeof import("./app/routes/save-annotation.ts");
+  "routes/document-create": typeof import("./app/routes/document-create.tsx");
 };
