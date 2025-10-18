@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Outlet, redirect } from "react-router";
 import { SidebarApp as SidebarLeft } from "~/components/sidebar-app-left";
 import { SidebarApp as SidebarRight } from "~/components/sidebar-app-right";
@@ -25,7 +25,9 @@ import { getChats } from "~/server/chats.server";
 import { getDocument, getDocuments } from "~/server/documents.server";
 import { getDocumentLimitInfo } from "~/server/billing.server";
 import { getGroups } from "~/server/groups.server";
+import { cn } from "~/lib/utils";
 import type { Route } from "./+types/layout";
+import { useTheme } from "~/hooks/use-theme";
 
 export const loader = async ({ request, params }: Route.LoaderArgs) => {
   const session = await getSession(request);
@@ -71,21 +73,10 @@ const Layout = ({ loaderData }: Route.ComponentProps) => {
   };
   const selectionRef = useRef<string>("");
   const [showHighlight, setShowHighlight] = useState(false);
-  const [theme, setTheme] = useState("light");
   const [includeSelection, setIncludeSelection] = useState<boolean>(
     () => !!selectionRef?.current?.trim()
   );
-
-  useEffect(() => {
-    if (theme == "light") {
-      document.documentElement.classList.remove("dark");
-      document.documentElement.style.colorScheme = "light";
-    } else {
-      document.documentElement.classList.add("dark");
-      document.documentElement.style.colorScheme = "dark";
-    }
-
-  }, [theme]);
+  const { theme, setTheme } = useTheme();
 
   return (
     <>
@@ -95,12 +86,25 @@ const Layout = ({ loaderData }: Route.ComponentProps) => {
         <SidebarLeft side="left" data={loaderData} user={uiUser} setTheme={setTheme} theme={theme} />
         <RightSidebarProvider>
           <SidebarInset className="flex flex-col h-screen overflow-y-auto">
-            <header className="sticky top-0 flex h-14 shrink-0 items-center gap-2 z-50 rounded-md backdrop-blur-md bg-background/80 border-b border-cyan-500/20 dark:border-cyan-400/20">
-              <div className="flex flex-1 justify-between items-center gap-2 px-3 relative">
-                {/* Subtle cyber accent line */}
-                <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent" />
+            <header
+              className={cn(
+                "sticky top-0 z-50 flex h-14 shrink-0 items-center gap-2 rounded-md border-b bg-background/80 backdrop-blur-md transition-colors",
+                theme === "neon" ? "border-sky-400/30 shadow-[0_0_25px_rgba(16,240,255,0.2)]" : "border-border/60"
+              )}
+            >
+              <div className="relative flex flex-1 items-center justify-between gap-2 px-3">
+                {theme === "neon" && (
+                  <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-400/40 to-transparent" />
+                )}
 
-                <SidebarTriggerLeft className="hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors" />
+                <SidebarTriggerLeft
+                  className={cn(
+                    "transition-colors",
+                    theme === "neon"
+                      ? "hover:text-cyan-400"
+                      : "hover:text-foreground/80"
+                  )}
+                />
                 <Breadcrumb>
                   <BreadcrumbList>
                     <BreadcrumbItem>
@@ -109,7 +113,14 @@ const Layout = ({ loaderData }: Route.ComponentProps) => {
                     </BreadcrumbItem>
                   </BreadcrumbList>
                 </Breadcrumb>
-                <SidebarTriggerRight className="hover:text-pink-500 dark:hover:text-pink-400 transition-colors" />
+                <SidebarTriggerRight
+                  className={cn(
+                    "transition-colors",
+                    theme === "neon"
+                      ? "hover:text-pink-400"
+                      : "hover:text-foreground/80"
+                  )}
+                />
               </div>
             </header>
             <Outlet
@@ -123,6 +134,7 @@ const Layout = ({ loaderData }: Route.ComponentProps) => {
             selectionRef={selectionRef}
             includeSelection={includeSelection}
             setIncludeSelection={setIncludeSelection}
+            theme={theme}
           />
           {/* <SidebarInset className="flex flex-col h-screen overflow-y-auto">
             </SidebarInset> */}

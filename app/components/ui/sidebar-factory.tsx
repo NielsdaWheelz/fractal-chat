@@ -196,7 +196,7 @@ export function createSidebarComponents(config: SidebarConfig) {
 
     return (
       <div
-        className="group peer hidden text-[#e0e3ff]/90 md:block"
+        className="group peer hidden text-sidebar-foreground md:block"
         data-state={state}
         data-collapsible={state === "collapsed" ? collapsible : ""}
         data-variant={variant}
@@ -232,11 +232,8 @@ export function createSidebarComponents(config: SidebarConfig) {
             data-sidebar="sidebar"
             data-slot="sidebar-inner"
             className={cn(
-              "relative flex h-full w-full flex-col overflow-hidden border border-[#252447]/70 bg-[#05040f]",
-              "before:pointer-events-none before:absolute before:inset-0 before:bg-[linear-gradient(rgba(46,255,247,0.08)_1px,transparent_0)] before:bg-[length:100%_3px] before:opacity-70 before:mix-blend-screen before:content-['']",
-              "after:pointer-events-none after:absolute after:inset-0 after:bg-[radial-gradient(circle_at_15%_18%,rgba(255,84,108,0.32),transparent_55%),radial-gradient(circle_at_82%_12%,rgba(111,255,236,0.2),transparent_60%),linear-gradient(125deg,rgba(86,32,255,0.22)_0%,rgba(255,93,177,0.16)_45%,transparent_75%)] after:opacity-80 after:mix-blend-lighten after:content-['']",
-              "shadow-[0_25px_70px_rgba(12,0,40,0.65),0_0_45px_rgba(141,45,255,0.32)]",
-              "group-data-[variant=floating]:rounded-xl group-data-[variant=floating]:border-[#3a3673]/70 group-data-[variant=floating]:shadow-[0_0_60px_rgba(141,45,255,0.35)]"
+              "relative flex h-full w-full flex-col overflow-hidden border border-sidebar-border bg-sidebar text-sidebar-foreground shadow-sm transition-colors",
+              "group-data-[variant=floating]:rounded-xl group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow-lg"
             )}
           >
             {children}
@@ -264,7 +261,7 @@ export function createSidebarComponents(config: SidebarConfig) {
           variant="ghost"
           size="icon"
           className={cn(
-            "size-9 rounded-lg border border-[#343065]/70 bg-[#121027]/85 text-[#8ffcff]/80 transition-all duration-200 ease-out hover:-translate-y-px hover:border-[#ff5688]/70 hover:bg-[#1c173a]/90 hover:text-white hover:shadow-[0_0_22px_rgba(111,255,244,0.28)] focus-visible:ring-2 focus-visible:ring-[#71fff6]/35 focus-visible:ring-offset-1 focus-visible:ring-offset-[#070314]",
+            "size-9 rounded-lg border border-sidebar-border bg-sidebar text-sidebar-foreground transition-all duration-200 ease-out hover:-translate-y-px hover:bg-sidebar-accent/15 hover:text-sidebar-foreground focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-1 focus-visible:ring-offset-background",
             className
           )}
           onClick={(event) => {
@@ -297,12 +294,10 @@ export function createSidebarComponents(config: SidebarConfig) {
         title="Toggle Sidebar"
         className={cn(
           "absolute inset-y-0 z-20 hidden w-5 -translate-x-1/2 transition-all duration-300 ease-linear group-data-[side=left]:-right-5 group-data-[side=right]:left-0 sm:flex",
-          "after:absolute after:inset-y-3 after:left-1/2 after:w-[2px] after:-translate-x-1/2 after:rounded-full after:bg-[linear-gradient(180deg,rgba(121,255,242,0.65)_0%,rgba(255,84,132,0.65)_100%)] after:opacity-80 after:shadow-[0_0_18px_rgba(111,255,244,0.35)] after:transition after:duration-300 after:ease-linear",
-          "before:pointer-events-none before:absolute before:inset-y-6 before:left-1/2 before:w-[6px] before:-translate-x-1/2 before:rounded-full before:bg-[radial-gradient(circle,rgba(111,255,244,0.35),transparent_60%)] before:opacity-0 before:transition before:duration-300 before:ease-linear hover:before:opacity-100",
-          "hover:after:shadow-[0_0_25px_rgba(255,86,151,0.45)] hover:after:brightness-125",
+          "rounded-full border border-transparent bg-transparent hover:bg-sidebar-accent/15",
           "in-data-[side=left]:cursor-w-resize in-data-[side=right]:cursor-e-resize",
           "[[data-side=left][data-state=collapsed]_&]:cursor-e-resize [[data-side=right][data-state=collapsed]_&]:cursor-w-resize",
-          "hover:group-data-[collapsible=offcanvas]:bg-[#0c061a]/80 group-data-[collapsible=offcanvas]:translate-x-0 group-data-[collapsible=offcanvas]:after:left-full",
+          "group-data-[collapsible=offcanvas]:translate-x-0",
           "[[data-side=left][data-collapsible=offcanvas]_&]:-right-3",
           "[[data-side=right][data-collapsible=offcanvas]_&]:-left-3",
           className
@@ -335,7 +330,7 @@ export function createSidebarComponents(config: SidebarConfig) {
         data-slot="sidebar-input"
         data-sidebar="input"
         className={cn(
-          "h-9 w-full border border-[#343065]/70 bg-[#050711]/90 font-mono text-xs tracking-[0.08em] text-[#d9dcff]/80 shadow-[0_0_0_1px_rgba(111,255,244,0.12)] transition-colors placeholder:text-[#667199]/70 focus-visible:border-[#6efff4]/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6efff4]/25",
+          "h-9 w-full border border-sidebar-border bg-sidebar font-theme-accent text-xs tracking-[0.08em] text-sidebar-foreground shadow-sm transition-colors placeholder:text-sidebar-foreground/60 focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35",
           className
         )}
         {...props}
@@ -349,8 +344,7 @@ export function createSidebarComponents(config: SidebarConfig) {
         data-slot="sidebar-header"
         data-sidebar="header"
         className={cn(
-          "relative isolate flex flex-col gap-3 border-b border-[#2d2850]/60 bg-gradient-to-br from-[#090417]/95 via-[#060213]/90 to-[#0f0724]/95 p-4 shadow-[0_12px_30px_rgba(15,0,42,0.35)]",
-          "before:pointer-events-none before:absolute before:inset-x-4 before:-bottom-px before:h-px before:bg-[linear-gradient(90deg,rgba(123,255,244,0.45)_0%,rgba(255,98,149,0.5)_50%,rgba(123,255,244,0.45)_100%)] before:content-[''] before:z-[-1]",
+          "relative isolate flex flex-col gap-3 border-b border-sidebar-border bg-sidebar/95 p-4 shadow-sm transition-colors",
           className
         )}
         {...props}
@@ -364,8 +358,7 @@ export function createSidebarComponents(config: SidebarConfig) {
         data-slot="sidebar-footer"
         data-sidebar="footer"
         className={cn(
-          "relative isolate flex flex-col gap-3 border-t border-[#2d2850]/60 bg-gradient-to-br from-[#070314]/95 via-[#060213]/90 to-[#0b0420]/95 p-4 shadow-[0_-12px_30px_rgba(15,0,42,0.35)]",
-          "before:pointer-events-none before:absolute before:inset-x-4 before:-top-px before:h-px before:bg-[linear-gradient(90deg,rgba(123,255,244,0.35)_0%,rgba(255,98,149,0.45)_50%,rgba(123,255,244,0.35)_100%)] before:content-[''] before:z-[-1]",
+          "relative isolate flex flex-col gap-3 border-t border-sidebar-border bg-sidebar/95 p-4 shadow-sm transition-colors",
           className
         )}
         {...props}
@@ -382,7 +375,7 @@ export function createSidebarComponents(config: SidebarConfig) {
         data-slot="sidebar-separator"
         data-sidebar="separator"
         className={cn(
-          "mx-0 my-4 h-px w-full bg-[linear-gradient(90deg,transparent,rgba(111,255,244,0.6),rgba(255,76,132,0.55),transparent)]",
+          "mx-0 my-4 h-px w-full bg-sidebar-border/60",
           className
         )}
         {...props}
@@ -410,9 +403,7 @@ export function createSidebarComponents(config: SidebarConfig) {
         data-slot="sidebar-group"
         data-sidebar="group"
         className={cn(
-          "relative isolate flex w-full min-w-0 flex-col gap-3 overflow-hidden rounded-xl border border-[#2a2850]/70 bg-[#090417]/80 p-4 shadow-[0_20px_45px_rgba(8,0,25,0.35)]",
-          "before:pointer-events-none before:absolute before:-top-px before:left-1/2 before:h-[1px] before:w-[60%] before:-translate-x-1/2 before:bg-[linear-gradient(90deg,rgba(129,255,237,0.45)_0%,rgba(255,82,132,0.55)_50%,rgba(129,255,237,0.45)_100%)] before:content-[''] before:z-[-1]",
-          "after:pointer-events-none after:absolute after:inset-[2px] after:rounded-lg after:border after:border-[#73fff6]/10 after:opacity-60 after:content-[''] after:z-[-1]",
+          "relative isolate flex w-full min-w-0 flex-col gap-3 overflow-hidden rounded-xl border border-sidebar-border bg-sidebar/95 p-4 shadow-sm transition-colors",
           className
         )}
         {...props}
@@ -432,7 +423,7 @@ export function createSidebarComponents(config: SidebarConfig) {
         data-slot="sidebar-group-label"
         data-sidebar="group-label"
         className={cn(
-          "flex h-8 shrink-0 items-center gap-2 rounded-md border border-[#343065]/70 bg-[#0b071d]/90 px-3 font-mono text-[0.65rem] uppercase tracking-[0.28em] text-[#8ffcff]/80 outline-hidden ring-offset-2 ring-[#58fff1]/40 transition-[margin,opacity] duration-200 ease-linear focus-visible:ring-2",
+          "flex h-8 shrink-0 items-center gap-2 rounded-md border border-sidebar-border bg-sidebar/80 px-3 font-theme-accent text-[0.65rem] uppercase tracking-[0.28em] text-sidebar-foreground/70 outline-none ring-offset-2 ring-offset-background transition-[margin,opacity] duration-200 ease-linear focus-visible:ring-2 focus-visible:ring-ring/40",
           "group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0",
           className
         )}
@@ -453,7 +444,7 @@ export function createSidebarComponents(config: SidebarConfig) {
         data-slot="sidebar-group-action"
         data-sidebar="group-action"
         className={cn(
-          "absolute top-3 right-3 flex aspect-square w-7 items-center justify-center rounded-md border border-transparent bg-[#121027]/85 p-0 text-[#8ffcff]/80 outline-hidden transition-all duration-200 ease-out hover:border-[#ff5688]/70 hover:bg-[#1c173a]/90 hover:text-white hover:shadow-[0_0_18px_rgba(111,255,244,0.35)] focus-visible:ring-2 focus-visible:ring-[#71fff6]/40 focus-visible:ring-offset-1 focus-visible:ring-offset-[#070314] [&>svg]:size-4 [&>svg]:shrink-0",
+          "absolute top-3 right-3 flex aspect-square w-7 items-center justify-center rounded-md border border-transparent bg-sidebar p-0 text-sidebar-foreground/70 transition-all duration-200 ease-out hover:border-sidebar-accent/60 hover:bg-sidebar-accent/20 hover:text-sidebar-foreground focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-1 focus-visible:ring-offset-background [&>svg]:size-4 [&>svg]:shrink-0",
           "after:absolute after:-inset-2 md:after:hidden",
           "group-data-[collapsible=icon]:hidden",
           className
@@ -472,7 +463,7 @@ export function createSidebarComponents(config: SidebarConfig) {
         data-slot="sidebar-group-content"
         data-sidebar="group-content"
         className={cn(
-          "relative z-10 w-full text-sm text-[#d5dcff]/85",
+          "relative z-10 w-full text-sm text-sidebar-foreground/80",
           className
         )}
         {...props}
@@ -506,13 +497,13 @@ export function createSidebarComponents(config: SidebarConfig) {
   }
 
   const sidebarMenuButtonVariants = cva(
-    "peer/menu-button relative flex w-full items-center gap-3 overflow-hidden rounded-lg border border-[#32305d]/70 bg-[#080617]/90 p-2 text-left text-sm font-mono tracking-[0.04em] text-[#dfe2ff]/85 outline-hidden transition-all duration-200 ease-out ring-offset-2 ring-offset-[#060312] ring-[#71fff6]/40 hover:-translate-y-[1px] hover:border-[#71fff6]/60 hover:bg-[#110a2b]/95 hover:text-white hover:shadow-[0_0_25px_rgba(121,255,242,0.25)] focus-visible:ring-2 focus-visible:ring-offset-2 active:translate-y-[0] active:border-[#ff5688]/70 active:bg-[#150c32] active:text-white active:shadow-[0_0_22px_rgba(255,86,151,0.35)] disabled:pointer-events-none disabled:opacity-50 group-has-data-[sidebar=menu-action]/menu-item:pr-9 aria-disabled:pointer-events-none aria-disabled:opacity-50 before:pointer-events-none before:absolute before:inset-0 before:-translate-x-[110%] before:bg-[linear-gradient(100deg,transparent,rgba(121,255,242,0.45),transparent)] before:opacity-0 before:transition before:duration-300 before:ease-out before:content-[''] hover:before:translate-x-0 hover:before:opacity-100 data-[active=true]:border-[#ff5688]/70 data-[active=true]:bg-[linear-gradient(135deg,rgba(255,89,137,0.35),rgba(110,0,255,0.4))] data-[active=true]:text-white data-[active=true]:shadow-[0_0_28px_rgba(146,54,255,0.45)] data-[state=open]:border-[#71fff6]/60 data-[state=open]:text-white group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0",
+    "peer/menu-button relative flex w-full items-center gap-3 overflow-hidden rounded-lg border border-sidebar-border bg-sidebar/90 p-2 text-left text-sm font-theme-accent tracking-[0.04em] text-sidebar-foreground/85 outline-none transition-all duration-200 ease-out ring-offset-2 ring-offset-background focus-visible:ring-2 focus-visible:ring-ring/40 hover:-translate-y-[1px] hover:border-sidebar-accent/60 hover:bg-sidebar-accent/15 hover:text-sidebar-foreground disabled:pointer-events-none disabled:opacity-50 group-has-data-[sidebar=menu-action]/menu-item:pr-9 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:border-sidebar-primary data-[active=true]:bg-sidebar-primary/20 data-[active=true]:text-sidebar-primary-foreground data-[state=open]:border-sidebar-accent data-[state=open]:text-sidebar-accent-foreground group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0",
     {
       variants: {
         variant: {
           default: "",
           outline:
-            "border-[#4a4586]/75 bg-transparent shadow-[0_0_0_1px_rgba(113,255,246,0.2)] hover:bg-[#0f0a22]/95 hover:shadow-[0_0_20px_rgba(113,255,246,0.2)]",
+            "border-sidebar-border bg-transparent hover:bg-sidebar-accent/10",
         },
         size: {
           default: "h-10 text-sm",
@@ -593,7 +584,7 @@ export function createSidebarComponents(config: SidebarConfig) {
         data-slot="sidebar-menu-action"
         data-sidebar="menu-action"
         className={cn(
-          "absolute top-1.5 right-1 flex aspect-square w-6 items-center justify-center rounded-md border border-transparent bg-[#121027]/80 p-0 font-mono text-xs uppercase text-[#8ffcff]/80 outline-hidden transition-all duration-200 ease-out hover:border-[#ff5688]/70 hover:bg-[#1c173a]/90 hover:text-white hover:shadow-[0_0_18px_rgba(111,255,244,0.35)] focus-visible:ring-2 focus-visible:ring-[#71fff6]/40 focus-visible:ring-offset-1 focus-visible:ring-offset-[#070314] [&>svg]:size-4 [&>svg]:shrink-0",
+          "absolute top-1.5 right-1 flex aspect-square w-6 items-center justify-center rounded-md border border-transparent bg-sidebar p-0 font-theme-accent text-xs uppercase text-sidebar-foreground/70 transition-all duration-200 ease-out hover:border-sidebar-accent/60 hover:bg-sidebar-accent/20 hover:text-sidebar-foreground focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-1 focus-visible:ring-offset-background [&>svg]:size-4 [&>svg]:shrink-0",
           "after:absolute after:-inset-2 md:after:hidden",
           "peer-data-[size=sm]/menu-button:top-1",
           "peer-data-[size=default]/menu-button:top-1.5",
@@ -617,7 +608,7 @@ export function createSidebarComponents(config: SidebarConfig) {
         data-slot="sidebar-menu-badge"
         data-sidebar="menu-badge"
         className={cn(
-          "pointer-events-none absolute right-2 flex h-5 min-w-6 items-center justify-center rounded-full border border-[#ff5688]/50 bg-[#150c32]/85 px-2 font-mono text-[0.6rem] uppercase tracking-[0.2em] text-[#ff9ad9] shadow-[0_0_14px_rgba(255,86,151,0.35)]",
+          "pointer-events-none absolute right-2 flex h-5 min-w-6 items-center justify-center rounded-full border border-sidebar-accent/50 bg-sidebar-accent/10 px-2 font-theme-accent text-[0.6rem] uppercase tracking-[0.2em] text-sidebar-accent-foreground shadow-sm",
           "peer-hover/menu-button:text-sidebar-accent-foreground peer-data-[active=true]/menu-button:text-sidebar-accent-foreground",
           "peer-data-[size=sm]/menu-button:top-1",
           "peer-data-[size=default]/menu-button:top-1.5",
@@ -646,19 +637,19 @@ export function createSidebarComponents(config: SidebarConfig) {
         data-slot="sidebar-menu-skeleton"
         data-sidebar="menu-skeleton"
         className={cn(
-          "flex h-9 items-center gap-3 rounded-lg border border-[#2c2855]/70 bg-[#0b0516]/80 px-3",
+          "flex h-9 items-center gap-3 rounded-lg border border-sidebar-border bg-sidebar/80 px-3",
           className
         )}
         {...props}
       >
         {showIcon && (
           <Skeleton
-            className="size-5 rounded-md bg-[#1b1435]"
+            className="size-5 rounded-md bg-sidebar-border/40"
             data-sidebar="menu-skeleton-icon"
           />
         )}
         <Skeleton
-          className="h-3.5 max-w-(--skeleton-width) flex-1 rounded bg-[#1b1435]"
+          className="h-3.5 max-w-(--skeleton-width) flex-1 rounded bg-sidebar-border/30"
           data-sidebar="menu-skeleton-text"
           style={
             {
@@ -676,8 +667,7 @@ export function createSidebarComponents(config: SidebarConfig) {
         data-slot="sidebar-menu-sub"
         data-sidebar="menu-sub"
         className={cn(
-          "relative z-10 mx-3.5 flex min-w-0 translate-x-px flex-col gap-2 border-l border-dashed border-[#3a3570]/70 px-3 py-1",
-          "before:pointer-events-none before:absolute before:-left-[1.5px] before:top-2 before:h-[calc(100%-1rem)] before:w-px before:bg-[linear-gradient(180deg,rgba(121,255,242,0.45)_0%,rgba(255,84,132,0.45)_100%)] before:content-['']",
+          "relative z-10 mx-3.5 flex min-w-0 translate-x-px flex-col gap-2 border-l border-dashed border-sidebar-border/70 px-3 py-1",
           "group-data-[collapsible=icon]:hidden",
           className
         )}
@@ -720,9 +710,8 @@ export function createSidebarComponents(config: SidebarConfig) {
         data-size={size}
         data-active={isActive}
         className={cn(
-          "relative flex h-8 min-w-0 -translate-x-px items-center gap-2 overflow-hidden rounded-md border border-transparent bg-transparent px-2.5 text-[0.7rem] font-mono tracking-[0.08em] text-[#bfc3ff]/85 outline-hidden transition-all duration-200 ease-out hover:border-[#71fff6]/60 hover:bg-[#120c2b]/85 hover:text-white hover:shadow-[0_0_16px_rgba(121,255,242,0.2)] focus-visible:ring-2 focus-visible:ring-[#71fff6]/35 focus-visible:ring-offset-1 focus-visible:ring-offset-[#070314] active:border-[#ff5688]/70 active:bg-[#150c32] active:text-white disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0 [&>svg]:text-[#8ffcff]/80",
-          "before:pointer-events-none before:absolute before:inset-0 before:-translate-x-[110%] before:bg-[linear-gradient(100deg,transparent,rgba(121,255,242,0.35),transparent)] before:opacity-0 before:transition before:duration-300 before:ease-out before:content-[''] hover:before:translate-x-0 hover:before:opacity-100",
-          "data-[active=true]:border-[#ff5688]/70 data-[active=true]:bg-[linear-gradient(135deg,rgba(255,89,137,0.3),rgba(110,0,255,0.35))] data-[active=true]:text-white data-[active=true]:shadow-[0_0_24px_rgba(146,54,255,0.35)]",
+          "relative flex h-8 min-w-0 -translate-x-px items-center gap-2 overflow-hidden rounded-md border border-transparent bg-transparent px-2.5 text-[0.7rem] font-theme-accent tracking-[0.08em] text-sidebar-foreground/70 transition-all duration-200 ease-out hover:border-sidebar-accent/60 hover:bg-sidebar-accent/15 hover:text-sidebar-foreground focus-visible:ring-2 focus-visible:ring-ring/35 focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0 [&>svg]:text-sidebar-foreground/60",
+          "data-[active=true]:border-sidebar-primary data-[active=true]:bg-sidebar-primary/20 data-[active=true]:text-sidebar-primary-foreground",
           size === "sm" && "h-7 px-2 text-[0.6rem]",
           size === "md" && "h-8 text-[0.7rem]",
           "group-data-[collapsible=icon]:hidden",

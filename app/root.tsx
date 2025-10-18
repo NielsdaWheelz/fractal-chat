@@ -10,6 +10,29 @@ import {
 import type { Route } from "./+types/root";
 import "./app.css";
 import { TooltipProvider } from "@radix-ui/react-tooltip";
+import { ThemeProvider } from "~/hooks/use-theme";
+
+const themeInitScript = `
+(function() {
+  try {
+    const storageKey = "fractal-theme";
+    const valid = new Set(["light", "dark", "neon"]);
+    const root = document.documentElement;
+    const stored = window.localStorage.getItem(storageKey);
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const theme = valid.has(stored) ? stored : (prefersDark ? "dark" : "light");
+    const isDarkContext = theme === "dark" || theme === "neon";
+    root.dataset.theme = theme;
+    root.classList.toggle("dark", isDarkContext);
+    root.classList.toggle("neon", theme === "neon");
+    root.style.colorScheme = isDarkContext ? "dark" : "light";
+    if (!valid.has(stored)) {
+      window.localStorage.setItem(storageKey, theme);
+    }
+  } catch (_) {
+    /* no-op */
+  }
+})();`;
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -31,16 +54,21 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <script src="https://accounts.google.com/gsi/client" async defer></script>
+        <script
+          dangerouslySetInnerHTML={{ __html: themeInitScript }}
+        />
         <Meta />
         <Links />
 
       </head>
       <body>
-        <TooltipProvider delayDuration={500}>
-          {children}
-          <ScrollRestoration />
-          <Scripts />
-        </TooltipProvider>
+        <ThemeProvider>
+          <TooltipProvider delayDuration={500}>
+            {children}
+            <ScrollRestoration />
+            <Scripts />
+          </TooltipProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -1,24 +1,55 @@
 // UploadForm.tsx
 import { Upload } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Form } from "react-router";
-import { Tooltip, TooltipTrigger, TooltipContent } from "./ui/tooltip";
 import { Button } from "./ui/button";
+import { useTheme } from "~/hooks/use-theme";
+import type { ThemeName } from "~/types/theme";
 
 type UploadFormProps = {
   disabled?: boolean;
 };
 
+const headerCopy: Record<ThemeName, { empty: string; selected: string }> = {
+  light: { empty: "Drop a document", selected: "Selected file" },
+  dark: { empty: "Drop a document", selected: "Selected file" },
+  neon: { empty: "Drop A Read", selected: "Selected Transmission" },
+};
+
+const placeholderCopy: Record<ThemeName, string> = {
+  light: "Click or drag a PDF or EPUB",
+  dark: "Click or drag a PDF or EPUB",
+  neon: "Click or drag to upload",
+};
+
+const submitCopy: Record<ThemeName, string> = {
+  light: "Upload",
+  dark: "Upload",
+  neon: "Transmit",
+};
+
 export default function UploadForm({ disabled }: UploadFormProps) {
   const [fileName, setFileName] = useState<string>("");
+  const { theme } = useTheme();
   const isDisabled = !!disabled;
+
+  const heading = useMemo(
+    () => (fileName ? headerCopy[theme].selected : headerCopy[theme].empty),
+    [fileName, theme],
+  );
+
+  const placeholder = useMemo(
+    () => (fileName ? fileName : placeholderCopy[theme]),
+    [fileName, theme],
+  );
 
   return (
     <Form
       method="post"
       encType="multipart/form-data"
       action="/api/upload"
-      className="rounded-xl border border-[#26224a]/70 bg-[#0b0618]/80 p-4 shadow-[0_12px_30px_rgba(10,0,28,0.35)]"
+      data-upload="card"
+      data-disabled={isDisabled ? "true" : "false"}
     >
       <input
         id="file"
@@ -35,26 +66,26 @@ export default function UploadForm({ disabled }: UploadFormProps) {
       />
       <label
         htmlFor="file"
-        className={`flex cursor-pointer flex-col gap-3 rounded-lg border border-dashed border-[#343065]/70 bg-[#100825]/80 px-4 py-4 transition-all duration-200 ease-out hover:border-[#71fff6]/60 hover:bg-[#140c31]/90 ${isDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
+        data-upload="dropzone"
+        data-disabled={isDisabled ? "true" : "false"}
       >
-        <span className="font-mono text-[0.7rem] uppercase tracking-[0.18em] text-[#8ffcff]/70">
-          {fileName ? "Selected Transmission" : "Drop A Read"}
-        </span>
-        <div className="flex items-center justify-between text-xs text-[#d9dcff]/85">
-          <span className="truncate font-mono">
-            {fileName || "Click or drag to upload"}
+        <span data-upload="label">{heading}</span>
+        <div data-upload="meta">
+          <span data-upload="filename" className={fileName ? "is-selected" : undefined}>
+            {placeholder}
           </span>
-          <Upload className="h-4 w-4 text-[#71fff6]" />
+          <Upload data-upload="icon" aria-hidden="true" />
         </div>
       </label>
       <div className="mt-4 flex justify-end">
         <Button
           type="submit"
           variant="ghost"
-          className="rounded-lg border border-[#ff5688]/70 bg-[#150c32]/90 px-4 py-2 font-mono text-xs uppercase tracking-[0.16em] text-white transition-all duration-200 ease-out hover:border-[#71fff6]/60 hover:bg-[#1d1040]/95 focus-visible:ring-2 focus-visible:ring-[#71fff6]/40 focus-visible:ring-offset-1 focus-visible:ring-offset-[#070314] disabled:opacity-50 disabled:cursor-not-allowed"
+          data-upload="submit"
+          data-disabled={isDisabled ? "true" : "false"}
           disabled={isDisabled}
         >
-          Transmit
+          {submitCopy[theme]}
         </Button>
       </div>
     </Form>

@@ -14,6 +14,7 @@ import { NotePopover } from "~/components/document/NotePopover";
 import { getColorFromID } from "~/server/users.server";
 import type { Annotation } from "~/types/types";
 import PdfViewer from "~/components/document/PdfViewer";
+import type { ThemeName } from "~/types/theme";
 
 
 type LoaderData = {
@@ -56,7 +57,7 @@ export default function Document() {
       selectionRef: React.MutableRefObject<string>;
       setShowHighlight: React.Dispatch<React.SetStateAction<boolean>>;
       setIncludeSelection: React.Dispatch<React.SetStateAction<boolean>>;
-      theme: string
+      theme: ThemeName;
     }>();
 
   const { document, annotations, color } = useLoaderData() as LoaderData;
@@ -197,6 +198,7 @@ export default function Document() {
           note={notePopup.note}
           quote={notePopup.quote}
           onClose={() => setNotePopup(null)}
+          theme={theme}
         />
       )}
       {popup && (

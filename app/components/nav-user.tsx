@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronsUpDown, LogOut, Moon, Sun } from "lucide-react";
+import { ChevronsUpDown, LogOut, Moon, Sparkles, Sun } from "lucide-react";
 import { useNavigate } from "react-router";
 
 import * as Tabs from "@radix-ui/react-tabs";
@@ -23,14 +23,15 @@ import createFallback from "~/helperfunctions/createFallback";
 import { clientSignOut } from "~/utils/auth.client";
 import { TabsList, TabsTrigger } from "./ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
+import type { ThemeName } from "~/types/theme";
 
 export function NavUser({
   user,
   setTheme,
   theme,
 }: {
-  setTheme: React.Dispatch<React.SetStateAction<"light" | "dark" >>;
-  theme: "light" | "dark";
+  setTheme: React.Dispatch<React.SetStateAction<ThemeName>>;
+  theme: ThemeName;
   user: {
     name: string;
     email: string;
@@ -87,17 +88,30 @@ export function NavUser({
                   </div>
                 </div>
 
-                <Tabs.Root defaultValue={theme}>
+                <Tabs.Root
+                  value={theme}
+                  onValueChange={(next) => setTheme(next as ThemeName)}
+                >
                   <TabsList>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <span>
-                          <TabsTrigger
-                            value="light"
-                            className="py-3"
-                            onClick={() => { setTheme("light") }}
-                          >
+                          <TabsTrigger value="light" className="py-3">
                             <Sun size={16} aria-hidden="true" />
+                          </TabsTrigger>
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent className="px-2 py-1 text-xs">
+                        Light Mode
+                      </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span>
+                          <TabsTrigger value="dark" className="group py-3">
+                            <span className="relative">
+                              <Moon size={16} aria-hidden="true" />
+                            </span>
                           </TabsTrigger>
                         </span>
                       </TooltipTrigger>
@@ -108,19 +122,13 @@ export function NavUser({
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <span>
-                          <TabsTrigger
-                            value="dark"
-                            className="group py-3"
-                            onClick={() => { setTheme("dark") }}
-                          >
-                            <span className="relative">
-                              <Moon size={16} aria-hidden="true" />
-                            </span>
+                          <TabsTrigger value="neon" className="py-3">
+                            <Sparkles size={16} aria-hidden="true" />
                           </TabsTrigger>
                         </span>
                       </TooltipTrigger>
                       <TooltipContent className="px-2 py-1 text-xs">
-                        Light Mode
+                        Neon Mode
                       </TooltipContent>
                     </Tooltip>
                   </TabsList>
