@@ -29,7 +29,7 @@ export const GroupAvatarStack = ({ users }) => {
     // const colors = ["#a87af5", "#f57ac7", "#f5a87a", "#c7f57a", "#7af5a8", "#7ac7f5"];
 
     return (
-        <div className="bg-gradient-to-r from-[#03B7F2] dark:from-[#9A5DFF] from-10% via-sky-100 dark:via-sky-950 via-30% to-emerald-100 dark:to-emerald-950 to-90% p-1.5 rounded-full">
+        <div className="bg-gradient-to-r from-[#03B7F2] dark:from-[#03B7F2] from-10% via-[#5E84FE] dark:via-[#5E84FE] via-30% to-[#9A5DFF] dark:to-[#9A5DFF] to-90% p-1.5 rounded-full opacity-45">
             <AvatarGroup
                 variant="css"
                 invertOverlap
