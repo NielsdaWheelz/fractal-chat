@@ -15,6 +15,16 @@ import {
   SidebarListItem
 } from "~/components/ui/sidebar-right";
 
+// Map color indices to border colors
+const colorToBorder: Record<string, string> = {
+  "0": "#d8b4fe", // purple
+  "1": "#faa0a0", // red
+  "2": "#a5b4fc", // blue
+  "3": "#86efac", // green
+  "4": "#fdba74", // orange
+  "5": "#d1d5db", // gray
+};
+
 function scrollToAnnotation(annid: string) {
   const marks = document.querySelectorAll(`[data-annid="${annid}"]`);
   if (marks.length === 0) return;
@@ -33,15 +43,23 @@ const AnnotationList = (props: {annotations, setSelectedAnnotationId}) => {
     <SidebarGroup>
       <SidebarMenu>
         {props.annotations?.sort((a: AnnotationListItem, b: AnnotationListItem) => a.start - b.start).map((annotation: AnnotationListItem) => {
+          const borderColor = colorToBorder[annotation.color] || "#d1d5db";
           return (
             <SidebarListItem key={annotation.id}>
-              <SidebarListButton className="w-full justify-start" onClick={() => {
-                props.setSelectedAnnotationId(annotation.id)
-                scrollToAnnotation(annotation.id)
+              <SidebarListButton
+                className="w-full justify-start items-start p-3 hover:bg-accent/50"
+                style={{ borderLeft: `4px solid ${borderColor}` }}
+                onClick={() => {
+                  props.setSelectedAnnotationId(annotation.id)
+                  scrollToAnnotation(annotation.id)
                 }}>
-                <Highlighter className="mr-2 h-4 w-4" />
-                <span className="text-xs">{annotation.quote}</span>
-                <span className="text-xs">{annotation.body}</span>
+                {/* <Highlighter className="mr-2 h-4 w-4 flex-shrink-0 mt-0.5" /> */}
+                <div className="flex flex-col gap-1 min-w-0 flex-1">
+                  <span className="text-sm font-medium line-clamp-1">{annotation.quote}</span>
+                  {annotation.body && (
+                    <span className="text-xs text-muted-foreground pl-3 line-clamp-1 border-l-2 border-muted">{annotation.body}</span>
+                  )}
+                </div>
               </SidebarListButton>
             </SidebarListItem>
           )

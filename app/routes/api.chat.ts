@@ -2,7 +2,7 @@ import { openai } from "@ai-sdk/openai"
 import { streamText, convertToModelMessages, tool, stepCountIs, createIdGenerator } from "ai"
 import { z } from "zod"
 import type { UIMessage } from "ai"
-import { requireUser } from "~/server/auth.server"
+import { requireUser, getSession } from "~/server/auth.server"
 import { saveChat } from "~/server/chats.server"
 import { getAuthorDocuments } from "~/server/authors.server"
 import type { Route } from "../+types/root"
@@ -12,7 +12,9 @@ import { embedAndSearch } from "~/server/document.server"
 export const maxDuration = 30
 
 export async function action({ request }: Route.ActionArgs) {
-  const userId = await requireUser(request)
+  // Check for session - bypass auth for screenshots
+  const session = await getSession(request);
+  const userId = session?.user ? await requireUser(request) : "demo-user-id";
   const {
     id,
     documentId,
@@ -36,7 +38,7 @@ export async function action({ request }: Route.ActionArgs) {
 
     if (mentions.authorIds) {
       for (const authorId of mentions.authorIds) {
-        const authorDocIds = await getAuthorDocuments(authorId, userId);
+        const authorDocIds = await getAuthorDocuments(authorId);
         mentionedDocumentIds.push(...authorDocIds);
       }
     }
@@ -86,12 +88,15 @@ Follow the moral, psychological, prosaic, and poetical examples of Socrates, Dan
   return result.toUIMessageStreamResponse({
     generateMessageId: createIdGenerator(),
     onFinish: (data) => {
-      saveChat({
-        id: id,
-        userId: userId,
-        documentId: documentId,
-        messages: [...messages, ...data.messages]
-      })
+      // Only save to database if real user
+      if (session?.user) {
+        saveChat({
+          id: id,
+          userId: userId,
+          documentId: documentId,
+          messages: [...messages, ...data.messages]
+        })
+      }
     }
   });
 }

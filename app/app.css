@@ -83,10 +83,6 @@ mark.anno-mark.is-hovered {
   /* brighter yellow */
 }
 
-mark.anno-mark.is-selected {
-  background: rgba(255, 215, 64, 0.35);
-}
-
 html,
 body {
   @apply bg-white dark:bg-gray-950;
@@ -230,4 +226,13 @@ body {
   .docContainer :where(figcaption) {
     @apply text-sm text-muted-foreground text-center mt-2;
   }
+}
+
+mark.anno-mark.is-selected {
+  background: rgba(255, 215, 64, 0.5) !important;
+  padding: 0.15rem 0.25rem !important;
+  margin: -0.15rem -0.25rem !important;
+  border-radius: 0.25rem !important;
+  box-shadow: 0 0 0 2px rgba(255, 215, 64, 0.35) !important;
+  display: inline-block !important;
 }

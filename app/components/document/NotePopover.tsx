@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 import { Form } from "react-router";
 import { Button } from "../ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import { Avatar, AvatarFallback } from "../ui/avatar";
 
 export function NotePopover({
   docId,
@@ -11,6 +12,7 @@ export function NotePopover({
   y,
   quote,
   note,
+  color,
   onClose,
 }: {
   docId: string;
@@ -19,6 +21,7 @@ export function NotePopover({
   y: number;
   quote: string;
   note: string;
+  color: string;
   onClose: () => void;
 }) {
   const popRef = useRef<HTMLDivElement | null>(null);
@@ -42,15 +45,51 @@ export function NotePopover({
     return () => document.removeEventListener("pointerdown", close, true);
   }, [onClose]);
 
+  // Hardcode which avatar shows for each annotation
+  let userData, avatarColor;
+
+  if (id === "annotation-1") {
+    userData = { name: "Alex Johnson", initials: "AJ" };
+    avatarColor = "0"; // purple border
+  } else if (id === "annotation-2") {
+    userData = { name: "Dan Abramov", initials: "DA" };
+    avatarColor = "1"; // red border
+  } else if (id === "ml-annotation-1") {
+    userData = { name: "Riley Park", initials: "RP" };
+    avatarColor = "3"; // green border
+  } else if (id === "ml-annotation-2") {
+    userData = { name: "Sam Chen", initials: "SC" };
+    avatarColor = "2"; // blue border
+  } else {
+    userData = { name: "Demo User", initials: "DU" };
+    avatarColor = color; // fallback to passed color
+  }
+
+  const mockUser = {
+    id: "demo-user",
+    name: userData.name,
+    email: "demo@example.com",
+    color: avatarColor,
+    emailVerified: false,
+    image: null,
+    friends: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+
   return (
     <div
       ref={popRef}
-      className="fixed bg-sidebar border border-gray-200 p-3 rounded-xl shadow-lg z-10 max-w-[420px] flex flex-row items-center gap-1"
+      className="fixed bg-sidebar border border-gray-200 p-3 rounded-xl shadow-lg z-10 max-w-[420px] flex flex-row items-center gap-3"
       style={{ left: x, top: y }}
       role="dialog"
       aria-label="Annotation"
     >
-      <p className="text-sm">{note || "(no note saved)"}</p>
+      <Avatar user={mockUser} color={avatarColor} className="h-8 w-8 flex-shrink-0">
+        <AvatarFallback className="text-xs">{userData.initials}</AvatarFallback>
+      </Avatar>
+
+      <p className="text-sm flex-1">{note || "(no note saved)"}</p>
 
       <Form method="post" action={`/workspace/delete-annotation/${docId}/${id}`}>
         <Tooltip>
@@ -62,7 +101,7 @@ export function NotePopover({
               // Optional: also stop propagation at capture just to be extra safe
               onPointerDownCapture={(e) => e.stopPropagation()}
             >
-              <Trash2 />
+              <Trash2 className="h-4 w-4" />
             </Button>
           </TooltipTrigger>
           <TooltipContent>

@@ -111,6 +111,9 @@ export default function DocumentContents({
           if (c) mark.className += ` ${c}`;
         }
 
+        // Store color index in data attribute
+        mark.dataset.color = String(primary.color);
+
         // ids: keep all for advanced behavior, store primary for fast lookup
         const ids = covering.map((a) => (a.id ? String(a.id) : "")).filter(Boolean);
         if (ids.length) {
@@ -200,6 +203,8 @@ export default function DocumentContents({
       const annid = el.dataset.annid;
       if (!annid) return;
 
+      console.log("Clicked annotation:", annid);
+
       if (annid === lastSelectedId) {
         clearClass("is-selected");
         lastSelectedId = null;
@@ -209,7 +214,11 @@ export default function DocumentContents({
 
       clearClass("is-selected");
       const pieces = Array.from(related(annid));
-      pieces.forEach((n) => n.classList.add("is-selected"));
+      console.log("Adding is-selected to", pieces.length, "pieces");
+      pieces.forEach((n) => {
+        n.classList.add("is-selected");
+        console.log("Element classes:", n.className);
+      });
       lastSelectedId = annid;
 
       // select text across all pieces (for copy, accessibility)

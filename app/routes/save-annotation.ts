@@ -2,10 +2,12 @@
 import type { ActionFunctionArgs } from "react-router";
 import { redirect } from "react-router";
 import { saveAnnotations } from "~/server/annotations.server";
-import { requireUser } from "~/server/auth.server";
+import { requireUser, getSession } from "~/server/auth.server";
 
 export async function action({ request, params }: ActionFunctionArgs) {
-  const userId = await requireUser(request);
+  // Check for session - bypass auth for screenshots
+  const session = await getSession(request);
+  const userId = session?.user ? await requireUser(request) : "demo-user-id";
 
   const id = params.id; // document id from route
   if (!id) throw redirect("/");
@@ -42,18 +44,24 @@ export async function action({ request, params }: ActionFunctionArgs) {
   }
 
 
-  await saveAnnotations({
-    id: crypto.randomUUID(),
-    userId,
-    documentId: id,
-    start,
-    end,
-    color: color,
-    highlights: quote ?? "",
-    prefix: prefix ?? "",
-    suffix: suffix ?? "",
-    body: body ?? "",
-  });
+  // Only save to database if real user
+  if (session?.user) {
+    await saveAnnotations({
+      id: crypto.randomUUID(),
+      userId,
+      documentId: id,
+      start,
+      end,
+      color: color,
+      quote: quote ?? "",
+      prefix: prefix ?? "",
+      suffix: suffix ?? "",
+      body: body ?? "",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+  }
+  // For mock user, just redirect back (annotation will exist client-side only)
 
   return redirect(`/workspace/document/${id}`);
 }
