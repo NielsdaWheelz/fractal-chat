@@ -35,14 +35,32 @@ import {
 import { cn } from "~/lib/utils";
 import ChatList from "./ChatList";
 import AnnotationList from "./AnnotationList";
+import type { ThemeName } from "~/types/theme";
 
 type UIMessagePart = { type: string; text?: string }
 type UIMessage = { role: string; parts: UIMessagePart[] }
 type ChatListItem = { id: string; messages?: UIMessage[] }
 type UserInfo = { name: string; email: string; avatar: string }
-type SidebarAppProps = { data; user: UserInfo; side: "left" | "right"; selectionRef?: MutableRefObject<string> } & ComponentProps<typeof Sidebar>
+type SidebarAppProps = {
+  data: any;
+  user: UserInfo;
+  side: "left" | "right";
+  selectionRef?: MutableRefObject<string>;
+  includeSelection: boolean;
+  setIncludeSelection: (value: boolean) => void;
+  theme: ThemeName;
+} & ComponentProps<typeof Sidebar>;
 
-export function SidebarApp({ side, data, user, selectionRef, includeSelection, setIncludeSelection, ...props }: SidebarAppProps) {
+export function SidebarApp({
+  side,
+  data,
+  user,
+  selectionRef,
+  includeSelection,
+  setIncludeSelection,
+  theme,
+  ...props
+}: SidebarAppProps) {
   const [mode, setMode] = useState("annotation")
   const [tabsValue, setTabsValue] = useState<"tab-1" | "tab-2">("tab-1")
   const { setOpen } = useSidebar()
@@ -134,32 +152,70 @@ export function SidebarApp({ side, data, user, selectionRef, includeSelection, s
     return messages
   }, [selectedChat])
 
+  const themedStyles = {
+    iconButton: iconButtonClasses(theme),
+    secondaryPanel: secondaryPanelClasses(theme),
+    sectionTitle: sectionTitleClasses(theme),
+    tabTrigger: tabTriggerClasses(theme),
+  }
+  const tabsListTone: Record<ThemeName, string> = {
+    light: "border-border bg-card shadow-sm",
+    dark: "border-border/70 bg-card/80 shadow-md",
+    neon: "border-sidebar-border bg-sidebar/90 shadow-[0_12px_30px_rgba(8,0,25,0.35)]",
+  }
+  const tabsTextTone: Record<ThemeName, string> = {
+    light: "text-muted-foreground",
+    dark: "text-muted-foreground",
+    neon: "text-sidebar-foreground/80",
+  }
+  const chatPanelTone: Record<ThemeName, string> = {
+    light: "border-border bg-card",
+    dark: "border-border/70 bg-card/90",
+    neon: "border-sidebar-border bg-sidebar/90",
+  }
+  const detailTextTone: Record<ThemeName, string> = {
+    light: "text-muted-foreground",
+    dark: "text-muted-foreground",
+    neon: "text-sidebar-foreground/70",
+  }
+  const tabsListClasses = cn(
+    "flex items-center gap-2 rounded-xl border px-1 py-1 transition-colors",
+    tabsListTone[theme]
+  )
+  const chatInnerClasses = cn(
+    "h-full overflow-hidden rounded-lg border transition-colors",
+    chatPanelTone[theme]
+  )
+
   return (
     <Sidebar className="border-l-0" {...props} side="right">
       <SidebarHeader>
         <Tabs
           value={tabsValue}
           onValueChange={(value) => setTabsValue(value as "tab-1" | "tab-2")}
-          className="items-center gap-4 text-[#d9dcff]/80"
+          className={cn(
+            "items-center gap-4",
+            tabsTextTone[theme]
+          )}
         >
           <div className="flex w-full items-center justify-between gap-3">
             <Button
               size="icon"
               variant="ghost"
-              className={iconButtonClasses}
+              className={themedStyles.iconButton}
               onClick={() => setSelectedChatId(null)}
             >
               <ArrowLeft className="h-5 w-5" />
               <span className="sr-only">Back</span>
             </Button>
-            <TabsList className="flex items-center gap-2 rounded-xl border border-[#2a2850]/70 bg-[#090417]/80 p-1 shadow-[0_12px_30px_rgba(8,0,25,0.35)]">
+            <TabsList className={tabsListClasses}>
               <TooltipProvider delayDuration={0}>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <span>
                       <TabsTrigger
                         value="tab-1"
-                        className={tabTriggerClasses}
+                        className={themedStyles.tabTrigger}
                         onClick={() => {
                           setTabsValue("tab-1")
                           setMode("annotation")
@@ -182,7 +238,7 @@ export function SidebarApp({ side, data, user, selectionRef, includeSelection, s
                     <span>
                       <TabsTrigger
                         value="tab-2"
-                        className={cn(tabTriggerClasses, "group")}
+                        className={cn(themedStyles.tabTrigger, "group")}
                         onClick={() => {
                           setTabsValue("tab-2")
                           setMode("chat")
@@ -211,7 +267,7 @@ export function SidebarApp({ side, data, user, selectionRef, includeSelection, s
                     size="icon"
                     variant="ghost"
                     type="submit"
-                    className={iconButtonClasses}
+                    className={themedStyles.iconButton}
                   >
                     <MessageCirclePlus className="h-5 w-5" />
                     <span className="sr-only">New Chat</span>
@@ -225,18 +281,16 @@ export function SidebarApp({ side, data, user, selectionRef, includeSelection, s
           </div>
           <TabsContent value="tab-1">
             <div className="flex items-center gap-2">
-              <span className={sectionTitleClasses}>Annotations Mesh</span>
+              <span className={themedStyles.sectionTitle}>Annotations Mesh</span>
             </div>
           </TabsContent>
           <TabsContent value="tab-2">
             <div className="flex items-center gap-2">
-              <span className={sectionTitleClasses}>
+              <span className={themedStyles.sectionTitle}>
                 {selectedChat ? "Chat Thread" : "Chats Uplink"}
               </span>
               {selectedChat && (
-                <span className="line-clamp-1 text-xs text-[#9ba2ff]/80">
-                  {headerTitle}
-                </span>
+                <span className={cn("line-clamp-1 text-xs", detailTextTone[theme])}>{headerTitle}</span>
               )}
             </div>
           </TabsContent>
@@ -254,8 +308,8 @@ export function SidebarApp({ side, data, user, selectionRef, includeSelection, s
             <ChatList chats={chats} setSelectedChatId={setSelectedChatId} />
           )}
           {mode === "chat" && selectedChat && (
-            <div className={cn(secondaryPanelClasses, "h-full overflow-hidden p-0")}>
-              <div className="h-full overflow-hidden rounded-lg border border-[#2c2855]/70 bg-[#05040f]/90">
+            <div className={cn(themedStyles.secondaryPanel, "h-full overflow-hidden p-0")}>
+              <div className={chatInnerClasses}>
                 <ChatBlock
                   chatId={selectedChat.id}
                   initialMessages={selectedChatMessages}

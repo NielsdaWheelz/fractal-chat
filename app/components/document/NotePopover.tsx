@@ -1,8 +1,24 @@
 import { Trash2 } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { Form } from "react-router";
+import { cva } from "class-variance-authority";
 import { Button } from "../ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import { cn } from "~/lib/utils";
+import type { ThemeName } from "~/types/theme";
+
+const notePopoverShell = cva("note-popover", {
+  variants: {
+    theme: {
+      light: "note-popover--light",
+      dark: "note-popover--dark",
+      neon: "note-popover--neon",
+    },
+  },
+  defaultVariants: {
+    theme: "light",
+  },
+});
 
 export function NotePopover({
   docId,
@@ -12,6 +28,7 @@ export function NotePopover({
   quote,
   note,
   onClose,
+  theme,
 }: {
   docId: string;
   id: string;
@@ -20,6 +37,7 @@ export function NotePopover({
   quote: string;
   note: string;
   onClose: () => void;
+  theme: ThemeName;
 }) {
   const popRef = useRef<HTMLDivElement | null>(null);
 
@@ -45,30 +63,26 @@ export function NotePopover({
   return (
     <div
       ref={popRef}
-      className="fixed bg-sidebar/95 backdrop-blur-md border-2 border-accent/30 p-3 shadow-[0_0_30px_rgba(0,0,0,0.4),0_0_60px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.1)] z-10 w-[320px] overflow-hidden group"
+      className={cn(notePopoverShell({ theme }))}
       style={{ left: x, top: y, borderRadius: 2 }}
       role="dialog"
       aria-label="Annotation"
+      data-theme={theme}
     >
-      <div
-        className="absolute inset-0 opacity-10 pointer-events-none mix-blend-overlay"
-        style={{
-          background: "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.03) 2px, rgba(255,255,255,0.03) 4px)",
-        }}
-      />
-      <div
-        className="absolute top-0 right-0 w-[2px] h-full bg-gradient-to-b from-accent/40 via-accent/20 to-transparent"
-      />
-      <div
-        className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-accent/40 via-accent/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-      />
+      <div className="note-popover__texture" />
+      <div className="note-popover__accent-vertical" />
+      <div className="note-popover__accent-bottom" />
 
       <div className="relative z-10 space-y-3">
-        <p className="text-sm font-mono leading-relaxed border-l-2 border-accent/50 pl-3 break-words">
-          {note || <span className="text-muted-foreground/60 italic">// no note saved</span>}
+        <p className="note-popover__note">
+          {note || <span className="note-popover__placeholder">// no note saved</span>}
         </p>
 
-        <Form method="post" action={`/workspace/delete-annotation/${docId}/${id}`} className="flex justify-end border-t border-border/30 pt-2">
+        <Form
+          method="post"
+          action={`/workspace/delete-annotation/${docId}/${id}`}
+          className="note-popover__actions"
+        >
           <Tooltip>
             <TooltipTrigger asChild>
               <Button

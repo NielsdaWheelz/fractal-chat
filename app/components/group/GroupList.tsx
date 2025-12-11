@@ -1,18 +1,30 @@
 import { Pencil } from "lucide-react"
-import DocumentList from "../document/DocumentList"
+import DocumentList, { type DocumentListItem } from "../document/DocumentList"
 import GroupAvatarStack from "../groupavatar"
 import { AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion"
 import { Button } from "../ui/button"
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
+import type { ThemeName } from "~/types/theme"
 
+type GroupShape = {
+  id: string;
+  name?: string | null;
+  members?: any[];
+  documents?: DocumentListItem[];
+};
 
+type GroupListProps = {
+  groups: GroupShape[];
+  onEditGroup: (group: { id: string; name: string; members: any[]; documents: DocumentListItem[] }) => void;
+  theme: ThemeName;
+};
 
-const GroupList = (props: { groups, onEditGroup }) => {
+const GroupList = ({ groups, onEditGroup, theme }: GroupListProps) => {
   // console.log("GROUP:", props.groups[0].documents)
   return (
     <>
-      {props?.groups?.map(
-        (group: { id: string, name?: string | null, members?: any[], documents?: any[] }) => {
+      {groups?.map(
+        (group) => {
           const name = (group.name && group.name.trim().length > 0)
             ? group.name
             : (group.id)
@@ -39,7 +51,7 @@ const GroupList = (props: { groups, onEditGroup }) => {
                           className="h-5 w-5 shrink-0 ml-auto"
                           onClick={(e) => {
                             e.stopPropagation();
-                            props.onEditGroup({
+                            onEditGroup({
                               id: group.id,
                               name: name,
                               members: group.members || [],
@@ -53,7 +65,7 @@ const GroupList = (props: { groups, onEditGroup }) => {
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="pb-2">
-                    <DocumentList documents={group.documents} />
+                    <DocumentList documents={group.documents ?? []} theme={theme} />
                   </AccordionContent>
                 </AccordionItem>
               </TooltipTrigger>

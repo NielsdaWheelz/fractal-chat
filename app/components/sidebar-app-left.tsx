@@ -38,11 +38,12 @@ import { ScrollArea } from "./ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import UploadForm from "./upload-form";
 import Logo from "./logo";
+import type { ThemeName } from "~/types/theme";
 
 type UIMessagePart = { type: string; text?: string }
 type UIMessage = { role: string; parts: UIMessagePart[] }
 type UserInfo = { name: string; email: string; avatar: string; fallback: string }
-type SidebarAppProps = { setTheme: React.Dispatch<React.SetStateAction<"light" | "dark">>; theme: "light" | "dark"; data: any; user: UserInfo; side: "left" | "right" } & ComponentProps<typeof Sidebar>
+type SidebarAppProps = { setTheme: React.Dispatch<React.SetStateAction<ThemeName>>; theme: ThemeName; data: any; user: UserInfo; side: "left" | "right" } & ComponentProps<typeof Sidebar>
 
 export function SidebarApp({ side, setTheme, theme, data, user, ...props }: SidebarAppProps) {
   const [mode, setMode] = useState("document")
@@ -80,6 +81,62 @@ export function SidebarApp({ side, setTheme, theme, data, user, ...props }: Side
   const documentLimitReached = limitInfo ? !limitInfo.allowed : false;
   const documentsRemaining = limitInfo?.remaining === Infinity ? null : limitInfo?.remaining;
   const isSubscribed = limitInfo?.subscribed ?? false;
+  const themedStyles = {
+    iconButton: iconButtonClasses(theme),
+    inputShell: inputShellClasses(theme),
+    secondaryPanel: secondaryPanelClasses(theme),
+    sectionTitle: sectionTitleClasses(theme),
+    tabTrigger: tabTriggerClasses(theme),
+  };
+  const tabsListTone: Record<ThemeName, string> = {
+    light: "border-border bg-card shadow-sm",
+    dark: "border-border/70 bg-card/80 shadow-md",
+    neon: "border-sidebar-border bg-sidebar/90 shadow-[0_12px_30px_rgba(8,0,25,0.35)]",
+  };
+  const tabsTextTone: Record<ThemeName, string> = {
+    light: "text-muted-foreground",
+    dark: "text-muted-foreground",
+    neon: "text-sidebar-foreground/80",
+  };
+  const accordionTone: Record<ThemeName, string> = {
+    light: "border-border bg-card text-muted-foreground hover:text-foreground hover:bg-accent/10",
+    dark: "border-border/70 bg-card/80 text-muted-foreground/90 hover:text-foreground hover:bg-accent/10",
+    neon: "border-sidebar-border bg-sidebar/90 font-theme-accent text-sidebar-foreground/80 hover:text-sidebar-foreground hover:border-sidebar-accent/60",
+  };
+  const accentIconTone: Record<ThemeName, string> = {
+    light: "text-accent",
+    dark: "text-accent",
+    neon: "text-sidebar-primary",
+  };
+  const helperTextTone: Record<ThemeName, string> = {
+    light: "text-muted-foreground",
+    dark: "text-muted-foreground",
+    neon: "text-sidebar-foreground/70",
+  };
+  const crawlLabelTone: Record<ThemeName, string> = {
+    light: "font-medium tracking-[0.08em]",
+    dark: "font-medium tracking-[0.08em]",
+    neon: "font-theme-accent uppercase tracking-[0.12em]",
+  };
+  const checkboxTone: Record<ThemeName, string> = {
+    light: "border-border bg-background accent-primary focus:ring-ring/20",
+    dark: "border-border/70 bg-card/80 accent-primary focus:ring-ring/25",
+    neon: "border-sidebar-border bg-sidebar/90 accent-[#ff5688] focus:ring-ring/30",
+  };
+  const selectExtras: Record<ThemeName, string> = {
+    light: "bg-background",
+    dark: "bg-card/80",
+    neon: "",
+  };
+  const tabsListClasses = cn(
+    "flex items-center gap-2 rounded-xl border px-1 py-1 transition-colors",
+    tabsListTone[theme]
+  );
+  const accordionTriggerClasses = cn(
+    "w-full rounded-xl border px-3 py-2 text-sm font-semibold transition-colors",
+    accordionTone[theme]
+  );
+  const accordionAccentIcon = accentIconTone[theme];
 
   useEffect(() => {
     if (fetcher.data && fetcher.data.length > 0) {
@@ -132,13 +189,13 @@ export function SidebarApp({ side, setTheme, theme, data, user, ...props }: Side
       : "Recent Transmission"
 
   const sidebarListBody = hasSearchResults ? (
-    <SearchResultList results={searchResults} />
+    <SearchResultList results={searchResults} theme={theme} />
   ) : isGroupMode ? (
     <Accordion type="single" collapsible className="w-full">
-      <GroupList groups={groups} onEditGroup={handleEditGroup} />
+      <GroupList groups={groups} onEditGroup={handleEditGroup} theme={theme} />
     </Accordion>
   ) : (
-    <DocumentList documents={documents} />
+    <DocumentList documents={documents} theme={theme} />
   )
 
   const startBillingRequest = async (intent: "checkout" | "portal") => {
@@ -187,12 +244,18 @@ export function SidebarApp({ side, setTheme, theme, data, user, ...props }: Side
             {new URLSearchParams(location.search).get("message")}
           </div>
         )}
-        <Tabs defaultValue="tab-1" className="items-center gap-4 text-[#d9dcff]/80">
+        <Tabs
+          defaultValue="tab-1"
+          className={cn(
+            "items-center gap-4",
+            tabsTextTone[theme]
+          )}
+        >
           <div className="flex w-full items-center justify-between gap-3">
             <Button
               size="icon"
               variant="ghost"
-              className={iconButtonClasses}
+              className={themedStyles.iconButton}
               onClick={() => {
                 setGroupId(null)
                 setDocumentId(null)
@@ -201,13 +264,13 @@ export function SidebarApp({ side, setTheme, theme, data, user, ...props }: Side
               <ArrowLeft className="h-5 w-5" />
               <span className="sr-only">Back</span>
             </Button>
-            <TabsList className="flex items-center gap-2 rounded-xl border border-[#2a2850]/70 bg-[#090417]/80 p-1 shadow-[0_12px_30px_rgba(8,0,25,0.35)]">
+            <TabsList className={tabsListClasses}>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span>
                     <TabsTrigger
                       value="tab-1"
-                      className={tabTriggerClasses}
+                      className={themedStyles.tabTrigger}
                       onClick={() => {
                         setMode("document")
                         setGroupId(null)
@@ -227,7 +290,7 @@ export function SidebarApp({ side, setTheme, theme, data, user, ...props }: Side
                   <span>
                     <TabsTrigger
                       value="tab-2"
-                      className={cn(tabTriggerClasses, "group")}
+                      className={cn(themedStyles.tabTrigger, "group")}
                       onClick={() => {
                         setMode("group")
                         setGroupId(null)
@@ -250,7 +313,7 @@ export function SidebarApp({ side, setTheme, theme, data, user, ...props }: Side
                 <Button
                   size="icon"
                   variant="ghost"
-                  className={iconButtonClasses}
+                  className={themedStyles.iconButton}
                   onClick={() => {
                     setEditingGroup(null);
                     setIsModalOpen(true);
@@ -273,12 +336,12 @@ export function SidebarApp({ side, setTheme, theme, data, user, ...props }: Side
           </div>
           <TabsContent value="tab-1">
             <div className="flex items-center gap-2">
-              <span className={sectionTitleClasses}>Reads Circuit</span>
+              <span className={themedStyles.sectionTitle}>Reads Circuit</span>
             </div>
           </TabsContent>
           <TabsContent value="tab-2">
             <div className="flex items-center gap-2">
-              <span className={sectionTitleClasses}>Collective Mesh</span>
+              <span className={themedStyles.sectionTitle}>Collective Mesh</span>
             </div>
           </TabsContent>
         </Tabs>
@@ -292,9 +355,9 @@ export function SidebarApp({ side, setTheme, theme, data, user, ...props }: Side
               className="space-y-3"
               onSubmit={handleSearchSubmit}
             >
-              <div className={cn(secondaryPanelClasses, "flex w-full items-center gap-2")}>
+              <div className={cn(themedStyles.secondaryPanel, "flex w-full items-center gap-2")}>
                 <input
-                  className={cn(inputShellClasses, "flex-1 min-w-0")}
+                  className={cn(themedStyles.inputShell, "flex-1 min-w-0")}
                   type="text"
                   name="query"
                   placeholder="Search Signal"
@@ -309,7 +372,7 @@ export function SidebarApp({ side, setTheme, theme, data, user, ...props }: Side
                       <Button
                         size="icon"
                         variant="ghost"
-                        className={cn(iconButtonClasses, "shrink-0")}
+                        className={cn(themedStyles.iconButton, "shrink-0")}
                         onClick={() => {
                           setSearchResults([])
                           setMode("group")
@@ -332,7 +395,7 @@ export function SidebarApp({ side, setTheme, theme, data, user, ...props }: Side
                         variant="ghost"
                         type="submit"
                         disabled={documentLimitReached}
-                        className={cn(iconButtonClasses, "shrink-0")}
+                        className={cn(themedStyles.iconButton, "shrink-0")}
                       >
                         <Search className="h-5 w-5" />
                         <span className="sr-only">Search</span>
@@ -347,9 +410,9 @@ export function SidebarApp({ side, setTheme, theme, data, user, ...props }: Side
             </fetcher.Form>
             <Accordion type="single" collapsible className="w-full">
               <AccordionItem value="document-intake" className="w-full">
-                <AccordionTrigger className="w-full rounded-xl border border-[#26224a]/70 bg-[#0b0618]/80 px-3 py-2 text-[0.7rem] font-mono uppercase tracking-[0.18em] text-[#8ffcff]/80 hover:text-white">
+                <AccordionTrigger className={accordionTriggerClasses}>
                   <span className="flex items-center gap-2">
-                    <FilePlus2 className="h-4 w-4 shrink-0 text-[#71fff6]" />
+                    <FilePlus2 className={cn("h-4 w-4 shrink-0", accordionAccentIcon)} />
                     Document Intake
                   </span>
                 </AccordionTrigger>
@@ -361,10 +424,10 @@ export function SidebarApp({ side, setTheme, theme, data, user, ...props }: Side
                     autoComplete="off"
                     className="space-y-3"
                   >
-                    <div className={cn(secondaryPanelClasses, "grid w-full gap-3")}>
+                    <div className={cn(themedStyles.secondaryPanel, "grid w-full gap-3")}>
                       <div className="flex items-center gap-2">
                         <input
-                          className={cn(inputShellClasses, "flex-1 min-w-0")}
+                          className={cn(themedStyles.inputShell, "flex-1 min-w-0")}
                           type="text"
                           name="url"
                           value={url}
@@ -377,7 +440,7 @@ export function SidebarApp({ side, setTheme, theme, data, user, ...props }: Side
                               size="icon"
                               variant="ghost"
                               type="submit"
-                              className={cn(iconButtonClasses, "shrink-0")}
+                              className={cn(themedStyles.iconButton, "shrink-0")}
                             >
                               <FilePlus2 className="h-5 w-5" />
                               <span className="sr-only">Add Read</span>
@@ -388,18 +451,31 @@ export function SidebarApp({ side, setTheme, theme, data, user, ...props }: Side
                           </TooltipContent>
                         </Tooltip>
                       </div>
-                      <div className="grid gap-2 text-[#8ffcff]/70">
-                        <label className="flex items-center gap-2 font-mono text-[0.65rem] uppercase tracking-[0.12em]">
+                      <div
+                        className={cn(
+                          "grid gap-2 text-xs",
+                          helperTextTone[theme]
+                        )}
+                      >
+                        <label
+                          className={cn(
+                            "flex items-center gap-2 text-[0.7rem]",
+                            crawlLabelTone[theme]
+                          )}
+                        >
                           <input
                             type="checkbox"
                             name="crawl"
-                            className="size-4 rounded border border-[#343065]/70 bg-[#050711]/90 accent-[#ff5688] focus:outline-none focus:ring-2 focus:ring-[#6efff4]/30"
+                            className={cn(
+                              "size-4 rounded border focus:outline-none focus:ring-2",
+                              checkboxTone[theme]
+                            )}
                           />
                           Crawl site
                         </label>
                         <div className="grid gap-2 sm:grid-cols-2">
                           <input
-                            className={cn(inputShellClasses, "w-full text-center")}
+                            className={cn(themedStyles.inputShell, "w-full text-center")}
                             type="number"
                             name="maxPages"
                             min={1}
@@ -408,7 +484,11 @@ export function SidebarApp({ side, setTheme, theme, data, user, ...props }: Side
                           />
                           <select
                             name="splitMode"
-                            className={cn(inputShellClasses, "w-full bg-[#050711]/90 text-xs")}
+                            className={cn(
+                              themedStyles.inputShell,
+                              "w-full text-xs",
+                              selectExtras[theme]
+                            )}
                           >
                             <option value="aggregate">One document</option>
                             <option value="split">One per page</option>
